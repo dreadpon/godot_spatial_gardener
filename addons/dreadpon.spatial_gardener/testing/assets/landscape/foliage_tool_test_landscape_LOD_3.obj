@@ -1,6 +1,5 @@
 # Blender v2.93.5 OBJ File: 'foliage_tool_test_landscape.blend'
 # www.blender.org
-mtllib foliage_tool_test_landscape_LOD_3.mtl
 o foliage_tool_test_landscape_LOD_3_terrain_o.003
 v -0.493382 -0.015829 0.490036
 v -0.501798 -0.015914 0.494029
@@ -8270,7 +8269,6 @@ vn 0.1447 0.9894 0.0089
 vn -0.1324 0.9911 0.0161
 vn 0.0039 0.9997 0.0231
 vn 0.0157 0.9979 0.0620
-usemtl Default_OBJ.002
 s 1
 f 3//1 2//2 1//3
 f 9//4 4//5 1//3
