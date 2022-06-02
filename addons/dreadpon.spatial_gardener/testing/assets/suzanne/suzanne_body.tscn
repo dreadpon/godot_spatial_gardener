@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/assets/suzanne/suzanne_collision.tres" type="Shape" id=1]
+
+[node name="StaticBody" type="StaticBody"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = ExtResource( 1 )

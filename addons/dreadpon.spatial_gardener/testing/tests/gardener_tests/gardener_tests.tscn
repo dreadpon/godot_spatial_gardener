@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/test_gardener_painting.gd" type="Script" id=1]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/test_gardener_undo_redo_painting.gd" type="Script" id=2]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/test_run_all.gd" type="Script" id=4]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/test_gardener_save_load_painting.gd" type="Script" id=12]
+
+[node name="GardenerTests" type="Node"]
+script = ExtResource( 4 )
+
+[node name="TestGardenerPainting" type="Node" parent="."]
+script = ExtResource( 1 )
+greenhouse_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"
+
+[node name="TestGardenerSaveLoadPainting" type="Node" parent="."]
+script = ExtResource( 12 )
+greenhouse_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"
+
+[node name="TestGardenerUndoRedoPainting" type="Node" parent="."]
+script = ExtResource( 2 )
+greenhouse_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 0.146447, 0.853553, -0.5, -0.5, 0.5, 0.707107, 0.853553, 0.146447, 0.5, 0, 25.1513, 0 )
+light_energy = 0.8

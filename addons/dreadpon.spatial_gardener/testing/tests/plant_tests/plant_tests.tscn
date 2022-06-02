@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/test_greenhouse_create_edit.gd" type="Script" id=1]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/test_greenhouse_save_load.gd" type="Script" id=2]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/test_greenhouse_undo_redo.gd" type="Script" id=3]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/testing/tests/test_run_all.gd" type="Script" id=4]
+
+[node name="PlantTests" type="Node"]
+script = ExtResource( 4 )
+
+[node name="TestGreenhouseCreateEdit" type="Node" parent="."]
+script = ExtResource( 1 )
+save_path = "res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/greenhouse_intervals"
+
+[node name="TestGreenhouseSaveLoad" type="Node" parent="."]
+script = ExtResource( 2 )
+save_path = "res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/greenhouse_intervals"
+test_save_load_path = "res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/test_greenhouse_save_load_dir"
+
+[node name="TestGreenhouseUndoRedo" type="Node" parent="."]
+script = ExtResource( 3 )
+save_path = "res://addons/dreadpon.spatial_gardener/testing/tests/plant_tests/greenhouse_intervals"

@@ -1,0 +1,20 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/foliage_tool_test_landscape_LOD_3.obj-8dc24f329df10c409ae7ddbae451d363.mesh"
+
+[deps]
+
+files=[ "res://.import/foliage_tool_test_landscape_LOD_3.obj-8dc24f329df10c409ae7ddbae451d363.mesh" ]
+
+source_file="res://addons/dreadpon.spatial_gardener/testing/assets/landscape/foliage_tool_test_landscape_LOD_3.obj"
+dest_files=[ "res://.import/foliage_tool_test_landscape_LOD_3.obj-8dc24f329df10c409ae7ddbae451d363.mesh", "res://.import/foliage_tool_test_landscape_LOD_3.obj-8dc24f329df10c409ae7ddbae451d363.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
+offset_mesh=Vector3( 0, 0, 0 )
+octahedral_compression=true
+optimize_mesh_flags=4286
