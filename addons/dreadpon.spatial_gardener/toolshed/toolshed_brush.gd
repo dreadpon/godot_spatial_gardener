@@ -40,7 +40,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 	
 	match prop:
 		"shape/shape_size":
-			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/brush_size_slider_max_value", 50.0)
+			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/brush_size_slider_max_value", 100.0)
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(shape_size, "Size", prop, settings)
 		"behavior/behavior_strength":

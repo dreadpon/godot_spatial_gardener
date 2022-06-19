@@ -7,8 +7,8 @@
 [ext_resource path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" type="Script" id=5]
 [ext_resource path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" type="Script" id=6]
 [ext_resource path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed_brush.gd" type="Script" id=7]
-[ext_resource path="res://showcase/mesh/tree/meshes/tree_pine-LOD2.mesh" type="ArrayMesh" id=8]
-[ext_resource path="res://showcase/mesh/cylinder/LOD_variants/cylinder_LOD_2.tres" type="Resource" id=9]
+[ext_resource path="res://demo/mesh/tree/meshes/tree_pine-LOD2.mesh" type="ArrayMesh" id=8]
+[ext_resource path="res://demo/mesh/cylinder/LOD_variants/cylinder_LOD_2.tres" type="Resource" id=9]
 
 [sub_resource type="Resource" id=18]
 resource_name = "Greenhouse_LODVariant"

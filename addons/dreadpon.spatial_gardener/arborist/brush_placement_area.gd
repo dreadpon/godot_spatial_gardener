@@ -322,8 +322,8 @@ func generate_raycast_positions():
 	# Yet it doesn't 100% work on angled surfaces
 	# We still might go over max placements, hence the limit check below
 	# The percieved visual density should be unaffected though, especially at high (>= 0.5) jitter
-#	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.empty():
-#		raycast_positions.remove(randi() % raycast_positions.size())
+	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.empty():
+		raycast_positions.remove(randi() % raycast_positions.size())
 
 
 
@@ -385,17 +385,18 @@ func debug_visualize_placement_grid(prefix:String = ""):
 	
 	if prefix != "":
 		logger.info(prefix)
-	for y in range(0, placement_grid[0].size()):
-		var string = "|"
-		for x in range(0, placement_grid.size()):
-			if placement_grid[x][y]:
-				string += " "
-			else:
-				string += "X"
-			if x < placement_grid[x].size() - 1:
-				string += "|"
-		string += "|"
-		logger.info(string)
+	if placement_grid.size() > 0:
+		for y in range(0, placement_grid[0].size()):
+			var string = "|"
+			for x in range(0, placement_grid.size()):
+				if placement_grid[x][y]:
+					string += " "
+				else:
+					string += "X"
+				if x < placement_grid[x].size() - 1:
+					string += "|"
+			string += "|"
+			logger.info(string)
 	print("\n")
 
 

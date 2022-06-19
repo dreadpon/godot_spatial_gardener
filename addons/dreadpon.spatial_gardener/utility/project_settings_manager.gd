@@ -31,7 +31,7 @@ static func add_plugin_project_settings():
 		Globals.KeyList.KEY_Q, Globals.KeyList)
 	add_project_setting(
 		"dreadpon_spatial_gardener/input_and_ui/brush_size_slider_max_value", 
-		50.0, 
+		100.0, 
 		TYPE_REAL)
 	add_project_setting(
 		"dreadpon_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 

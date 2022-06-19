@@ -102,6 +102,7 @@ plant/plant_brush_active = true
 plant/plant = SubResource( 5 )
 
 [resource]
+resource_name = "Greenhouse"
 script = ExtResource( 1 )
 __meta__ = {
 "class": "Greenhouse"

@@ -306,20 +306,31 @@ func handle_selected_gardener(selection:Array):
 
 # Start/stop editing an active Gardener
 func set_gardener_edit_state(gardener):
-	if is_instance_valid(active_gardener) && active_gardener != gardener:
-		active_gardener.stop_editing()
-		active_gardener = null
-	
-	if !gardener:
-		side_panel_ND.visible = false
-		toolbar.visible = false
+	if (is_instance_valid(active_gardener) && active_gardener != gardener) || !gardener:
+		stop_gardener_edit()
 	
 	if gardener:
-		active_gardener = gardener
-		active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), side_panel_ND)
-		side_panel_ND.visible = true
-		toolbar.visible = true
-		active_gardener.up_to_date_debug_view_menu(debug_view_menu)
+		start_gardener_edit(gardener)
+
+
+func start_gardener_edit(gardener):
+	active_gardener = gardener
+	active_gardener.connect("tree_exited", self, "set_gardener_edit_state", [null])
+	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), side_panel_ND)
+	side_panel_ND.visible = true
+	toolbar.visible = true
+	active_gardener.up_to_date_debug_view_menu(debug_view_menu)
+
+
+func stop_gardener_edit():
+	side_panel_ND.visible = false
+	toolbar.visible = false
+	
+	if active_gardener:
+		active_gardener.stop_editing()
+		if active_gardener.is_connected("tree_exited", self, "set_gardener_edit_state"):
+			active_gardener.disconnect("tree_exited", self, "set_gardener_edit_state")
+		active_gardener = null
 
 
 

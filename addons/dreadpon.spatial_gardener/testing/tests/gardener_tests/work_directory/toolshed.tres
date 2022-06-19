@@ -42,6 +42,7 @@ behavior/behavior_brush_type = 3
 shape/shape_size = 10.0
 
 [resource]
+resource_name = "Toolshed"
 script = ExtResource( 2 )
 __meta__ = {
 "class": "Toolshed"

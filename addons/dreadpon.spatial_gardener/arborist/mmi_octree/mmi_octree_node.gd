@@ -198,6 +198,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	if shared_LOD_variants.empty(): return
 	
 	var dist_to_node_center := (center_pos - camera_pos).length()
+	
 	var max_LOD_dist := LOD_max_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
 	var max_kill_dist := LOD_kill_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
 	var dist_to_node_center_bounds_estimate := clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
