@@ -223,7 +223,7 @@ func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance):
 		MMI.multimesh.set_instance_color(index, octree_node.debug_get_color())
 	
 	if draw_members && octree_node.is_leaf:
-		var member_extent = FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/debug_viewer_octree_member_size", 0.0) * 0.5
+		var member_extent = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/debug_viewer_octree_member_size", 0.0) * 0.5
 		extents = Vector3(member_extent, member_extent, member_extent)
 		var basis = Basis.IDENTITY.scaled(extents)
 		for member in octree_node.members:

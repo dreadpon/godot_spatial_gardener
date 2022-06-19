@@ -381,7 +381,7 @@ func grid_coord_to_centered_UV(grid_coord:Vector2) -> Vector2:
 
 # Print a nicely formatted placement grid to console
 func debug_visualize_placement_grid(prefix:String = ""):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/brush_placement_area_log_grid", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/brush_placement_area_log_grid", false): return
 	
 	if prefix != "":
 		logger.info(prefix)
@@ -401,5 +401,5 @@ func debug_visualize_placement_grid(prefix:String = ""):
 
 
 func debug_log_grid(string:String):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/brush_placement_area_log_grid", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/brush_placement_area_log_grid", false): return
 	logger.info(string)

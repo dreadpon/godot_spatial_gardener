@@ -114,5 +114,5 @@ func modify_brush_data_to_plant(brush_data:Dictionary, plant) -> Dictionary:
 
 
 func debug_print_lifecycle(string:String):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/arborist_log_lifecycle", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/arborist_log_lifecycle", false): return
 	logger.info(string)

@@ -137,18 +137,18 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			var settings := {"_base_control": _base_control, "_resource_previewer": _resource_previewer, "label_visibility": false, "tab": 1}
 			input_field = UI_IF_Object.new(selected_for_edit_resource, "LOD Variant", prop, settings)
 		"mesh/mesh_LOD_max_distance":
-			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 1000.0)
+			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 1000.0)
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_max_distance, "LOD Max Distance", prop, settings)
 		"mesh/mesh_LOD_kill_distance":
-			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/plant_kill_distance_slider_max_value", 2000.0)
+			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_kill_distance_slider_max_value", 2000.0)
 			var settings := {"min": -1.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_kill_distance, "LOD Kill Distance", prop, settings)
 		#======================================================
 		"mesh/mesh_LOD_max_capacity":
 			input_field = UI_IF_IntLineEdit.new(mesh_LOD_max_capacity, "Max chunk capacity", prop)
 		"mesh/mesh_LOD_min_size":
-			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/octree_min_node_size_slider_max_value", 500.0)
+			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/octree_min_node_size_slider_max_value", 500.0)
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_min_size, "Min node size", prop, settings)
 		"octree/octree_reconfigure_button":
@@ -164,7 +164,7 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			input_field.connect("pressed", self, "on_if_button", [input_field])
 		#======================================================
 		"density/density_per_units":
-			var max_value = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/plant_density_slider_max_value", 2000.0)
+			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value", 2000.0)
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			var field_name = "Plants Per %d Unit" % [Globals.PLANT_DENSITY_UNITS]
 			if Globals.PLANT_DENSITY_UNITS != 1:

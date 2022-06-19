@@ -265,5 +265,5 @@ func _try_visibility_check():
 
 
 func debug_print_prop_action(string:String):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/input_field_resource_log_prop_actions", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/input_field_resource_log_prop_actions", false): return
 	logger.info(string)

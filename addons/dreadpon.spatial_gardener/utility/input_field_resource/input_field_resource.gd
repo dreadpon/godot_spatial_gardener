@@ -180,7 +180,7 @@ func prop_action_request_lifecycle(prop_action:PropAction, lifecycle_stage:int):
 	# Most of the time we need this is when using a UI slider 
 	# To avoid commiting dozens of history actions while dragging
 func _can_prop_action_create_history(prop_action:PropAction):
-	var enable_undo_redo = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", true)
+	var enable_undo_redo = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", true)
 	return prop_action.can_create_history && enable_undo_redo
 
 
@@ -550,5 +550,5 @@ func res_edit_update_interaction_features(res_prop:String):
 
 # Debug print with a ProjectSettings check
 func debug_print_prop_action(string:String):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/input_field_resource_log_prop_actions", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/input_field_resource_log_prop_actions", false): return
 	logger.info(string)

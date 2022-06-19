@@ -819,7 +819,7 @@ func debug_dump_tree(results:Dictionary = {"string": "", "total_members": 0}):
 
 # Print an address of this node with two optional messages (prefix and suffix)
 func print_address(prefix:String = "", suffix:String = ""):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/octree_log_lifecycle", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/octree_log_lifecycle", false): return
 	var string = ""
 	
 	if prefix.length() > 0:

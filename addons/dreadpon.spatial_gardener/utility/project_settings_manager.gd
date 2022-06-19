@@ -17,64 +17,64 @@ const Logger = preload("logger.gd")
 static func add_plugin_project_settings():
 	# Input and UI
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", 
+		"dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", 
 		true, 
 		TYPE_BOOL)
 	add_project_setting_globals_enum(
-		"dreadpon_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", 
+		"dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", 
 		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
 	add_project_setting_globals_enum(
-		"dreadpon_spatial_gardener/input_and_ui/brush_property_edit_button", 
+		"dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button", 
 		Globals.ButtonList.BUTTON_RIGHT, Globals.ButtonList)
 	add_project_setting_globals_enum(
-		"dreadpon_spatial_gardener/input_and_ui/focus_painter_key", 
+		"dreadpons_spatial_gardener/input_and_ui/focus_painter_key", 
 		Globals.KeyList.KEY_Q, Globals.KeyList)
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/brush_size_slider_max_value", 
+		"dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value", 
 		100.0, 
 		TYPE_REAL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 
+		"dreadpons_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 
 		1000.0, 
 		TYPE_REAL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/plant_kill_distance_slider_max_value", 
+		"dreadpons_spatial_gardener/input_and_ui/plant_kill_distance_slider_max_value", 
 		2000.0, 
 		TYPE_REAL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/plant_density_slider_max_value", 
+		"dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value", 
 		2000.0, 
 		TYPE_REAL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/input_and_ui/octree_min_node_size_slider_max_value", 
+		"dreadpons_spatial_gardener/input_and_ui/octree_min_node_size_slider_max_value", 
 		500.0, 
 		TYPE_REAL)
 	
 	# Debug
 	add_project_setting_globals_enum(
-		"dreadpon_spatial_gardener/debug/dump_editor_tree_key",
+		"dreadpons_spatial_gardener/debug/dump_editor_tree_key",
 		Globals.KeyList.KEY_UNSET, Globals.KeyList)
 	add_project_setting_globals_enum(
-		"dreadpon_spatial_gardener/debug/dump_all_octrees_key",
+		"dreadpons_spatial_gardener/debug/dump_all_octrees_key",
 		Globals.KeyList.KEY_UNSET, Globals.KeyList)
 	add_project_setting(
-		"dreadpon_spatial_gardener/debug/arborist_log_lifecycle", 
+		"dreadpons_spatial_gardener/debug/arborist_log_lifecycle", 
 		false,
 		TYPE_BOOL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/debug/octree_log_lifecycle", 
+		"dreadpons_spatial_gardener/debug/octree_log_lifecycle", 
 		false,
 		TYPE_BOOL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/debug/brush_placement_area_log_grid", 
+		"dreadpons_spatial_gardener/debug/brush_placement_area_log_grid", 
 		false,
 		TYPE_BOOL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/debug/input_field_resource_log_prop_actions", 
+		"dreadpons_spatial_gardener/debug/input_field_resource_log_prop_actions", 
 		false,
 		TYPE_BOOL)
 	add_project_setting(
-		"dreadpon_spatial_gardener/debug/debug_viewer_octree_member_size", 
+		"dreadpons_spatial_gardener/debug/debug_viewer_octree_member_size", 
 		2.0, 
 		TYPE_REAL)
 	

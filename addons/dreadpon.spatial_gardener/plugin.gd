@@ -243,7 +243,7 @@ func restore_gardener_selection():
 
 
 func get_focus_painter_key():
-	var key = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/focus_painter_key", KEY_Q)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/focus_painter_key", KEY_Q)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
@@ -358,7 +358,7 @@ func debug_dump_node_descendants(node:Node, intendation:int = 0):
 
 
 func debug_get_dump_editor_tree_key():
-	var key = FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/dump_editor_tree_key", 0)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_editor_tree_key", 0)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 

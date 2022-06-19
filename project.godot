@@ -10,7 +10,7 @@ config_version=4
 
 [application]
 
-config/name="Godot Spatial Gardener"
+config/name="Dreadpon's Spatial Gardener"
 config/icon="res://icon.png"
 
 [physics]

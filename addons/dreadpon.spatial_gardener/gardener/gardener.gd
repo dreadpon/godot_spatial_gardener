@@ -505,7 +505,7 @@ func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 
 func painter_update_to_active_brush(active_brush):
 	assert(active_brush)
-	var max_size = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/brush_size_slider_max_value", 100.0)
+	var max_size = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value", 100.0)
 	var max_strength = 1.0
 	
 	painter.set_active_brush_max_size(max_size)

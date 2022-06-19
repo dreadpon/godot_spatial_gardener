@@ -168,12 +168,12 @@ func forwarded_input(camera:Camera, event):
 func get_property_edit_modifier_key():
 	# This convolution exists because a project setting with default value is not saved for some reason and load as "null"
 	# See https://github.com/godotengine/godot/issues/56598
-	var key = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", Globals.KeyList.KEY_SHIFT)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", Globals.KeyList.KEY_SHIFT)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
 func get_property_edit_button():
-	var key = FunLib.get_setting_safe("dreadpon_spatial_gardener/input_and_ui/brush_property_edit_button", Globals.ButtonList.BUTTON_RIGHT)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button", Globals.ButtonList.BUTTON_RIGHT)
 	return Globals.index_to_enum(key, Globals.ButtonList)
 
 

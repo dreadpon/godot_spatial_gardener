@@ -566,10 +566,10 @@ func request_debug_redraw():
 
 
 func debug_get_dump_tree_key():
-	var key = FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/dump_all_octrees_key", 0)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_all_octrees_key", 0)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
 func debug_print_lifecycle(string:String):
-	if !FunLib.get_setting_safe("dreadpon_spatial_gardener/debug/arborist_log_lifecycle", false): return
+	if !FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/arborist_log_lifecycle", false): return
 	logger.info(string)
