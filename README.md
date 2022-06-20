@@ -5,7 +5,7 @@
     </h1>
 </p>
 
-![Animated cover](https://i.postimg.cc/9FRBNkhs/spatial-gardener.gif)
+![Animated cover](https://i.postimg.cc/fRwVwFVq/spatial-gardener.gif)
 
 [![Video preview](https://i.postimg.cc/9FcssTbG/external-trailer-thubmnail.jpg)](https://youtu.be/Yod-SPBqitQ)
 
