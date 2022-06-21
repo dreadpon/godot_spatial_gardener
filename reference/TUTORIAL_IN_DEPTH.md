@@ -9,7 +9,6 @@
 - [Plants](#plants)
 - [Gardener Debug Viewer](#gardener)
 - [Project Settings](#project-settings)
-- [Recording Godot with OBS](#recording-godot-with-obs)
 - [We're done!](#were-done)
 
 ## Gardener
@@ -116,12 +115,6 @@ And finally, the plugin settings. Go to `Project -> Project Settings` and scroll
 - In `Debug` you can assign a key to dump information about the scene to console for inspection. This doesn’t work in-game, but works in-editor. You can also activate logging of various functions, or set the member size for `Gardener Debug Viewer`.
 
     ![015 Plugin settings debug]()
-
-## Recording Godot with OBS
-
-As a closing remark: if you ever want to record my plugin in action, know that OBS recording of Godot in fullscreen can be painful. The easiest way is to add `Game Capture` source, set it to `Capture specific window` and make sure `Window` is chosen correctly.
-
-![016 OBS setup]()
 
 ## We're done!
 

@@ -28,7 +28,7 @@ var mesh_LOD_max_distance:float = 10.0
 var mesh_LOD_kill_distance:float = -1.0
 
 # How many members fit into an octree node before it's subdivided
-var mesh_LOD_max_capacity:int = 100
+var mesh_LOD_max_capacity:int = 50
 # Minimum size of an octree node. Will not subdivide after this treshold
 # Chunks of minimum size might contain members beyond the capacity limit
 var mesh_LOD_min_size:float = 1.0

@@ -19,11 +19,11 @@ You should have Godot engine installed; if not, you can download it from the off
 
 ![001 Godot stable download]()
 
-Recommended version is 3.4.2, but most 3.x versions should be supported. Godot 4 is not supported at the moment. 
+Recommended version is 3.4.2 and can be easily found on Godot’s GitHub, however, most 3.x versions should be supported. Godot 4 is not supported at the moment.
 
 ![002 Godot older downloads]()
 
-Grab a copy of the showcase project from GitHub. Open the main repository page, go to `Releases` and download the `godot_spatial_gardener_demo.zip`. 
+Grab a copy of the showcase project from GitHub. Open the main repository page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo.zip`. 
 
 ![003 Actions to download plugin]()
 
@@ -113,7 +113,7 @@ Set `LOD Max Distance` to 100, and zoom your camera in and out. Observe how the 
 
 ![Trees of different LOD]()
 
-Click `Configure Octrees`. Default values here are meant for something more dense, like grass. It assumes one hundred objects can fit into one ‘cube’. For trees, lets change `Max Chunk Capacity` to a more reasonable 10 and click `Apply`.
+Click `Configure Octrees`. Default values here are meant for something more dense, like bushes. It assumes one hundred objects can fit into one ‘cube’. For trees, lets change `Max Chunk Capacity` to a more reasonable 10 and click `Apply`.
 
 ![021 Rebuilding octree]()
 
@@ -151,9 +151,9 @@ Finally, cleanup any overlaps or weird placements and lets move on to bushes and
 
 ## Setting up bushes and grass
 
-Create the necessary `LOD Variants` and assign their meshes from `bush` and `grass` folders. Then, set the density of bushes to 200 and grass to 4000. Set `LOD Max Distance` of both to 50. For grass, also set `LOD Kill Distance` to 200. That way, when your camera moves far away, grass will disappear entirely.
+Add 2 `LOD Variants` for bushes, set it’s density to 100 and `LOD Max Distance` to 50. Set it’s scale to 2 and 3.
 
-Then set the scale. I use a range from 2 to 3 for both.
+For grass it’s gonna be 3 variants, density of 4000 and `LOD Max Distance` of 30. Gove it the same scale as bushes, and set `LOD Kill Distance` to 50. That way, when your camera moves far away, grass will disappear entirely.
 
 ![028 Side by side bush grass until scale]()
 
