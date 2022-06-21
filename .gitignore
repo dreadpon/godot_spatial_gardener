@@ -1,1 +1,3 @@
 *.backup
+.import/
+export_presets.cfg
