@@ -15,7 +15,7 @@ It can also handle thousands of foliage instances without completely tanking the
 
 This is a single player plugin and works best with finite medium-sized scenes. Think platformers, shooters, adventure games, anything with a hand-made level.
 
-[![Video preview](https://i.postimg.cc/VsRnZDRn/trailer-thubmnail-360p-ext-compressed.jpg)](https://youtu.be/Yod-SPBqitQ)
+[![Video preview](https://i.postimg.cc/VsRnZDRn/trailer-thubmnail-360p-ext-compressed.jpg)](https://youtu.be/o_59aTeljpg)
 
 # Stability
 
