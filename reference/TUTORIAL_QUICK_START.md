@@ -19,11 +19,11 @@
 ## Plugin Setup
 You should have Godot engine installed; if not, you can download it from the [official website.](https://godotengine.org/download)
 
-Recommended version is [3.4.2 and can be easily found on Godot's GitHub](https://github.com/godotengine/godot/releases), however, most 3.x versions should be supported. Godot 4 is not supported at the moment.
+Minimum and most compatible version is [3.4.2 and can be easily found on Godot's GitHub](https://github.com/godotengine/godot/releases/tag/3.4.2-stable).
 
 ![t_pt1_001_godot_older_download](https://i.postimg.cc/sgjxVHJn/t-pt1-001-godot-older-download.jpg)
 
-Grab a copy of the showcase project from [GitHub](https://github.com/dreadpon/godot_spatial_gardener). Open the page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo.zip`. 
+Grab a copy of the demo project from [GitHub](https://github.com/dreadpon/godot_spatial_gardener). Open the page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo.zip`. 
 
 ![t_pt1_002_plugin_demo_download](https://i.postimg.cc/DwxZmQj7/t-pt1-002-plugin-demo-download.jpg)
 
@@ -149,7 +149,7 @@ Last thing: collision. If you click on `LOD Variants`, you'll see two properties
 
 ![t_pt1_025_inside_lod_variant](https://i.postimg.cc/bJCdMxn6/t-pt1-025-inside-lod-variant.jpg)
 
-Find `body_plants_tree_pine.tscn` and drag it over `Spawned Spatial`.
+Find `body_plants_tree_pine.tscn` and drag it over `Spawned Spatial` for each of the variants.
 
 ![t_pt1_026_assigning_collision](https://i.postimg.cc/kXtD1tgc/t-pt1-026-assigning-collision.jpg)
 
@@ -191,7 +191,7 @@ In terms of environment design, this means our bushes will mostly point upwards,
 
 ## Final steps
 
-In Spatial Gardener you can paint with several plant types simultaneously. Deselect trees, select bushes with grass and paint them. 
+In Spatial Gardener you can paint with several plant types simultaneously. Deselect trees, select bushes with grass and paint them. If you can't see your grass, temporarily disable `LOD Kill Distance` by setting it to -1.
 
 ![t_pt1_034_select_bush_grass_painting](https://i.postimg.cc/sXNDKVFq/t-pt1-034-select-bush-grass-painting.jpg)
 

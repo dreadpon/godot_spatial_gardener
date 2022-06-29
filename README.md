@@ -58,7 +58,7 @@ If you want to report a bug or request a feature, you should do so on GitHub usi
 
 You're welcome to support me on:
 
-- **[<img src="https://i.postimg.cc/QCfW2L37/Digital-Patreon-Logo-Fiery-Coral.png" width="16" style="margin-right:4px"/> Patreon](https://www.patreon.com/dreadpon?fan_landing=true)**
+- **[<img src="https://i.postimg.cc/QCfW2L37/Digital-Patreon-Logo-Fiery-Coral.png" width="16" style="margin-right:4px"/> Patreon](https://www.patreon.com/dreadpon)**
 - **[<img src="https://i.postimg.cc/Hkc7hPPJ/Color.png" width="16" style="margin-right:4px"/> Boosty](https://boosty.to/dreadpon)**
 
 This will help make updates for this plugin and embark on any new projects I set my eyes on.

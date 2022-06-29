@@ -28,7 +28,7 @@ var mesh_LOD_max_distance:float = 10.0
 var mesh_LOD_kill_distance:float = -1.0
 
 # How many members fit into an octree node before it's subdivided
-var mesh_LOD_max_capacity:int = 50
+var mesh_LOD_max_capacity:int = 75
 # Minimum size of an octree node. Will not subdivide after this treshold
 # Chunks of minimum size might contain members beyond the capacity limit
 var mesh_LOD_min_size:float = 1.0
@@ -128,7 +128,7 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"add_create_inst_button": true,
 				"_base_control": _base_control, 
 				"accepted_classes": accepted_classes,
-				"element_display_size": 75, 
+				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_LOD_VARIANT,
 				"_resource_previewer": _resource_previewer,
 				}

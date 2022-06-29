@@ -20,6 +20,10 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", 
 		true, 
 		TYPE_BOOL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 
+		1.0, 
+		TYPE_REAL)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", 
 		Globals.KeyList.KEY_SHIFT, Globals.KeyList)

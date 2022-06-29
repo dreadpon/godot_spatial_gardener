@@ -29,7 +29,8 @@ func _ready():
 	
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	size_flags_stretch_ratio = 0.3
-	rect_min_size.x = 275.0
+	rect_min_size.x = 100.0
+	rect_size.x = 300.0
 	
 	gardener_ui_tools.name = "gardener_ui_tools"
 	gardener_ui_tools.split_offset = 80

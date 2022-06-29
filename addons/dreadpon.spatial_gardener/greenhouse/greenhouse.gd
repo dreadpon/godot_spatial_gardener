@@ -111,7 +111,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 				"add_create_inst_button": true,
 				"_base_control": _base_control, 
 				"accepted_classes": ["Greenhouse_PlantState"], 
-				"element_display_size": 100, 
+				"element_display_size": 100 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_PLANT_STATE,
 				"_resource_previewer": _resource_previewer,
 				}

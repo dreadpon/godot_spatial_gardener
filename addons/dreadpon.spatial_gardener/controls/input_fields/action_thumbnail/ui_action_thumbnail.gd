@@ -129,8 +129,10 @@ func update_size():
 func update_size_step2():
 	var thumb_rect = Vector2(thumb_size, thumb_size)
 	var button_rect = Vector2(button_size, button_size)
-	var toMargin = thumb_size - button_size - 4
+	var to_margin = thumb_size - button_size - 4
+	var scale = float(button_size) / 32.0
 	
+	print("%s %s" % [str(thumb_rect), str(button_rect)])
 	root_button_nd.set_size(thumb_rect)
 	texture_rect_nd.set_size(thumb_rect)
 	
@@ -141,20 +143,26 @@ func update_size_step2():
 		check_box_nd.get_icon("checked").set_size_override(button_rect)
 		check_box_nd.get_icon("unchecked").set_size_override(button_rect)
 		check_box_nd.set_size(button_rect)
-		check_box_nd.set_position(Vector2(4, toMargin))
+		check_box_nd.set_position(Vector2(4, to_margin))
 	if is_instance_valid(clear_button_nd):
 		clear_button_nd.set_size(button_rect)
 		clear_button_nd.set_position(Vector2(4, 4))
 	if is_instance_valid(delete_button_nd):
 		delete_button_nd.set_size(button_rect)
-		delete_button_nd.set_position(Vector2(toMargin, 4))
+		delete_button_nd.set_position(Vector2(to_margin, 4))
 	if is_instance_valid(counter_container_nd):
 		counter_container_nd.set_size(button_rect)
-		counter_container_nd.set_position(Vector2(toMargin, toMargin))
+		counter_container_nd.set_position(Vector2(to_margin, to_margin))
 		
-		counter_label_nd.rect_pivot_offset = counter_label_nd.rect_size
-		var scale = float(button_size) / 32.0
-		counter_label_nd.rect_scale = Vector2(scale, scale)
+		var label = counter_container_nd.get_child(0)
+		var font = label.get_font("font", "").duplicate()
+		font.size *= scale
+		label.add_font_override("font", font)
+	if is_instance_valid(alt_text_margin_nd):
+		var label = alt_text_margin_nd.get_child(0)
+		var font = label.get_font("font", "").duplicate()
+		font.size *= scale
+		label.add_font_override("font", font)
 	
 	rect_size = thumb_rect
 	rect_min_size = thumb_rect
