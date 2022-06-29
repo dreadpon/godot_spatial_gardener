@@ -1,5 +1,7 @@
 # [Part 2] In-Depth Look
 
+**[Tutorial Overview](TUTORIAL_ROOT.md)**
+
 **[<- [Part 1] Quick-Start Tutorial](TUTORIAL_QUICK_START.md)**
 
 ## Table of contents
@@ -7,124 +9,138 @@
 - [Scene tree structure](#scene-tree-structure)
 - [Brushes](#brushes)
 - [Plants](#plants)
-- [Gardener Debug Viewer](#gardener)
+- [Gardener Debug Viewer](#gardener-debug-viewer)
 - [Project Settings](#project-settings)
 - [We're done!](#were-done)
 
 ## Gardener
 
-We’ll start with the Gardener itself.
+We'll start with the Gardener itself.
 
-![001 Gardener properties]()
+![t_pt2_001_gardener_properties](https://i.postimg.cc/pVmDvrd9/t-pt2-001-gardener-properties.jpg)
 
-- `Work Directory` is the main place to save your plant and brush configurations. It’s meant to ease reusing plants across different Gardeners. However, Godot’s resource system is pretty wonky at times. I had to work around some of it’s quirks when saving and loading resources. So, you shouldn’t tinker with it besides the intended way covered in this tutorial.
-- `Collision Mask` was already explained. It’s very important to set it up correctly, or you might end up with something like this:
-- Next, the `Transforms`. Gardeners should work fine with custom translations and rotations. It’s not something I tested much, so it’s better to leave it at world origin and instead recenter the octree.
+- `Work Directory` is the main place to save your plant and brush configurations. It's meant to ease reusing plants across different Gardeners. It's worth to mention that Godot's resource system is pretty wonky at times. I had to work around some of it's quirks when saving and loading resources. So, you shouldn't tinker with it besides the intended way covered in this tutorial.
+- `Collision Mask` was already explained. It's very important to set it up correctly, or you might end up with something like this:
+
+![t_pt2_002_improper_collision_layers-](https://i.postimg.cc/gc132pwg/t-pt2-002-improper-collision-layers.jpg)
+
+- Next, the `Transforms`. Gardeners should work fine with custom translations and rotations. It's not something I tested much, so it's better to leave it at world origin and instead recenter the octree.
 
 ## Scene tree structure
 
 Next up, the scene tree structure.
 
-![002 Gardener scene tree expanded]()
+![t_pt2_003_gardener_scene_tree](https://i.postimg.cc/pdVF6X7L/t-pt2-003-gardener-scene-tree.jpg)
 
 - First is the `Gardener` – a high-level manager that handles input, lifecycle of different functions and communications between them.
 - Second comes the `Arborist`. It manages octrees and foliage placement in response to brush painting.
-- Next is¬ a long list of `Multimesh` nodes. They are unordered, and handled by Arborist’s octrees. Each multimesh represents a ‘cube’ you’ve seen in `Gardener Debug Viewer`, called an octree node. They handle the instancing of meshes on GPU.
+- Then you have a MultiMesh container for each of the plant types.
+- Next is a long list of `Multimesh` nodes. They are unordered, and handled by Arborist's octrees. Each multimesh represents a 'cube' you've seen in `Gardener Debug Viewer`, called an octree node. MultiMeshes handle the instancing of meshes on GPU.
 - Finally we have `StaticBody` nodes. They are added if you have a `Spawned Spatial` assigned.
 
-You shouldn’t manually edit this list, so it’s better to keep your Gardeners folded.
+You shouldn't manually edit this list, so it's better to keep your Gardeners folded.
 
 ## Brushes
 
 Now the brushes. 
 
-![003 Brush properties]()
+![t_pt2_004_brush_props](https://i.postimg.cc/DwTs1cPs/t-pt2-004-brush-props.jpg)
 
-You can switch between them by clicking, or pressing buttons 1 to 4 on your keyboard. Both properties can be quickly edited: `Size` by holding Right Mouse Button and dragging, and ‘Strength’ by holding Shift + Right Mouse Button.
+You can switch between them by clicking, or pressing buttons 1-4 on your keyboard. Both properties can be quickly edited: `Size` by holding `Right Mouse Button` and dragging, and `Strength` by holding `Shift` + `Right Mouse Button`.
 
-- `Paint` brush adds foliage. It’s `Strength` multiplies plant density. At 0.5 strength you’ll get half the density.
-- `Erase` removes foliage. `Strength` defines how much foliage is removed in relation to current density in the settings. A value of 0.5 will make your foliage approximately half as dense.
+- `Paint` brush adds foliage. It's `Strength` multiplies plant density. At 0.5 strength you'll get half the density.
+- `Erase` removes foliage. `Strength` defines how much foliage is removed related to current density in the settings. A value of 0.5 will make your foliage approximately half as dense.
 - `Single` is used to place individual objects like trees or props.
-- `Reapply` updates individual transforms of already placed plants. It doesn’t affect density, octree configuration or LOD settings.
+- `Reapply` updates individual transforms of already placed plants. It doesn't affect density, octree configuration or LOD settings.
 
 ## Plants
 
-As for plant UI, I’m pretty sure you can’t create a second inspector window in Godot. Or reuse any of the inspector UI really. So I had to rebuild the entire property management system to ensure basic editor functionality can work inside custom Control nodes. So it might behave differently from the native Inspector.
+As for plant UI, I'm pretty sure you can't create a second inspector window in Godot. Or reuse any of the inspector UI really. So I had to rebuild the entire property management system to ensure basic editor functionality can work inside custom Control nodes. So it might behave differently from the native Inspector.
 
-![004 Plant properties fully expanded]()
+![t_pt2_005_plant_props](https://i.postimg.cc/cJDnyGyM/t-pt2-005-plant-props.jpg)
 
 The plant list is simple. You can add, delete plants, and select them for painting with a checkbox.
 
-- `LOD Variants` is a list of Level of Detail meshes in order of their simplification. Inside, you can set the `Mesh` and `Spawned Spatial`. You can add, delete or clear variant’s properties. For ease of use, you can drag’n’drop both the meshes and spatials without opening the variant.
-
-    ![005 Comparing drag'n'drop functionality]()
-
+- `LOD Variants` is a list of 'Level of Detail' meshes in order of their simplification. Inside, you can set the `Mesh` and `Spawned Spatial`. You can add, delete or clear variant's properties. For ease of use, you can drag'n'drop both the meshes and spatials without opening the variant.
 - At `LOD Max Distance` threshold, lowest LOD is shown. LODs in between are chosen at equal intervals.
-- At `LOD Kill Distance` threshold, meshes and spawned spatials are removed entirely, to reduce the machine  load.
-- `Octree configuration` sets two things: a maximum number of plants in each node and a minimum size of that node. To understand what’s going on here, I advise you read an article on gamedev.net.
-    - If a node exceeds it’s capacity, it will subdivide into 8 smaller nodes. But it won’t subdivide less than it’s minimum size. Instead, it will keep adding objects over it’s capacity limit. If your nodes seem to overflow with objects – check the scale you’re working in. Perhaps you need to scale everything up or reduce the minimum node size.
-- `Plants Per 100 Units` represents how many objects you’ll have in a 100x100 units square. But many things affect the final result. 
+- At `LOD Kill Distance` threshold, meshes and spawned spatials are removed entirely, to reduce the machine load.
+- `Octree configuration` sets two things: a maximum number of plants in each node and a minimum size of that node. To understand what's going on here, I advise you read an article on [gamedev.net.](https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/introduction-to-octrees-r3529/)
+    - If a node exceeds it's capacity, it will subdivide into 8 smaller nodes. But it won't subdivide less than it's minimum size. Instead, it will keep adding objects over it's capacity limit. If your nodes seem to overflow with objects – check the scale you're working in. Perhaps you need to scale everything up or reduce the minimum node size.
+
+        ![t_pt2_006_octree_overflow](https://i.postimg.cc/W3hJsYsR/t-pt2-006-octree-overflow.jpg)
+
+- `Plants Per 100 Units` represents how many objects you'll have in a 100x100 units square. But many things affect the final result. 
     - First - your brush is circular, not square. Naturally, the corners are cut off.
     
-        ![006 Cut off corners]()
+        ![t_pt2_007_cut_off_corners](https://i.postimg.cc/j5mn26jD/t-pt2-007-cut-off-corners.jpg)
 
-    - Next, when you paint, your brush creates a virtual 2D grid. It then places the objects on that grid and applies a random offset, so it looks more natural. As grid moves and rotates, grid cells tend to overlap a lot and this usually results in increased density of up to 30%-50%. If you really need these numbers to be accurate, you can do a pass with `Erase` brush set to 0 strength. This will remove any excess objects.
+    - Next, when you paint, your brush creates a virtual 2D grid. It then places the objects on that grid and applies a random offset, so it looks more natural. As grid moves and rotates, grid cells tend to overlap a lot and this usually results in increased density of up to 30%. If you really need these numbers to be accurate, you can do a pass with `Erase` brush set to 0 strength. This will remove any excess objects.
+    - If you ever worked with foliage, you probably know that sometimes it's placed procedurally using a distribution function such as blue noise. Spatial Gardener doesn't support that and is meant for manually painting any surface, not just a heightmap terrain. So most of the 2D placement solutions don't apply here.
 
-        ![007 2D grid, jitter and brush mid-move]()
+        ![t_pt2_008_blue_noise](https://i.postimg.cc/zXmR1kMM/t-pt2-008-blue-noise.jpg)
 
-    - If you ever worked with foliage, you probably know that sometimes it’s placed procedurally using a distribution function such as blue noise. Spatial Gardener doesn’t support that and is meant for manually painting any surface, not just a heightmap terrain. So most of the 2D placement solutions don’t apply here.
-- `Scaling type` defines the scaling constraint. With `Uniform` it keeps the original proportions. `Free` usually creates wonky objects, but allows all axes to scale independently. Last three options define a plane in 3D space and constraint only that plane, leaving the third axis independent. Most used one is probably `Lock XZ`: it gives proportional horizontal scale, but allows varying vertical scale.
+- `Scaling type` defines the scaling constraint. With `Uniform` it keeps the original proportions. `Free` usually creates wonky objects, but allows all axes to scale independently. 
 
-    ![008 Horizontal lock variety demo]()
+    ![t_pt2_009_free_scale](https://i.postimg.cc/4yc79KKB/t-pt2-009-free-scale.jpg)
+
+    Last three options define a plane in 3D space and constraint only that plane, leaving the third axis independent. Most used one is probably `Lock XZ`: it gives proportional horizontal scale, but allows varying vertical scale.
+
+    ![t_pt2_010_lockxz_scale](https://i.postimg.cc/pV5n7S0z/t-pt2-010-lockxz-scale.jpg)
 
 - `Random Scale Range` defines bounds for choosing a random scale. If a scaling constraint is active, only the first property can be edited, the rest will follow automatically.
-- `Up-Vectors`. They define which direction is the ‘top side’ of our object. You can choose a world-space vector, normal of the surface or define a custom vector. You can also blend between the `Primary` and `Secondary` vectors by a given `Blending` factor.
-- Same goes for `Forward-Vectors`. They define which direction is ‘forward’ for an object. This is mainly used to make vines that point outwards from the surface. Keep in mind that `Up-Vector` still takes precedence.
+- `Up-Vectors`. They define which direction is the 'top side' of our object. You can choose a world-space vector, normal of the surface or define a custom vector. You can also blend between the `Primary` and `Secondary` vectors by a given `Blending` factor.
 
-    ![009 Vines with lines drawn and text]()
+    ![t_pt2_011_up_vector_demo](https://i.postimg.cc/FHNdYHhV/t-pt2-011-up-vector-demo.jpg)
 
-- `Random Offset Range Y` offsets the object vertically by a random value. It’s used to cover the bottom side of an object, like roots of a tree. If the object is scaled, say, twice the size, this value will be doubled too.
+- Same goes for `Forward-Vectors`. They define which direction is 'forward' for an object. This is mainly used to make vines that point outwards from the surface. Keep in mind that `Up-Vector` still takes precedence.
 
-    ![010 Tree vertical offset]()
+    ![t_pt2_012_forward_vector_demo](https://i.postimg.cc/ZqDCsPpw/t-pt2-012-forward-vector-demo.jpg)
+
+- `Random Offset Range Y` offsets the object vertically by a random value. It's used to cover the bottom side of an object, like roots of a tree. If the object is scaled, say, twice the size, this value will be doubled too.
+
+    ![t_pt2_013_vertical_offset](https://i.postimg.cc/VLj0sCPN/t-pt2-013-vertical-offset.jpg)
 
 - `Random Jitter Fraction` offsets an object from the original grid. Default value of 0.6 keeps it natural-looking, but prevents overlaps between neighbors.
 
-    ![011 Comparing 3 jitter settings]()
+    ![t_pt2_014_jitter_demo](https://i.postimg.cc/8z4FMg5Q/t-pt2-014-jitter-demo.jpg)
 
 - `Random Rotations` are ranges for choosing random rotations, from 0 to 180 degrees in each direction. By default, rotation on `Y` axis is fully randomized.
-- `Allowed Slope Range` prevents object placement on inclined or vertical surfaces. Limit this to 45 degrees, and you’ll prevent placement on a steep terrain.
+- `Allowed Slope Range` prevents object placement on inclined or vertical surfaces. Limit this to 45 (or 90) degrees, and you'll prevent placement on a steep terrain.
 
-    ![012 Brush over steep slope]()
+    ![t_pt2_015_slope_range_demo](https://i.postimg.cc/mDvhBbdM/t-pt2-015-slope-range-demo.jpg)
 
 ## Gardener Debug Viewer
 
 Next, a debugging tool called `Gardener Debug Viewer`. It visualizes the underlying octrees. 
 
-![013 Full view of debug viewer with menu and members]()
-
 - You can choose to display the `First Active Plant` or `All Active Plants` at once. 
 - Besides showing `Octree Nodes`, it can show individual `Node Members`, to inspect hidden objects, for example.
+
+![t_pt2_016_debug_viewer_members](https://i.postimg.cc/66Zyzv3h/t-pt2-016-debug-viewer-members.jpg)
 
 ## Project Settings
 
 And finally, the plugin settings. Go to `Project -> Project Settings` and scroll until you see `Dreadpon Spatial Gardener`.
+
+![t_pt2_017_plugin_settings](https://i.postimg.cc/W44d7YFD/t-pt2-017-plugin-settings.jpg)
+
 - In `Input and UI` you can: toggle undo-redo for editing plant properties, change useful keybinds and change the range for each slider in the UI.
 
-    ![014 Plugin settings input and ui]()
+    ![t_pt2_018_input_ui](https://i.postimg.cc/50YjhHmb/t-pt2-018-input-ui.jpg)
 
-- In `Debug` you can assign a key to dump information about the scene to console for inspection. This doesn’t work in-game, but works in-editor. You can also activate logging of various functions, or set the member size for `Gardener Debug Viewer`.
+- In `Debug` you can assign a key to dump information about the scene to console for inspection. This doesn't work in-game, but works in-editor. You can also activate logging of various functions, or set the member size for `Gardener Debug Viewer`.
 
-    ![015 Plugin settings debug]()
+    ![t_pt2_019_debug](https://i.postimg.cc/yx0xNw5G/t-pt2-019-debug.jpg)
 
 ## We're done!
 
-That covers most of the things you need to know about this plugin. You are welcome to get a look through the code itself, as it contains some useful insights here and there. However, you shouldn’t call plugin functions from your own code. There’s currently no separate interface to integrate Gardeners in your gameplay logic, and they’re best kept separate. More so, if you have active gardeners you shouldn’t edit the plugin’s code. This will lead to data corruption and loss.
+That covers most of the things you need to know about this plugin. You are welcome to get a look through the code itself, as it contains some useful insights here and there. However, you shouldn't call plugin functions from your own code. There's currently no interface to integrate Gardeners in your gameplay logic, and they're best kept separate. More so, if you have active gardeners you shouldn't edit the plugin's code. **This will lead to data corruption and loss.**
 
 Thanks for following through. I hope you now understand how Spatial Gardener works. 
 
-![017 Beautiful shot of painted terrain]()
+![t_pt2_020_mid_paint_shot](https://i.postimg.cc/Hs4j11bc/t-pt2-020-mid-paint-shot.jpg)
 
-Please share your thoughts in the comments and feel free to drop by on Discord or GitHub. Since I find foliage painting quite useful for modern 3D games, I’m open to suggestions and collaboration.
+Please share your thoughts and feel free to drop by on [Discord](https://discord.gg/CzRSk8E). Since I find foliage painting quite useful for modern 3D games, I'm open to suggestions and collaboration.
 
 Farewell and good luck!
 
