@@ -5,7 +5,7 @@
     </h1>
 </p>
 
-![Animated cover](https://i.postimg.cc/XJ54PHdW/cover-gif-lossy.gif)
+[![cover-gif-lossy.gif](https://i.postimg.cc/XJ54PHdW/cover-gif-lossy.gif)](https://postimg.cc/0M9TMCVX)
 
 # What is it for?
 
