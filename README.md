@@ -35,7 +35,7 @@ Download the code by clicking green `Code` button and then `Download ZIP`. Unpac
 
 Copy the folder `addons/dreadpon.spatial_gardener/` to `res://addons/` in your Godot project and enable it from `Project -> Project Settings -> Plugins`.
 
-![Paint 1](https://i.postimg.cc/vZ1nBMdt/paint-1.jpg)
+![Paint 1](https://i.postimg.cc/rmQFHYgr/paint-1.jpg)
 
 # Tutorial
 
