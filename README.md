@@ -5,7 +5,7 @@
     </h1>
 </p>
 
-![Animated cover](https://i.postimg.cc/XJ54PHdW/cover-gif-lossy.gif)
+![Animated cover](https://i.postimg.cc/tCq8TMBf/cover-gif-lossy.gif)
 
 # What is it for?
 
@@ -25,7 +25,7 @@ Its relatively stable on Windows, but not tested on other platforms.
 
 Want a test-drive? Go to [Releases](https://github.com/dreadpon/godot_spatial_gardener/releases) and get the most recent windows build: `godot_spatial_gardener_showcase_windows_x64.zip`.
 
-![Test-drive](https://i.postimg.cc/L6tRrtVp/showcase-gif-lossy.gif)
+![Test-drive](https://i.postimg.cc/cLjzF4dy/showcase-gif-lossy.gif)
 
 # Installation
 
