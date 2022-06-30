@@ -19,7 +19,7 @@ This is a single player plugin and works best with finite medium-sized scenes. T
 
 # Stability
 
-This plugin was developed and tested using Godot v3.4.2, but should work fine on most 3.x versions.
+This plugin requires at least Godot v3.4.2, but should work fine on any subsequent versions (excluding Godot 4.0).
 
 Its relatively stable on Windows, but not tested on other platforms.
 
