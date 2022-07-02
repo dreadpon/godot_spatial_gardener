@@ -48,7 +48,7 @@ class Base:
 # Instead we use ProjectSettings to toggle frequently used logging domains
 static func get_for(owner:Object, name:String = "") -> Base:
 	# Note: don't store the owner. If it's a Reference, it could create a cycle
-	var context = owner.get_script().resource_path.get_file() 
+	var context = owner.get_script().resource_path.get_file()
 	if name != "":
 		context += " (%s)" % [name]
 	return get_for_string(context)

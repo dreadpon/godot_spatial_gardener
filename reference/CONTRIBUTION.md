@@ -23,6 +23,6 @@ There are 2 main venues to discuss anything plugin-related:
 - **[Issues](https://github.com/dreadpon/godot_spatial_gardener/issues)**
     - The most straightforward way if you want to talk specifics and actionable changes.
 - **[My Discord server](https://discord.gg/CzRSk8E)**
-    - A place for more lengthy discussions and 'what ifs'. Everyone is welcome, no matter the experience. 
+    - A place for more lengthy discussions and 'what ifs'. Everyone is welcome, no matter the experience.
 
 ## Thanks you for contributing mindfully!

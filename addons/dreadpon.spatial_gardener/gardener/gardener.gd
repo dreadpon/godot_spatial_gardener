@@ -32,7 +32,7 @@ const PA_ArrayRemove = preload("../utility/input_field_resource/pa_array_remove.
 const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 
 
-#export 
+#export
 var refresh_octree_shared_LOD_variants:bool = false setget set_refresh_octree_shared_LOD_variants
 
 # file_management
@@ -257,7 +257,7 @@ func pair_arborist_greenhouse():
 
 
 func pair_debug_viewer_greenhouse():
-	if !debug_viewer || !greenhouse: 
+	if !debug_viewer || !greenhouse:
 		if !debug_viewer: logger.warn("DebugViewer->Greenhouse: DebugViewer is not initialized!")
 		if !greenhouse: logger.warn("DebugViewer->Greenhouse: Greenhouse is not initialized!")
 		return
@@ -361,7 +361,7 @@ func set_gardening_collision_mask(val):
 
 
 func set_garden_work_directory(val):
-	if !val.ends_with("/"): 
+	if !val.ends_with("/"):
 		val += "/"
 	
 	var changed = garden_work_directory != val
@@ -496,7 +496,7 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 	assert(painter)
 	if !(prop_action is PA_PropSet) && !(prop_action is PA_PropEdit): return
-	if final_val != toolshed.active_brush: 
+	if final_val != toolshed.active_brush:
 		logger.error("Passed final_val is not equal to toolshed.active_brush!")
 		return
 	
@@ -533,7 +533,7 @@ func on_changed_active_brush_size(val, final:bool):
 
 # Property change instigated by painter
 func on_changed_active_brush_strength(val, final:bool):
-	var prop_action 
+	var prop_action
 	if final:
 		prop_action = PA_PropSet.new("behavior/behavior_strength", val)
 	else:

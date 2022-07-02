@@ -24,8 +24,8 @@ static func generate_plant_transform(placement, normal, plant, randomizer) -> Tr
 	var plant_fwd_vector:Vector3 = lerp(fwd_vector_primary, fwd_vector_secondary, plant.fwd_vector_blending).normalized()
 	
 	var plant_scale:Vector3 = FunLib.vector_tri_lerp(
-		plant.scale_range[0], 
-		plant.scale_range[1], 
+		plant.scale_range[0],
+		plant.scale_range[1],
 		get_scaling_randomized_weight(plant.scale_scaling_type, randomizer)
 	)
 	
@@ -100,11 +100,11 @@ static func get_scaling_randomized_weight(scaling_type, randomizer) -> Vector3:
 			scale_weight.x = randomizer.randf_range(0.0, 1.0)
 			scale_weight.y = randomizer.randf_range(0.0, 1.0)
 			scale_weight.z = randomizer.randf_range(0.0, 1.0)
-		Greenhouse_Plant.ScalingType.LOCK_XY: 
+		Greenhouse_Plant.ScalingType.LOCK_XY:
 			scale_weight.x = randomizer.randf_range(0.0, 1.0)
 			scale_weight.y = scale_weight.x
 			scale_weight.z = randomizer.randf_range(0.0, 1.0)
-		Greenhouse_Plant.ScalingType.LOCK_ZY: 
+		Greenhouse_Plant.ScalingType.LOCK_ZY:
 			scale_weight.x = randomizer.randf_range(0.0, 1.0)
 			scale_weight.y = randomizer.randf_range(0.0, 1.0)
 			scale_weight.z = scale_weight.y

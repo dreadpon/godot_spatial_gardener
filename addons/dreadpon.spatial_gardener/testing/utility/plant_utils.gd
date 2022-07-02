@@ -32,7 +32,7 @@ static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop
 	var morph_actions := []
 	
 	morph_actions.append_array(get_array_morph_actions(
-		target.greenhouse_plant_states, initial.greenhouse_plant_states, 
+		target.greenhouse_plant_states, initial.greenhouse_plant_states,
 		[], "plant_types/greenhouse_plant_states"))
 	
 	for i in range(0, target.greenhouse_plant_states.size()):
@@ -40,22 +40,22 @@ static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop
 		
 		var t_plant_state:Greenhouse_PlantState = target.greenhouse_plant_states[i]
 		var i_plant_state:Greenhouse_PlantState = Greenhouse_PlantState.new()
-		if initial.greenhouse_plant_states.size() > i: 
+		if initial.greenhouse_plant_states.size() > i:
 			i_plant_state = initial.greenhouse_plant_states[i]
 		
 		morph_actions.append_array(get_prop_morph_actions(
-				t_plant_state, i_plant_state, 
+				t_plant_state, i_plant_state,
 				adrs.duplicate(), "plant/plant_brush_active"))
 		
 		adrs.append("plant/plant")
 		
 		var t_plant:Greenhouse_Plant = t_plant_state.plant
 		var i_plant:Greenhouse_Plant = Greenhouse_Plant.new()
-		if i_plant_state: 
+		if i_plant_state:
 			i_plant = i_plant_state.plant
 		
 		morph_actions.append_array(get_array_morph_actions(
-			t_plant.mesh_LOD_variants, i_plant.mesh_LOD_variants, 
+			t_plant.mesh_LOD_variants, i_plant.mesh_LOD_variants,
 			adrs.duplicate(),  "mesh/mesh_LOD_variants"))
 		
 		for k in range(0, t_plant.mesh_LOD_variants.size()):
@@ -64,107 +64,107 @@ static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop
 			
 			var t_LOD:Greenhouse_LODVariant = t_plant.mesh_LOD_variants[k]
 			var i_LOD:Greenhouse_LODVariant = Greenhouse_LODVariant.new()
-			if i_plant && i_plant.mesh_LOD_variants.size() > k: 
+			if i_plant && i_plant.mesh_LOD_variants.size() > k:
 				i_LOD = i_plant.mesh_LOD_variants[k]
 			
 			morph_actions.append_array(get_prop_morph_actions(
-				t_LOD, i_LOD, 
+				t_LOD, i_LOD,
 				adrs_1.duplicate(), "mesh"))
 			
 			morph_actions.append_array(get_prop_morph_actions(
-				t_LOD, i_LOD, 
+				t_LOD, i_LOD,
 				adrs_1.duplicate(), "spawned_spatial"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "mesh/mesh_LOD_max_distance", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "mesh/mesh_LOD_kill_distance", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "mesh/mesh_LOD_max_capacity"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "mesh/mesh_LOD_min_size", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "density/density_per_units", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "scale/scale_scaling_type"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "scale/scale_range"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "up_vector/up_vector_primary_type"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "up_vector/up_vector_primary"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "up_vector/up_vector_secondary_type"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "up_vector/up_vector_secondary"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "up_vector/up_vector_blending", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "fwd_vector/fwd_vector_primary_type"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "fwd_vector/fwd_vector_primary"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "fwd_vector/fwd_vector_secondary_type"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "fwd_vector/fwd_vector_secondary"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "fwd_vector/fwd_vector_blending", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "offset/offset_y_range"))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "offset/offset_jitter_fraction", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "rotation/rotation_random_y", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "rotation/rotation_random_x", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "rotation/rotation_random_z", enable_prop_edit_actions))
 		
 		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant, 
+			t_plant, i_plant,
 			adrs.duplicate(), "slope/slope_allowed_range"))
 	
 	return morph_actions
@@ -178,7 +178,7 @@ static func get_array_morph_actions(t_array:Array, i_array:Array, adrs:Array, pr
 		for i in range(0, delta_size):
 			var index = i_array.size() + i
 			morph_actions.append(MorphAction.new(
-				adrs, 
+				adrs,
 				PA_ArrayInsert.new(prop, null, index)))
 	elif delta_size < 0:
 		for i in range(0, abs(delta_size)):
@@ -187,7 +187,7 @@ static func get_array_morph_actions(t_array:Array, i_array:Array, adrs:Array, pr
 			
 			var index = i_array.size() - i - 1
 			morph_actions.append(MorphAction.new(
-				adrs, 
+				adrs,
 				PA_ArrayRemove.new(prop, null, index)))
 	
 	return morph_actions
@@ -207,11 +207,11 @@ static func get_prop_morph_actions(t_res:Resource, i_res:Resource, adrs:Array, p
 		
 		elif edit_beforehand:
 				morph_actions.append(MorphAction.new(
-					adrs, 
+					adrs,
 					PA_PropEdit.new(prop, (t_val - i_val) * 0.5 + t_val)))
 		
 		morph_actions.append(MorphAction.new(
-			adrs, 
+			adrs,
 			PA_PropSet.new(prop, t_val)))
 	
 	return morph_actions

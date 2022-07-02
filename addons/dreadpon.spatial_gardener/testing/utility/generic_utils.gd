@@ -141,7 +141,7 @@ static func load_sequential_resources_in_array(load_path:String, base_filename:S
 
 static func get_action_intervals(action_count:int) -> Array:
 	var intervals := []
-	if action_count == 0: 
+	if action_count == 0:
 		intervals = []
 	elif action_count == 1:
 		intervals = [0, 1]

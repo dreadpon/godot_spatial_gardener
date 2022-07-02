@@ -43,7 +43,7 @@ func _init().():
 	_add_res_edit_source_array("plant_types/greenhouse_plant_states", "plant_types/selected_for_edit_resource")
 
 
-# The UI is created here because we need to manage it afterwards 
+# The UI is created here because we need to manage it afterwards
 # And I see no reason to get lost in a signal spaghetti of delegating it
 func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
@@ -109,9 +109,9 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 		"plant_types/greenhouse_plant_states":
 			var settings := {
 				"add_create_inst_button": true,
-				"_base_control": _base_control, 
-				"accepted_classes": ["Greenhouse_PlantState"], 
-				"element_display_size": 100 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
+				"_base_control": _base_control,
+				"accepted_classes": ["Greenhouse_PlantState"],
+				"element_display_size": 100 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_PLANT_STATE,
 				"_resource_previewer": _resource_previewer,
 				}

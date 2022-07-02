@@ -28,9 +28,9 @@ var stage:int = 0
 
 # Any more difference should be concerning, but not necessary an error
 # The density algorithm is an approximation after all
-const max_member_count_difference:float = 0.333 
+const max_member_count_difference:float = 0.333
 const PRESET_COVERAGE_MODES_1COVER_4CENTER100 = [
-	GardenerScript.CoverageMode.COVER, GardenerScript.CoverageMode.CENTER_100_PCT, 
+	GardenerScript.CoverageMode.COVER, GardenerScript.CoverageMode.CENTER_100_PCT,
 	GardenerScript.CoverageMode.CENTER_100_PCT, GardenerScript.CoverageMode.CENTER_100_PCT, GardenerScript.CoverageMode.CENTER_100_PCT]
 const PRESET_COVERAGE_MODES_1COVER = [
 	GardenerScript.CoverageMode.COVER]
@@ -164,7 +164,7 @@ func process_check_results(index:int, check_results:Dictionary, error_counters:D
 			member_count_difference = 0.0
 		var too_big_member_difference = member_count_difference >= max_member_count_difference
 		error_counters["member count difference"] = 1 if too_big_member_difference else 0
-		logger.info(GenericUtils.get_idx_msg("", index, 
+		logger.info(GenericUtils.get_idx_msg("", index,
 			"found '%d' members, target: '%d' members, difference: '%f', max difference: '%f'" % [
 				check_results.total_members, check_results.target_members, member_count_difference, max_member_count_difference]))
 

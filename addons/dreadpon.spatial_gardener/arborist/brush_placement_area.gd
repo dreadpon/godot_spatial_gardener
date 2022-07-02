@@ -3,7 +3,7 @@ extends Reference
 
 
 #-------------------------------------------------------------------------------
-# A helper class that creates a placement area (grid) 
+# A helper class that creates a placement area (grid)
 # And makes sure all instances of a given plant are evenly spaced
 #-------------------------------------------------------------------------------
 
@@ -178,9 +178,9 @@ func init_placement_grid():
 
 
 # Initialize placements overlapping with the given sphere
-# Resulting placements will be in range (-sphere_radius, sphere_radius) 
+# Resulting placements will be in range (-sphere_radius, sphere_radius)
 # Edge extension is used to grad one more/one less loop of overlaps
-	# Typically used to grab members that were displaced with jitter_fraction 
+	# Typically used to grab members that were displaced with jitter_fraction
 	# And happen to be outside our sphere_radius, but still belong to overlapped grid cells
 func init_placement_overlaps(octree_manager:MMIOctreeManager, edge_extension:int = 0):
 	placement_overlaps = []
@@ -261,7 +261,7 @@ func invalidate_self_or_neighbor(grid_coord:Vector2):
 	# So we nudge our overlaps one cell in whatever direction
 	
 	# CURRENT VERSION DOESN'T SOLVE THE ISSUE
-	# THIS NEEDS TO APPROXIMATE THE BEST FITTING CELL BY COMPARING DISTANCES 
+	# THIS NEEDS TO APPROXIMATE THE BEST FITTING CELL BY COMPARING DISTANCES
 	# AND AT THIS POINT IT'S TOO MANY CALCULATIONS
 	# SO WE SUSPEND THIS FOR NOW
 	
@@ -336,7 +336,7 @@ func generate_raycast_positions():
 # Get a linear distance between two points
 # Separated into a function because we need this in StrokeHandler as well
 static func get_point_distance(plant_density, brush_strength) -> float:
-	# Convert square density to linear density 
+	# Convert square density to linear density
 	# Then density per PLANT_DENSITY_UNITS to density per 1 unit
 	# That is a distance between two points
 	if brush_strength <= 0.0:
@@ -348,9 +348,9 @@ static func get_point_distance(plant_density, brush_strength) -> float:
 # Resulting vector will be in range (-sphere_radius, sphere_radius)
 func grid_coord_to_local_pos(grid_coord:Vector2) -> Vector2:
 	return Vector2(
-		grid_coord.x * point_distance + grid_offset, 
+		grid_coord.x * point_distance + grid_offset,
 		grid_coord.y * point_distance + grid_offset
-	) 
+	)
 
 
 # Convert local position to grid coordinates
@@ -363,7 +363,7 @@ func local_pos_to_grid_coord(local_pos:Vector2) -> Vector2:
 	return Vector2(
 		round((local_pos.x - grid_offset) / point_distance),
 		round((local_pos.y - grid_offset) / point_distance)
-	) 
+	)
 
 
 # Convert grid coordinates to UV space in range (-1.0, 1.0)

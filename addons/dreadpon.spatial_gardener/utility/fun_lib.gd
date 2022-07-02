@@ -134,7 +134,7 @@ static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int 
 					if i + 1 < time_units.size() && time_units[i + 1] <= 0:
 						time_units.remove(i + 1)
 				TimeTrimMode.KEEP_ONE:
-					if i >= 1: 
+					if i >= 1:
 						time_units.remove(i)
 				TimeTrimMode.KEEP_TWO:
 					if i >= 2:
@@ -197,7 +197,7 @@ static func are_same_class(one:Object, two:Object) -> bool:
 		return true
 	elif one.get_class() == two.get_class():
 		return true
-#	elif !one.is_class(two.get_class()): 
+#	elif !one.is_class(two.get_class()):
 #		return true
 	return false
 
@@ -215,7 +215,7 @@ static func obj_is_class_string(obj:Object, class_string:String) -> bool:
 	if obj.get_class() == class_string:
 		return true
 	elif obj.has_meta("class") && obj.get_meta("class") == class_string:
-		return true 
+		return true
 	return false
 
 
@@ -242,7 +242,7 @@ static func get_setting_safe(setting:String, default_value = null):
 
 # 'free_existing' should be 'true' for resources, but 'false' for scenes
 static func save_res(res:Resource, dir:String, res_name:String, free_existing:bool = true):
-	if !dir.ends_with("/"): 
+	if !dir.ends_with("/"):
 		dir += "/"
 	assert(res)
 	var logger = Logger.get_for_string("FunLib")
@@ -307,7 +307,7 @@ static func res_free_path(res):
 
 
 static func load_res(dir:String, res_name:String, default_res:Resource = null) -> Resource:
-	if !dir.ends_with("/"): 
+	if !dir.ends_with("/"):
 		dir += "/"
 	var full_path = "%s%s" % [dir, res_name]
 	var res = null

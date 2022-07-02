@@ -8,7 +8,7 @@ extends Spatial
 # To show the correct LOD variant when moving closer/further to plants
 #-------------------------------------------------------------------------------
 
-# It's worth considering to split this object into mutliple: 
+# It's worth considering to split this object into mutliple:
 	# Octree management
 	# Updating positions of individual plants (through painting)
 	# Threaded updates to LODs (if possible)
@@ -206,7 +206,7 @@ func on_LOD_variant_prop_changed_spawned_spatial(plant_index:int, mesh_index:int
 func add_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = MMIOctreeManager.new()
 	octree_manager.init_octree(
-		plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size, 
+		plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size,
 		Vector3.ZERO, MMI_container, plant_state.plant.mesh_LOD_min_size)
 	octree_manager.LOD_max_distance = plant_state.plant.mesh_LOD_max_distance
 	octree_manager.LOD_kill_distance = plant_state.plant.mesh_LOD_kill_distance
@@ -473,7 +473,7 @@ func _unhandled_input(event):
 # In-game just gets an active viewport's camera
 func get_camera():
 	if is_instance_valid(active_camera_override):
-		return active_camera_override 
+		return active_camera_override
 	else:
 		active_camera_override = null
 		return get_viewport().get_camera()

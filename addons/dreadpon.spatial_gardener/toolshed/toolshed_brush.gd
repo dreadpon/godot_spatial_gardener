@@ -147,7 +147,7 @@ func _get_properties_for_brush_type():
 	match behavior_brush_type:
 		BrushType.PAINT:
 			return [
-				"behavior/behavior_brush_type", 
+				"behavior/behavior_brush_type",
 				"shape/shape_size",
 				"behavior/behavior_strength",
 			]

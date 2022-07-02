@@ -137,7 +137,7 @@ func _get_prop_dictionary():
 			"name": "plant/plant",
 			"type": TYPE_OBJECT ,
 			"usage": PROPERTY_USAGE_DEFAULT,
-			"hint": PROPERTY_HINT_RESOURCE_TYPE 
+			"hint": PROPERTY_HINT_RESOURCE_TYPE
 		},
 		}
 

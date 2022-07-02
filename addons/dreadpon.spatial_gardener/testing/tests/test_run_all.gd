@@ -31,7 +31,7 @@ func test_execution_finished(results:Array = []):
 	
 	execution_list[0].disconnect("finished_execution", self, "test_execution_finished")
 	execution_list.pop_front()
-	if !execution_list.empty(): 
+	if !execution_list.empty():
 		execute_next_test()
 		return
 	

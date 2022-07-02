@@ -108,7 +108,7 @@ func forwarded_input(camera:Camera, event):
 	
 	var handled = false
 	
-	# If inactive property edit 
+	# If inactive property edit
 	# And event == mouseMotion
 	# -> move the brush
 	if brush_prop_edit_flag <= BrushPropEditFlag.NONE:
@@ -126,7 +126,7 @@ func forwarded_input(camera:Camera, event):
 			brush_prop_edit_flag = BrushPropEditFlag.NONE
 		handled = true
 	
-	# If inactive property edit or modifier key pressed 
+	# If inactive property edit or modifier key pressed
 	# And event == property edit trigger pressed
 	# -> start property edit
 	if brush_prop_edit_flag <= BrushPropEditFlag.NONE && event is InputEventMouseButton && event.button_index == get_property_edit_button():

@@ -100,7 +100,7 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 	var all_members:Array = root_octree_node.get_all_members()
 	root_octree_node.prepare_for_removal()
 	
-	init_octree(members_per_node, min_leaf_extent, Vector3.ZERO,#root_octree_node.center_pos, 
+	init_octree(members_per_node, min_leaf_extent, Vector3.ZERO,#root_octree_node.center_pos,
 		root_octree_node.MMI_container, min_leaf_extent)
 
 	if !all_members.empty():
@@ -130,7 +130,7 @@ func recenter_octree():
 			var delta_pos = (member.placement - new_center).abs()
 			new_extent = max(new_extent, max(delta_pos.x, max(delta_pos.y, delta_pos.z)))
 	
-	init_octree(last_root.max_members, new_extent, new_center, 
+	init_octree(last_root.max_members, new_extent, new_center,
 		root_octree_node.MMI_container, last_root.min_leaf_extent)
 
 	if !all_members.empty():
@@ -182,7 +182,7 @@ func collapse_root(new_root_octant):
 #
 #	FunLib.clear_children(root_octree_node.MMI_container)
 #	root_octree_node._init(
-#		null, root_octree_node.max_members, root_octree_node.min_leaf_extent, root_octree_node.center, 
+#		null, root_octree_node.max_members, root_octree_node.min_leaf_extent, root_octree_node.center,
 #		-1, root_octree_node.min_leaf_extent, root_octree_node.MMI_container, LOD_variants)
 #	request_debug_redraw()
 
@@ -224,7 +224,7 @@ func process_queues():
 	remove_members_queue = []
 	set_members_queue = []
 	
-	# Make sure we update LODs even for nodes at max LOD index 
+	# Make sure we update LODs even for nodes at max LOD index
 	# Since we changed their children most likely
 	set_LODs_to_active_index()
 
