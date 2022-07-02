@@ -105,7 +105,7 @@ func dump_octrees(args:Array = []):
 	
 	if args.size() > 2:
 		if args[2].is_valid_integer():
-			octree_index = args[2].to_int() 
+			octree_index = args[2].to_int()
 		else:
 			return "[color=red]'%s' wrong type in argument '%d'[/color]" % [args[0], 2]
 	

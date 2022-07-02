@@ -188,7 +188,7 @@ func plugin_input(event):
 	if event is InputEventKey && !event.pressed:
 		if event.scancode == debug_get_dump_editor_tree_key():
 			debug_dump_editor_tree()
-		elif (event.scancode == get_focus_painter_key() 
+		elif (event.scancode == get_focus_painter_key()
 			&& !Input.is_key_pressed(KEY_SHIFT) && !Input.is_key_pressed(KEY_CONTROL) && !Input.is_key_pressed(KEY_ALT) && !Input.is_key_pressed(KEY_SYSREQ)):
 			focus_painter()
 

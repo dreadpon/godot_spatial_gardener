@@ -14,4 +14,4 @@ func _hide_scrollbar():
 		if child is VScrollBar:
 			child.visible = false
 		elif child is HScrollBar:
-			child.visible = false  
+			child.visible = false

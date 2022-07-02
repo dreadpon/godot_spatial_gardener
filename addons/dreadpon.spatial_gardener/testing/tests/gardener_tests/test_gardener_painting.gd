@@ -16,27 +16,27 @@ func execute_next_stage():
 			select_brush(0)
 			painter_script = (
 				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(5,30)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) + 
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) + 
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) + 
+				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) +
+				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) +
+				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) +
 				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_100_PCT))
 
 		1:
 			select_brush(1)
 			painter_script = (
 				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.SPOTTY_50_PCT, Vector2(5,10)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_50_PCT) + 
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_50_PCT) + 
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_50_PCT) + 
+				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_50_PCT) +
+				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_50_PCT) +
+				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_50_PCT) +
 				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_50_PCT))
 
 		2:
 			select_brush(0)
 			painter_script = (
 				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(40,40)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) + 
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) + 
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) + 
+				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) +
+				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) +
+				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) +
 				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_100_PCT))
 		
 		3:

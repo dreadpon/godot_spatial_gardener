@@ -134,7 +134,7 @@ func _remove_thumb(index:int):
 
 
 func on_requested_add():
-	var index = flex_grid.get_child_count() 
+	var index = flex_grid.get_child_count()
 	if add_create_inst_button:
 		index -= 1
 	_request_prop_action(null, "PA_ArrayInsert", {"index": index})

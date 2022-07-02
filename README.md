@@ -71,7 +71,7 @@ Or join me on my Discord:
 
 You can use 'Spatial Gardener' logos on the basis of 'fair use' whenever you mention this plugin (e.g. in a video review/tutorial).
 
-As long as you don't modify them in any way, claim as your own or redistribute/resell you should be fine. 
+As long as you don't modify them in any way, claim as your own or redistribute/resell you should be fine.
 
 **[You can download them here.](https://www.mediafire.com/file/a7a6xoa73mu9e44/spatial_gardener_logos.zip/file)**
 

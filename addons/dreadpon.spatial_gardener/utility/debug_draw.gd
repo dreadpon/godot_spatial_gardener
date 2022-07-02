@@ -8,8 +8,8 @@ extends Node
 #-------------------------------------------------------------------------------
 
 
-var active_geometry:Array = [] 
-var cached_geometry:Array = [] 
+var active_geometry:Array = []
+var cached_geometry:Array = []
 
 
 

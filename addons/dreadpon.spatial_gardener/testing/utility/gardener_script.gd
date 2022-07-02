@@ -13,7 +13,7 @@ const PRESET_STROKE_LENGTH_JITTER = [1, 3, 1, 5, 2, 10]
 
 
 
-static func mk_script(paint_body_data:PaintBodyData, coverage_mode:int = CoverageMode.COVER, 
+static func mk_script(paint_body_data:PaintBodyData, coverage_mode:int = CoverageMode.COVER,
 	brush_size_range:Vector2 = Vector2.ZERO, stroke_length_list:Array = []):
 	
 	var script := []
@@ -57,7 +57,7 @@ static func mk_script_actions_center(script:Array, paint_body_data:PaintBodyData
 		PainterAction.new(PainterAction.PainterActionType.END_STROKE))
 
 
-static func mk_script_actions_cover(script:Array, paint_body_data:PaintBodyData, brush_size_range:Vector2, 
+static func mk_script_actions_cover(script:Array, paint_body_data:PaintBodyData, brush_size_range:Vector2,
 	distance_multiplier:float, stroke_length_list:Array):
 	
 	var brush_size_avg := (brush_size_range.x + brush_size_range.y) * 0.5

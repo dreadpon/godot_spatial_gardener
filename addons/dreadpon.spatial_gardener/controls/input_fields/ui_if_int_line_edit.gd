@@ -3,7 +3,7 @@ extends "ui_input_field.gd"
 
 
 #-------------------------------------------------------------------------------
-# Stores an int value 
+# Stores an int value
 # Has a slider + line_edit for convinience
 #-------------------------------------------------------------------------------
 

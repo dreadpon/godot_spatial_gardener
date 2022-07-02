@@ -42,7 +42,7 @@ You shouldn't manually edit this list, so it's better to keep your Gardeners fol
 
 ## Brushes
 
-Now the brushes. 
+Now the brushes.
 
 ![t_pt2_004_brush_props](https://i.postimg.cc/DwTs1cPs/t-pt2-004-brush-props.jpg)
 
@@ -69,9 +69,9 @@ The plant list is simple. You can add, delete plants, and select them for painti
 
         ![t_pt2_006_octree_overflow](https://i.postimg.cc/W3hJsYsR/t-pt2-006-octree-overflow.jpg)
 
-- `Plants Per 100 Units` represents how many objects you'll have in a 100x100 units square. But many things affect the final result. 
+- `Plants Per 100 Units` represents how many objects you'll have in a 100x100 units square. But many things affect the final result.
     - First - your brush is circular, not square. Naturally, the corners are cut off.
-    
+
         ![t_pt2_007_cut_off_corners](https://i.postimg.cc/j5mn26jD/t-pt2-007-cut-off-corners.jpg)
 
     - Next, when you paint, your brush creates a virtual 2D grid. It then places the objects on that grid and applies a random offset, so it looks more natural. As grid moves and rotates, grid cells tend to overlap a lot and this usually results in increased density of up to 30%. If you really need these numbers to be accurate, you can do a pass with `Erase` brush set to 0 strength. This will remove any excess objects.
@@ -79,7 +79,7 @@ The plant list is simple. You can add, delete plants, and select them for painti
 
         ![t_pt2_008_blue_noise](https://i.postimg.cc/zXmR1kMM/t-pt2-008-blue-noise.jpg)
 
-- `Scaling type` defines the scaling constraint. With `Uniform` it keeps the original proportions. `Free` usually creates wonky objects, but allows all axes to scale independently. 
+- `Scaling type` defines the scaling constraint. With `Uniform` it keeps the original proportions. `Free` usually creates wonky objects, but allows all axes to scale independently.
 
     ![t_pt2_009_free_scale](https://i.postimg.cc/4yc79KKB/t-pt2-009-free-scale.jpg)
 
@@ -111,9 +111,9 @@ The plant list is simple. You can add, delete plants, and select them for painti
 
 ## Gardener Debug Viewer
 
-Next, a debugging tool called `Gardener Debug Viewer`. It visualizes the underlying octrees. 
+Next, a debugging tool called `Gardener Debug Viewer`. It visualizes the underlying octrees.
 
-- You can choose to display the `First Active Plant` or `All Active Plants` at once. 
+- You can choose to display the `First Active Plant` or `All Active Plants` at once.
 - Besides showing `Octree Nodes`, it can show individual `Node Members`, to inspect hidden objects, for example.
 
 ![t_pt2_016_debug_viewer_members](https://i.postimg.cc/66Zyzv3h/t-pt2-016-debug-viewer-members.jpg)
@@ -136,7 +136,7 @@ And finally, the plugin settings. Go to `Project -> Project Settings` and scroll
 
 That covers most of the things you need to know about this plugin. You are welcome to get a look through the code itself, as it contains some useful insights here and there. However, you shouldn't call plugin functions from your own code. There's currently no interface to integrate Gardeners in your gameplay logic, and they're best kept separate. More so, if you have active gardeners you shouldn't edit the plugin's code. **This will lead to data corruption and loss.**
 
-Thanks for following through. I hope you now understand how Spatial Gardener works. 
+Thanks for following through. I hope you now understand how Spatial Gardener works.
 
 ![t_pt2_020_mid_paint_shot](https://i.postimg.cc/Hs4j11bc/t-pt2-020-mid-paint-shot.jpg)
 

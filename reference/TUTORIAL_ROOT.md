@@ -13,7 +13,7 @@ By the end of this tutorial you’ll be able to create a diverse environment lik
 
 But first, about this plugin. It’s used for painting any kind of props or foliage with even distribution on arbitrary surfaces. This is a single player plugin and works best with finite medium-sized levels. Its relatively stable on Windows, but needs additional testing on other platforms. I encourage you to share your own experience in `Issues` or on my [Discord](https://discord.gg/CzRSk8E).
 
-They's two parts to this: 
+They's two parts to this:
 
 1. **[Quick-start tutorial](TUTORIAL_QUICK_START.md)**
 2. **[In-depth look at all the properties](TUTORIAL_IN_DEPTH.md)**

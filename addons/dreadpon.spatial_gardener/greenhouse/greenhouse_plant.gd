@@ -126,9 +126,9 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			accepted_classes.append_array(Globals.MESH_CLASSES)
 			var settings := {
 				"add_create_inst_button": true,
-				"_base_control": _base_control, 
+				"_base_control": _base_control,
 				"accepted_classes": accepted_classes,
-				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
+				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_LOD_VARIANT,
 				"_resource_previewer": _resource_previewer,
 				}
@@ -177,8 +177,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"scale/scale_range":
 			var settings := {
 				"is_range": true,
-				"value_count": 3, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR, 
+				"value_count": 3,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(scale_range, "Random Scale Range", prop, settings)
 		#======================================================
@@ -188,8 +188,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"up_vector/up_vector_primary":
 			var settings := {
 				"is_range": false,
-				"value_count": 3, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR, 
+				"value_count": 3,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_primary, "Up-Vector Primary", prop, settings)
 			input_field.add_tracked_property("up_vector/up_vector_primary_type", DirectionVectorType.CUSTOM, up_vector_primary_type)
@@ -200,8 +200,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"up_vector/up_vector_secondary":
 			var settings := {
 				"is_range": false,
-				"value_count": 3, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR, 
+				"value_count": 3,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_secondary, "Up-Vector Secondary", prop, settings)
 			input_field.add_tracked_property("up_vector/up_vector_secondary_type", DirectionVectorType.CUSTOM, up_vector_secondary_type)
@@ -216,8 +216,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"fwd_vector/fwd_vector_primary":
 			var settings := {
 				"is_range": false,
-				"value_count": 3, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR, 
+				"value_count": 3,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_primary, "Forward-Vector Primary", prop, settings)
 			input_field.add_tracked_property("fwd_vector/fwd_vector_primary_type", DirectionVectorType.CUSTOM, fwd_vector_primary_type)
@@ -228,8 +228,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"fwd_vector/fwd_vector_secondary":
 			var settings := {
 				"is_range": false,
-				"value_count": 3, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR, 
+				"value_count": 3,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_secondary, "Forward-Vector Secondary", prop, settings)
 			input_field.add_tracked_property("fwd_vector/fwd_vector_secondary_type", DirectionVectorType.CUSTOM, fwd_vector_secondary_type)
@@ -241,8 +241,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"offset/offset_y_range":
 			var settings := {
 				"is_range": true,
-				"value_count": 1, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VALUE, 
+				"value_count": 1,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VALUE,
 				}
 			input_field = UI_IF_MultiRange.new(offset_y_range, "Random Offset Range Y", prop, settings)
 		"offset/offset_jitter_fraction":
@@ -262,8 +262,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"slope/slope_allowed_range":
 			var settings := {
 				"is_range": true,
-				"value_count": 1, 
-				"representation_type": UI_IF_MultiRange.RepresentationType.VALUE, 
+				"value_count": 1,
+				"representation_type": UI_IF_MultiRange.RepresentationType.VALUE,
 				}
 			input_field = UI_IF_MultiRange.new(slope_allowed_range, "Allowed Slope Range", prop, settings)
 	
@@ -647,14 +647,14 @@ func _get_property_list():
 
 func _get_prop_dictionary():
 	return {
-		"mesh/mesh_LOD_variants": 
+		"mesh/mesh_LOD_variants":
 		{
 			"name": "mesh/mesh_LOD_variants",
 			"type": TYPE_ARRAY,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
-		"mesh/selected_for_edit_resource": 
+		"mesh/selected_for_edit_resource":
 		{
 			"name": "mesh/selected_for_edit_resource",
 			"type": TYPE_OBJECT,

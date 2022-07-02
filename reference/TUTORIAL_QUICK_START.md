@@ -23,7 +23,7 @@ Minimum and most compatible version is [3.4.2 and can be easily found on Godot's
 
 ![t_pt1_001_godot_older_download](https://i.postimg.cc/sgjxVHJn/t-pt1-001-godot-older-download.jpg)
 
-Grab a copy of the demo project from [GitHub](https://github.com/dreadpon/godot_spatial_gardener). Open the page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo.zip`. 
+Grab a copy of the demo project from [GitHub](https://github.com/dreadpon/godot_spatial_gardener). Open the page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo.zip`.
 
 ![t_pt1_002_plugin_demo_download](https://i.postimg.cc/DwxZmQj7/t-pt1-002-plugin-demo-download.jpg)
 
@@ -37,7 +37,7 @@ Make sure the plugin is enabled by going to `Project -> Project Settings -> Plug
 
 ## What we're working with
 
-This project comes with a few things besides the plugin itself. In the `demo` folder you'll see a bunch of files used to build two demo scenes at the very bottom: `showcase.tscn` and `playground.tscn`. 
+This project comes with a few things besides the plugin itself. In the `demo` folder you'll see a bunch of files used to build two demo scenes at the very bottom: `showcase.tscn` and `playground.tscn`.
 
 ![t_pt1_005_demo_folder](https://i.postimg.cc/4d9N8DJ3/t-pt1-005-demo-folder.jpg)
 
@@ -49,7 +49,7 @@ This project comes with a few things besides the plugin itself. In the `demo` fo
 
 To work with the Gardener you'll need some level geometry with collision. Here we have an island and two buildings with auto-generated static physics bodies. Take a look at their collision layers.
 
-First layer, `gameplay` is used for game collision such as interaction with the player. The second, `painting` is reserved for foliage painting. 
+First layer, `gameplay` is used for game collision such as interaction with the player. The second, `painting` is reserved for foliage painting.
 
 ![t_pt1_007_collision_layers](https://i.postimg.cc/XN9Y96HH/t-pt1-007-collision-layers.jpg)
 
@@ -59,7 +59,7 @@ Notice how landscape interacts with this layer, but buildings do not. I assume y
 
 ## Setting up a Gardener
 
-Go to the scene tree and add a node called `Gardener`. It will handle the entire drawing process. 
+Go to the scene tree and add a node called `Gardener`. It will handle the entire drawing process.
 
 ![t_pt1_009_adding_gardener](https://i.postimg.cc/xTYTRpB0/t-pt1-009-adding-gardener.jpg)
 
@@ -67,7 +67,7 @@ Every Gardener maintains a subtree of nodes that are essential for its functiona
 
 ![t_pt1_010_gardener_scene_tree](https://i.postimg.cc/cLkxdxCH/t-pt1-010-gardener-scene-tree.jpg)
 
-Select your Gardener, and choose its working directory in `demo -> playground -> work_directory`. All your plants and brushes will be saved here. 
+Select your Gardener, and choose its working directory in `demo -> playground -> work_directory`. All your plants and brushes will be saved here.
 
 Now choose collision layers that our Gardener interacts with. Disable `gameplay` layer and enable `painting`. Now we can paint on landscape objects, but ignore buildings.
 
@@ -87,13 +87,13 @@ To paint a plant, you mostly need only two basic things: a mesh and a desired de
 
 For plants to look good, they need a lot of polygons and high-res textures. There's usually hundreds if not thousands of plants in a level. Multiply these and you get a molten Graphics Card. But, we rightfully assume that players can't see that well in the distance, so it's fine for faraway plants to have less detail. This concept is called 'Level of Detail' or LOD for short. We make 2, 3, 4 separate models, each simpler than the last. And then switch between them depending on the distance.
 
-That's what `LOD Variants` are for. Add three variants. Now go to `demo -> playground -> plants -> pine` and find three meshes named `plants_tree_pine_lod.mesh`. You should assign them in order of simplification: drag  `plants_tree_pine_lod0.mesh` to the first LOD variant, `plants_tree_pine_lod1.mesh` to second and  `plants_tree_pine_lod2.mesh` to third. 
+That's what `LOD Variants` are for. Add three variants. Now go to `demo -> playground -> plants -> pine` and find three meshes named `plants_tree_pine_lod.mesh`. You should assign them in order of simplification: drag  `plants_tree_pine_lod0.mesh` to the first LOD variant, `plants_tree_pine_lod1.mesh` to second and  `plants_tree_pine_lod2.mesh` to third.
 
 ![t_pt1_014_assign_lod](https://i.postimg.cc/FR3Nb0Zd/t-pt1-014-assign-lod.jpg)
 
 Next, the density. Set `Plants Per 100 Units` to something small like 15. It defines how many plants to place in a 100x100 units square. This number is very approximate and can be off by around thirty percent. Not to mention circular brush shape does not account for corners. To get the feel of the density, you really should play with this number a bit.
 
-Problems may arise at low density and small brush size. If you have obviously too many plants – try increasing the brush size. 
+Problems may arise at low density and small brush size. If you have obviously too many plants – try increasing the brush size.
 
 ![t_pt1_015_compare_low_desnity](https://i.postimg.cc/NFxtSYZQ/t-pt1-015-compare-low-desnity.jpg)
 
@@ -109,7 +109,7 @@ That's it, we now have trees.
 
 ## Configuring octrees
 
-If you go to the `Gardener Debug Viewer` at the top and select `View First Active Plant`, you can see how trees are referenced in 3D space. This structure is called an octree and it optimizes iteration over thousands of spatial objects. This is needed to switch our LODs according to camera distance. 
+If you go to the `Gardener Debug Viewer` at the top and select `View First Active Plant`, you can see how trees are referenced in 3D space. This structure is called an octree and it optimizes iteration over thousands of spatial objects. This is needed to switch our LODs according to camera distance.
 
 ![t_pt1_018_debug_viewer](https://i.postimg.cc/bwkDJ2XJ/t-pt1-018-debug-viewer.jpg)
 
@@ -131,7 +131,7 @@ Now let's add some variety with randomized scale and rotation. But first, choose
 
 ![t_pt1_022_erasing_patch](https://i.postimg.cc/zBXV0tyb/t-pt1-022-erasing-patch.jpg)
 
-`Random Scale Range` generates a random scale for our object. Go to the second column and set the `X` value to 1.5. All other values in this column turned to 1.5 as well, because of the constraint above, the `Scaling Type`. `Uniform` ensures proportions of an object will be preserved. 
+`Random Scale Range` generates a random scale for our object. Go to the second column and set the `X` value to 1.5. All other values in this column turned to 1.5 as well, because of the constraint above, the `Scaling Type`. `Uniform` ensures proportions of an object will be preserved.
 
 Now when we paint, our trees will get a slightly randomized size within these bounds.
 
@@ -145,7 +145,7 @@ To apply changes, you can erase and repaint your trees, but you can also just re
 
 ## Collision
 
-Last thing: collision. If you click on `LOD Variants`, you'll see two properties in fact: `Mesh` and `Spawned Spatial`. `Spawned Spatial` can be any spatial scene you'd like. In our case, it's a premade static physics body. 
+Last thing: collision. If you click on `LOD Variants`, you'll see two properties in fact: `Mesh` and `Spawned Spatial`. `Spawned Spatial` can be any spatial scene you'd like. In our case, it's a premade static physics body.
 
 ![t_pt1_025_inside_lod_variant](https://i.postimg.cc/bJCdMxn6/t-pt1-025-inside-lod-variant.jpg)
 
@@ -173,7 +173,7 @@ Key difference here is that bushes and grass usually align to the ground. You'd 
 
 ![t_pt1_029_surface_normal](https://i.postimg.cc/hGKjtyby/t-pt1-029-surface-normal.jpg)
 
-In grass settings, set `Primary Up-Vector` to `Normal`. 
+In grass settings, set `Primary Up-Vector` to `Normal`.
 
 ![t_pt1_030_setting_grass_up_vector](https://i.postimg.cc/TPQPLVtR/t-pt1-030-setting-grass-up-vector.jpg)
 
@@ -195,15 +195,15 @@ In Spatial Gardener you can paint with several plant types simultaneously. Desel
 
 ![t_pt1_034_select_bush_grass_painting](https://i.postimg.cc/sXNDKVFq/t-pt1-034-select-bush-grass-painting.jpg)
 
-Overlap detection is not supported, so you should clean up any jarring overlaps manually. 
+Overlap detection is not supported, so you should clean up any jarring overlaps manually.
 
 All that's left is to optimize your octrees. Rebuild bushes with a `Max Chunk Capacity` of 50 and grass with 500. Then recenter both.
 
-Here we go. Your level is ready for playing. 
+Here we go. Your level is ready for playing.
 
 ![t_pt1_035_finished_all_painting](https://i.postimg.cc/dtdr7frw/t-pt1-035-finished-all-painting.jpg)
 
-Launch your scene and give it a go. Congratulations, you're now able to set up a plant and paint it on your terrain. 
+Launch your scene and give it a go. Congratulations, you're now able to set up a plant and paint it on your terrain.
 
 ![t_pt1_036_walking_in_level](https://i.postimg.cc/ht1ms72Y/t-pt1-036-walking-in-level.jpg)
 

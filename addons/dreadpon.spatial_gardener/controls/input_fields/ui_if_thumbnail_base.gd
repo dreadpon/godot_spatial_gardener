@@ -201,7 +201,7 @@ func on_file_selected(path, thumb):
 	
 	var found_example = false
 	for accepted_classe in accepted_classes:
-		if FunLib.obj_is_class_string(res, accepted_classe): 
+		if FunLib.obj_is_class_string(res, accepted_classe):
 			found_example = true
 			break
 	

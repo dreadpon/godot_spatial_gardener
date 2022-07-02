@@ -8,7 +8,7 @@ extends "ui_input_field.gd"
 #-------------------------------------------------------------------------------
 
 
-# Describes what data input_field receives and returns 
+# Describes what data input_field receives and returns
 # Does not affect how this data is stored internally (always in an array)
 enum RepresentationType {
 	VECTOR, # will input/output_array float/float[2], Vector2/Vector2[2], Vector3/Vector3[2], float[4]/float[4][2]
@@ -65,14 +65,14 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	for value_index in range(0, value_count):
 		var value_range_panel = PanelContainer.new()
-		value_range_panel.name = "value_range_panel_-_%s" % [str(value_index)] 
+		value_range_panel.name = "value_range_panel_-_%s" % [str(value_index)]
 		
 		var value_range_row = HBoxContainer.new()
-		value_range_row.name = "value_range_row_-_%s" % [str(value_index)] 
+		value_range_row.name = "value_range_row_-_%s" % [str(value_index)]
 		value_range_row.add_constant_override("separation", 0)
 		
 		var prop_label := Label.new()
-		prop_label.name = "prop_label_-_%s" % [str(value_index)] 
+		prop_label.name = "prop_label_-_%s" % [str(value_index)]
 		prop_label.text = prop_label_text[representation_type][value_index]
 		prop_label.valign = Label.VALIGN_CENTER
 		prop_label.size_flags_vertical = Control.SIZE_FILL
@@ -87,7 +87,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 		
 		for range_index in range(0, 2 if is_range else 1):
 			var value_input = LineEdit.new()
-			value_input.name = "value_input_%s_%s" % [str(range_index), str(value_index)] 
+			value_input.name = "value_input_%s_%s" % [str(range_index), str(value_index)]
 			value_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			value_input.size_flags_vertical = Control.SIZE_FILL
 			
@@ -102,7 +102,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 			
 			if is_range && range_index == 0:
 				var dash_label := Label.new()
-				dash_label.name = "dash_label_-_%s" % [str(value_index)] 
+				dash_label.name = "dash_label_-_%s" % [str(value_index)]
 				dash_label.text = "–"
 				dash_label.valign = Label.VALIGN_CENTER
 				dash_label.size_flags_vertical = Control.SIZE_FILL

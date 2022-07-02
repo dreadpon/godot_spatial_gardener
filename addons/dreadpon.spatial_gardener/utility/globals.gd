@@ -46,9 +46,9 @@ const AS_IN_SETTINGS_STRING:String = "As specified in 'Project' -> 'Project Sett
 const SPKEY = (1 << 24)
 
 enum KeyList {
-	# An addition to handle an unset key. 
+	# An addition to handle an unset key.
 	# AFAIK, KEY_UNKNOWN is reserved for cases when key exists, but Godot isn't familiar with it
-	KEY_UNSET = 0, 
+	KEY_UNSET = 0,
 	
 	KEY_ESCAPE = SPKEY | 0x01,
 	KEY_TAB = SPKEY | 0x02,

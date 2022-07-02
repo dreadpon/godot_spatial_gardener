@@ -38,7 +38,7 @@ func _init(__brushes:Array = []).():
 	_add_prop_dependency("brush/active_brush", ["brush/brushes"])
 
 
-# The UI is created here because we need to manage it afterwards 
+# The UI is created here because we need to manage it afterwards
 # And I see no reason to get lost in a signal spaghetti of delegating it
 func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control

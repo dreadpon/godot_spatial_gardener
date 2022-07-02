@@ -22,7 +22,7 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 	reapplied_octree_members = []
 
 
-func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, 
+func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int,
 	octree_manager:MMIOctreeManager, brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges, node):
 	
 	# We detect overlaps first
@@ -45,7 +45,7 @@ func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, p
 		# Painting changes here are non-standart: they actually have an octree node address and member index bundled
 		# We can't reliably use an address when adding/removing members since the octree might grow/collapse
 		# But here it's fine since we don't change the amount of members
-		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index, 
+		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
 			{"member": new_placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address},
 			{"member": placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address})
 

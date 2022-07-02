@@ -161,7 +161,7 @@ class ThemeOverrider extends Reference:
 		while node != null:
 			if "theme" in node:
 				theme = node.theme
-			if theme != null: 
+			if theme != null:
 				break
 			node = node.get_parent()
 		return theme

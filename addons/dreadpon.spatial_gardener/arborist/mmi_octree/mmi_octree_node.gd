@@ -56,7 +56,7 @@ signal req_debug_redraw()
 
 
 # Last two variables will be used only if there was no parent passed
-func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0, __center_pos:Vector3 = Vector3.ZERO, 
+func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0, __center_pos:Vector3 = Vector3.ZERO,
 	__octant:int = -1, __min_leaf_extent:float = 0.0, __MMI_container:Spatial = null, __LOD_variants:Array = []):
 	
 	set_meta("class", "MMIOctreeNode")
@@ -109,7 +109,7 @@ func safe_init_root():
 
 
 # Cleanup this this node before deletion
-# TODO find out if I ccan lear the member array here as well 
+# TODO find out if I ccan lear the member array here as well
 func prepare_for_removal():
 	# I like this name. I will keep it
 	print_address("", "prepare for removal")
@@ -219,7 +219,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 			skip_children = true
 		skip_assignment = true
 	# If already at max LOD and outside of the max LOD threshold
-	elif active_LOD_index == max_LOD_index && dist_to_node_center_bounds_estimate >= max_LOD_dist: 
+	elif active_LOD_index == max_LOD_index && dist_to_node_center_bounds_estimate >= max_LOD_dist:
 		# Skip assignment
 		skip_assignment = true
 		skip_children = true
@@ -281,10 +281,10 @@ func add_members(new_members:Array):
 	var rejected = reject_outside_members(new_members)
 	if rejected.size() > 0:
 		emit_signal("members_rejected", rejected + new_members)
-		# Further execution can lead to members being added to a collapsed node 
+		# Further execution can lead to members being added to a collapsed node
 		# (OctreeManager tries to collapse children when growing to members)
 		# So we abort
-		return 
+		return
 	
 	if new_members.empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
@@ -304,7 +304,7 @@ func add_members(new_members:Array):
 		for member in new_members:
 			_add_member_to_child(member)
 	else:
-		for member in new_members: 
+		for member in new_members:
 			members.append(member)
 			spawn_spatial_for_member(member)
 			print_address("", "adding member " + str(member))
@@ -321,7 +321,7 @@ func remove_members(old_members:Array):
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
-	# Presumably, it's ok to overwrite the members' octants 
+	# Presumably, it's ok to overwrite the members' octants
 	# Since we WILL remove them and won't ever need to reference previous positions inside a node
 	assign_octants_to_members(old_members)
 	
@@ -571,14 +571,14 @@ func try_collapse_children(instigator_child:int):
 	var reason:String
 	
 	# If no children - no collapsing
-	if child_nodes.size() <= 0: 
+	if child_nodes.size() <= 0:
 		can_collapse = false
 		reason = "child_nodes.size() <= 0"
 	else:
 		for child in child_nodes:
 			if can_collapse:
 				# If at least one child has children - we can't collapse children
-				if child.child_nodes.size() > 0: 
+				if child.child_nodes.size() > 0:
 					can_collapse = false
 					reason = "child.child_nodes.size() > 0"
 					break
@@ -601,7 +601,7 @@ func try_collapse_self(instigator_child:int):
 	var reason:String
 	
 	# If no children - no collapsing
-	if child_nodes.size() <= 0: 
+	if child_nodes.size() <= 0:
 		can_collapse = false
 		reason = "child_nodes.size() <= 0"
 	else:
@@ -621,7 +621,7 @@ func try_collapse_self(instigator_child:int):
 		print_address("", "can't collapse self: %s" % [reason])
 	
 	if can_collapse:
-		# If condition fulfilled 
+		# If condition fulfilled
 		# Or an edgecase when child_nodes have no members or children at all (i.e. all members were removed in one pass)
 		if child_with_descendants >= 0:
 			emit_signal("collapse_self_possible", child_with_descendants)

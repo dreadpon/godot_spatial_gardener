@@ -86,7 +86,7 @@ func get_stroke_update_changes(brush_data:Dictionary, container_transform:Transf
 
 # Called when the Painter brush stroke is updated (moved)
 # To be overridden
-func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, 
+func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int,
 	octree_manager:MMIOctreeManager, brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges, node):
 	return null
 

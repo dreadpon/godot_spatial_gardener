@@ -3,7 +3,7 @@ extends "ui_input_field.gd"
 
 
 #-------------------------------------------------------------------------------
-# Stores a real (float) value 
+# Stores a real (float) value
 # Has a slider + line_edit for convinience
 #-------------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ var value_input:LineEdit = null
 func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
 	set_meta("class", "UI_IF_RealSlider")
 	
-	real_slider = UI_SignalingHSlider.new() 
+	real_slider = UI_SignalingHSlider.new()
 	real_slider.name = "real_slider"
 	real_slider.size_flags_horizontal = SIZE_EXPAND_FILL
 	real_slider.min_value = settings.min

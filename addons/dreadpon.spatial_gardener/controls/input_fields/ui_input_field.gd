@@ -31,7 +31,7 @@ var container_box:HBoxContainer = HBoxContainer.new()
 var tab_spacer:Control = Control.new()
 # Stores the name of our property
 var label:Label = Label.new()
-# Stores the value of our property 
+# Stores the value of our property
 var value_container:HBoxContainer = HBoxContainer.new()
 
 # Bound prop name
@@ -45,11 +45,11 @@ var val_cache = null
 # A visual offset index
 var tab_index:int = 0
 
-# An override for input field's visibility 
+# An override for input field's visibility
 	# -1 - don't force any visibility state
 	# 0/1 force invisible/visible state
 var visibility_forced:int = -1
-var visibility_tracked_properties:Array = [] 
+var visibility_tracked_properties:Array = []
 var visibility_is_tracked:bool = false setget set_visibility_is_tracked
 
 var _undo_redo:UndoRedo = null
@@ -249,7 +249,7 @@ func _try_visibility_check():
 		return
 	
 	var result := true
-	for prop_dict in visibility_tracked_properties: 
+	for prop_dict in visibility_tracked_properties:
 		if prop_dict.last_val != prop_dict.target_val:
 			result = false
 			break

@@ -35,19 +35,19 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 	match prop:
 		"mesh":
 			var settings := {
-				"_base_control": _base_control, 
+				"_base_control": _base_control,
 				# Godot really needs a proper class check
-				"accepted_classes": Globals.MESH_CLASSES, 
-				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
+				"accepted_classes": Globals.MESH_CLASSES,
+				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_RESOURCE,
 				"_resource_previewer": _resource_previewer,
 				}
 			input_field = UI_IF_ThumbnailObject.new(mesh, "Mesh", prop, settings)
 		"spawned_spatial":
 			var settings := {
-				"_base_control": _base_control, 
-				"accepted_classes": ["PackedScene"], 
-				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0), 
+				"_base_control": _base_control,
+				"accepted_classes": ["PackedScene"],
+				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_RESOURCE,
 				"_resource_previewer": _resource_previewer,
 				}

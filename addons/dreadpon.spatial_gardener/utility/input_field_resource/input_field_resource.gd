@@ -177,7 +177,7 @@ func prop_action_request_lifecycle(prop_action:PropAction, lifecycle_stage:int):
 
 
 # Can a given prop action create UndoRedo history?
-	# Most of the time we need this is when using a UI slider 
+	# Most of the time we need this is when using a UI slider
 	# To avoid commiting dozens of history actions while dragging
 func _can_prop_action_create_history(prop_action:PropAction):
 	var enable_undo_redo = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo", true)
@@ -291,7 +291,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 #-------------------------------------------------------------------------------
 
 
-# Modify a property 
+# Modify a property
 # Mostly used to initialize a newly added array/dictionary value when setting array size from Engine Inspector
 # To be overridden and (usually) called inside a _set()
 func _modify_prop(prop:String, val):
@@ -375,7 +375,7 @@ func on_if_ready(input_field:UI_InputField):
 func on_if_thumbnail_array_press(pressed_index:int, input_field:Control):
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
-		var array_val = get(res_edit.array_prop) 
+		var array_val = get(res_edit.array_prop)
 		var new_res_val = array_val[pressed_index]
 		_res_edit_select(res_edit.array_prop, [new_res_val], true)
 
@@ -469,8 +469,8 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 func _res_edit_select(array_prop:String, new_res_array:Array, create_history:bool = false):
 	var res_edit = find_res_edit_by_array_prop(array_prop)
 	if res_edit:
-		var array_val = get(res_edit.array_prop) 
-		var res_val = get(res_edit.res_prop) 
+		var array_val = get(res_edit.array_prop)
+		var res_val = get(res_edit.res_prop)
 		var new_res_val = new_res_array[0]
 		if res_val == new_res_val:
 			new_res_val = null

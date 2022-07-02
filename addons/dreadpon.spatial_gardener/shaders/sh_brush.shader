@@ -1,6 +1,6 @@
 shader_type spatial;
 render_mode blend_mix,cull_disabled,unshaded,depth_draw_opaque;
- 
+
 
 // Base color + opacity
 uniform vec4 albedo : hint_color;
@@ -8,7 +8,7 @@ uniform vec4 albedo : hint_color;
 uniform float proximity_multiplier = 1.0;
 // Distance at which proximity highlight occurs
 uniform float proximity_treshold = 0.4;
- 
+
 
 void fragment() {
 	ALBEDO = albedo.rgb;
