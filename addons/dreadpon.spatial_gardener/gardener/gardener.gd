@@ -442,6 +442,9 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 		"spawned_spatial":
 			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
 				arborist.on_LOD_variant_prop_changed_spawned_spatial(plant_index, mesh_index, final_val)
+		"shadow_casting_mode":
+			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+				arborist.recenter_octree(plant_state, plant_index) #to force a refresh
 
 
 # A request to reconfigure an octree

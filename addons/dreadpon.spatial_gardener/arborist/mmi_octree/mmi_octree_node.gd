@@ -255,6 +255,7 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	# But non-leaves do not have an MMI and can't spawn spatials
 	if is_leaf:
 		MMI.multimesh.mesh = shared_LOD_variants[LOD_index].mesh
+		MMI.cast_shadow = shared_LOD_variants[LOD_index].shadow_casting_mode
 		clear_and_spawn_all_member_spatials(last_LOD_index)
 
 
