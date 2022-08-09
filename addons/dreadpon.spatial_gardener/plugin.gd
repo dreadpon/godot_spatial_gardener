@@ -105,7 +105,9 @@ func _exit_tree():
 	remove_custom_types()
 
 
-func apply_changes():
+# Previously here was 'apply_changes', but it fired even when scene was closed without saving
+# 'save_external_data' respects saving/not saving choice
+func save_external_data():
 	if !Engine.editor_hint: return
 	
 	apply_changes_to_gardeners()

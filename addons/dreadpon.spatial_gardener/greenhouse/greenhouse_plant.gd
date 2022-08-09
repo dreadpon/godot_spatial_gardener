@@ -347,15 +347,7 @@ func _modify_prop(prop:String, val):
 			# TODO retain Greenhouse_LODVariant if it already exists when drag-and-dropping a .mesh or a .tscn resource
 			for i in range(0, val.size()):
 				if !(val[i] is Greenhouse_LODVariant):
-#					var backup_val = val[i]
 					val[i] = Greenhouse_LODVariant.new()
-					
-#					if backup_val is PackedScene:
-#						val[i].spawned_spatial = backup_val
-#					else:
-#						for mesh_class in Globals.MESH_CLASSES:
-#							if FunLib.obj_is_class_string(backup_val, mesh_class):
-#								val[i].mesh = backup_val
 				
 				FunLib.ensure_signal(val[i], "changed", self, "on_changed_LOD_variant")
 				FunLib.ensure_signal(val[i], "prop_action_executed", self, "on_prop_action_executed_on_LOD_variant", [val[i]])

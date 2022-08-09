@@ -240,81 +240,39 @@ static func get_setting_safe(setting:String, default_value = null):
 #-------------------------------------------------------------------------------
 
 
-# 'free_existing' should be 'true' for resources, but 'false' for scenes
-static func save_res(res:Resource, dir:String, res_name:String, free_existing:bool = true):
-	if !dir.ends_with("/"):
-		dir += "/"
+static func save_res(res:Resource, dir:String, res_name:String):
 	assert(res)
 	var logger = Logger.get_for_string("FunLib")
-	var full_path = "%s%s" % [dir, res_name]
+	var full_path = combine_dir_and_file(dir, res_name)
 	
-	# take_over_path() and ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS
-	# Are CRITICAL
-		# (although ResourceSaver.FLAG_CHANGE_PATH seems unneccessary, but I'll keep it for good measure)
-	# take_over_path() frees the path from a resource already cached from this path
-		# This allows us to fully overtake that path
-	# ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS takes over all the paths of subresources
-		# This rejects/frees/whatever-the-hell-it-does the already cached subresources
-		# Allowing us to reference only the up-to-date subresources, without any of the old ones
-	# The alternative would be to free/dereference all kept references for the old resource, but that seems... unreasonable?
+	# Abort explicit saving if our resource and an existing one are the same instance
+	# Since it will be saved on 'Ctrl+S' implicitly by the editor
+	# And allows reverting resource by exiting the editor
+	var loaded_res = load_res(dir, res_name, null, false)
+	if res == loaded_res:
+		return
 	
-	# EDIT: This is not enough
-	# See https://github.com/godotengine/godot/issues/24646
-	# Editor holds cached version still and does not update it no matter what
-	# I don't know how to solve this
-	# And I can't even delete the resource and save it anew
-	# Because it's still cached and will be overriden with that stupid cache
+	# There was a wall of text here regarding problems of saving and re-saving custom resources
+	# But curiously, seems like it went away
+	# These comments and previous state of saving/loading logic is available on commit '7b127ad'
 	
-	# EDIT: There is some magic dance possible with closing, reopening and resaving
-	# But it's nigh impossible to understand and replicate
-	# And it's not guranteed to work in a standalone Gardener either
-	
-	# EDIT: Last two points above seem wrong
-	# Saving of topmost resource goes without problems if we reset existing path with existing_res.resource_path = ""
-	# But any subresources will retain their cached states
-	# Curiously, recreating a simplified setup in a separate project (custom resource with nested arrays and subresources)
-	# Seems to save everything correctly
-	# Which most likely means my InputFieldResource is not very ResourceSaver friendly
-	# In what way? I don't know. I was able to find a workaround, so I won't dwell on this problem for now
-	# To solve the issue, we recursively iterate all exported properties of a resource
-	# Upon finding a subresource, we reset it's resource_path as seen in res_free_path()
-	# This seems to let us overwrite resource in project files and not face weird cahce-retaining behavior on it's subresources
-	# TODO find the root cause of this issue. Probably delay this until conversion to Godot 4.0
-	
-	if ResourceLoader.exists(full_path) && free_existing:
-		var existing_res = ResourceLoader.load(full_path, "", true)#)
-		res_free_path(existing_res)
-	
+	# Taking over path and subpaths is still required
+	# Still keeping FLAG_CHANGE_PATH in case we want to save to a different location
 	res.take_over_path(full_path)
 	var err = ResourceSaver.save(full_path, res, ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
 	if err != OK:
 		logger.error("Could not save '%s', error %s!" % [full_path, Globals.get_err_message(err)])
 
 
-static func res_free_path(res):
-	if res is Array:
-		for arr_val in res:
-			res_free_path(arr_val)
-	elif res is Dictionary:
-		for arr_val in res.values():
-			res_free_path(arr_val)
-	elif res is Resource:
-		for prop in res.get_property_list():
-			res_free_path(res.get(prop.name))
-		if res.has_method("duplicate_ifr"):
-			res.resource_path = ""
-#			print("freed %s" % [res.resource_name])
-
-
-static func load_res(dir:String, res_name:String, default_res:Resource = null) -> Resource:
-	if !dir.ends_with("/"):
-		dir += "/"
-	var full_path = "%s%s" % [dir, res_name]
+# Passing 'true' as 'no_cache' is important to bypass this cache
+# We use it by default, but want to allow loading a cache to check if resource exists at path
+static func load_res(dir:String, res_name:String, default_res:Resource = null, no_cache: bool = true) -> Resource:
+	var full_path = combine_dir_and_file(dir, res_name)
 	var res = null
 	var logger = Logger.get_for_string("FunLib")
 	
 	if ResourceLoader.exists(full_path):
-		res = ResourceLoader.load(full_path, "", true)
+		res = ResourceLoader.load(full_path, "", no_cache)
 	elif is_instance_valid(default_res):
 		res = default_res.duplicate(true)
 		logger.info("Path '%s', doesn't exist. Using default resource." % [full_path])
@@ -327,7 +285,13 @@ static func load_res(dir:String, res_name:String, default_res:Resource = null) -
 		else:
 			logger.warn("Could not load '%s'!" % [full_path])
 	
-	return res#.duplicate()
+	return res
+
+
+static func combine_dir_and_file(dir_path: String, file_name: String):
+	if !dir_path.ends_with("/"):
+		dir_path += "/"
+	return "%s%s" % [dir_path, file_name]
 
 
 static func is_dir_valid(dir):

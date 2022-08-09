@@ -244,7 +244,6 @@ func _get(prop):
 func _modify_prop(prop:String, val):
 	match prop:
 		"plant_types/greenhouse_plant_states":
-#			val = val.duplicate()
 			for i in range(0, val.size()):
 				if !(val[i] is Greenhouse_PlantState):
 					val[i] = Greenhouse_PlantState.new()
