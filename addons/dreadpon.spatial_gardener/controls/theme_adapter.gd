@@ -64,13 +64,15 @@ static func adapt_theme(theme:Theme):
 	
 	var MultiRangePropLabel_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
 	MultiRangePropLabel_stylebox_panel.bg_color = stylebox_background.bg_color
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", MultiRangePropLabel_stylebox_panel)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", 	MultiRangePropLabel_stylebox_panel)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", 	MultiRangePropLabel_stylebox_panel.duplicate(true))
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", 		LineEdit_stylebox_normal.duplicate(true))
 	
-	var MultiRangeDashLabel_stylebox_panel := MultiRangePropLabel_stylebox_panel.duplicate(true)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", MultiRangeDashLabel_stylebox_panel)
-	
-	var MultiRangeValue_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", MultiRangeValue_stylebox_panel)
+	var PlantTitleLineEdit_stylebox := StyleBoxFlat.new()
+	PlantTitleLineEdit_stylebox.bg_color = stylebox_background.bg_color
+	PlantTitleLineEdit_stylebox.content_margin_left = 1
+	PlantTitleLineEdit_stylebox.content_margin_right = 1
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PlantTitleLineEdit", 		PlantTitleLineEdit_stylebox)
 
 
 # Iterate through controls and return the first found theme
@@ -128,6 +130,8 @@ class ThemeOverrider extends Reference:
 	
 	func set_overrides(target_control:Control, node_type:String):
 		var theme := get_theme(target_control)
+		
+		
 		
 		for item_name in theme.get_color_list(node_type):
 			var item_value = theme.get_color(item_name, node_type)

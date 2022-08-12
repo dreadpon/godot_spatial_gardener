@@ -85,6 +85,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	select_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	select_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	select_container.connect("requested_check", self, "on_plant_state_check")
+	select_container.connect("requested_label_edit", self, "on_plant_label_edit")
 	
 	settings_container = input_fields[1]
 	ThemeAdapter.assign_node_type(settings_container, "ExternalMargin")
@@ -137,9 +138,21 @@ func on_plant_state_check(index:int, state:bool):
 	plant_state.request_prop_action(prop_action)
 
 
+# Edit Greenhouse_PlantState's label
+func on_plant_label_edit(index:int, label_text:String):
+	var plant_state = greenhouse_plant_states[index]
+	var prop_action = PA_PropSet.new("plant/plant_label", label_text)
+	plant_state.request_prop_action(prop_action)
+
+
 func select_plant_state_for_brush(index:int, state:bool):
 	if is_instance_valid(select_container):
 		select_container.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.CHECK, state, {"index": index})
+
+
+func set_plant_state_label(index:int, label_text:String):
+	if is_instance_valid(select_container):
+		select_container.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.EDIT_LABEL, label_text, {"index": index})
 
 
 func on_if_ready(input_field:UI_InputField):
@@ -148,6 +161,7 @@ func on_if_ready(input_field:UI_InputField):
 	if input_field.prop_name == "plant_types/greenhouse_plant_states":
 		for i in range(0, greenhouse_plant_states.size()):
 			select_plant_state_for_brush(i, greenhouse_plant_states[i].plant_brush_active)
+			set_plant_state_label(i, greenhouse_plant_states[i].plant_label)
 
 
 func plant_count_updated(plant_index, new_count):
@@ -190,6 +204,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 					# This is deferred because the action thumbnail is not ready yet
 					call_deferred("plant_count_updated", prop_action.index, 0)
 					call_deferred("select_plant_state_for_brush", prop_action.index, final_val[prop_action.index].plant_brush_active)
+					call_deferred("set_plant_state_label", prop_action.index, final_val[prop_action.index].plant_label)
 	
 
 
@@ -199,6 +214,8 @@ func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
 		match prop_action.prop:
 			"plant/plant_brush_active":
 				select_plant_state_for_brush(plant_index, final_val)
+			"plant/plant_label":
+				set_plant_state_label(plant_index, final_val)
 	
 	emit_signal("prop_action_executed_on_plant_state", prop_action, final_val, plant_state)
 

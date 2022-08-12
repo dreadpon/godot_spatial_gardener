@@ -64,6 +64,10 @@ func on_check(state, thumb):
 	emit_signal("requested_check", 0, state)
 
 
+func on_label_edit(label_text, thumb):
+	emit_signal("requested_label_edit", 0, label_text)
+
+
 func on_press(thumb):
 	emit_signal("requested_press", 0)
 
