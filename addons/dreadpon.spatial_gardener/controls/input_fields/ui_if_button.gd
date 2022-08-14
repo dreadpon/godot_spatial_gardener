@@ -30,6 +30,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.size_flags_vertical = SIZE_SHRINK_CENTER
 	button.text = settings.button_text
 	button.connect("pressed", self, "on_button_pressed")
+	ThemeAdapter.assign_node_type(button, 'InspectorButton')
 
 
 func _ready():

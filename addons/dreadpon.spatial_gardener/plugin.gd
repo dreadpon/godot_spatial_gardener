@@ -15,7 +15,8 @@ const FunLib = preload("utility/fun_lib.gd")
 const ProjectSettingsManager = preload("utility/project_settings_manager.gd")
 const Gardener = preload("gardener/gardener.gd")
 const DebugViewer = preload("gardener/debug_viewer.gd")
-const UI_SidePanel = preload("controls/ui_side_panel.gd")
+const UI_SidePanel_SCN = preload("controls/side_panel/ui_side_panel.tscn")
+const UI_SidePanel = preload("controls/side_panel/ui_side_panel.gd")
 const ThemeAdapter = preload("controls/theme_adapter.gd")
 
 const Greenhouse = preload("greenhouse/greenhouse.gd")
@@ -32,7 +33,7 @@ const Console = preload("utility/console/console.gd")
 const gardener_icon:Texture = preload("icons/gardener_icon.svg")
 
 
-var side_panel_ND:UI_SidePanel = UI_SidePanel.new()
+var _side_panel:UI_SidePanel = null
 var _base_control:Control = Control.new()
 var _resource_previewer = null
 var control_theme:Theme = null
@@ -42,6 +43,7 @@ var debug_view_menu:MenuButton
 
 var active_gardener = null
 var gardeners_in_tree:Array = []
+var folding_states: Dictionary = {}
 
 var logger = null
 
@@ -87,11 +89,12 @@ func _enter_tree():
 	
 	adapt_editor_theme()
 	
-	side_panel_ND.theme = control_theme
+	_side_panel = UI_SidePanel_SCN.instance()
+	_side_panel.theme = control_theme
 	toolbar.visible = false
 	
 	add_custom_types()
-	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, side_panel_ND)
+	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	selection_changed()
 
@@ -100,7 +103,7 @@ func _exit_tree():
 	if !Engine.editor_hint: return
 	
 	set_gardener_edit_state(null)
-	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, side_panel_ND)
+	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	remove_custom_types()
 
@@ -155,6 +158,10 @@ func apply_changes_to_gardeners():
 	for gardener in gardeners_in_tree:
 		if gardener is Gardener && is_instance_valid(gardener):
 			gardener.apply_changes()
+
+
+func get_plugin_name() -> String:
+	return 'SpatialGardener'
 
 
 
@@ -271,6 +278,26 @@ func adapt_editor_theme():
 	ThemeAdapter.adapt_theme(control_theme)
 
 
+# Gather folding states from side panel
+func get_state() -> Dictionary:
+	_side_panel.cleanup_folding_states(folding_states)
+	return {'folding_states': folding_states}
+
+
+# Restore folding states for side panel
+func set_state(state: Dictionary):
+	folding_states = state.folding_states
+
+
+func on_greenhouse_prop_action_executed(prop_action, final_val):
+	_side_panel.on_greenhouse_prop_action_executed(folding_states, active_gardener.greenhouse, prop_action, final_val)
+
+
+func refresh_folding_state_for_greenhouse(greenhouse):
+	if greenhouse:
+		_side_panel.refresh_folding_states_for_greenhouse(folding_states, greenhouse)
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -317,22 +344,41 @@ func set_gardener_edit_state(gardener):
 
 func start_gardener_edit(gardener):
 	active_gardener = gardener
+	# TODO: figure out this weird bug :/
+	#		basically, when having 2 scenes open, one with gardener and another NOT SAVED PREVIOUSLY (new empty scene)
+	#		if you switch to an empty scene and save it, gardener loses all references (this doesnt happen is was saved at least once)
+	#		To prevent that we call _ready each time we start gardener editing
+	#		But this leads to some nodes being instanced again, even though they already exist 
+	#		This is a workaround that I haven't tested extensively, so it might backfire in the future
+	#
+	#		There's more.
+	#		Foldable states are reset two (maybe even all resource incuding gardeners and toolsheds, etc.?)
+	#			Doesn't seem so, but still weird
+	active_gardener._ready()
+	
 	active_gardener.connect("tree_exited", self, "set_gardener_edit_state", [null])
-	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), side_panel_ND)
-	side_panel_ND.visible = true
+	active_gardener.connect("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed")
+	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), _side_panel)
+	_side_panel.visible = true
 	toolbar.visible = true
 	active_gardener.up_to_date_debug_view_menu(debug_view_menu)
+	refresh_folding_state_for_greenhouse(active_gardener.greenhouse)
 
 
 func stop_gardener_edit():
-	side_panel_ND.visible = false
+	get_state()
+
+	_side_panel.visible = false
 	toolbar.visible = false
-	
+
 	if active_gardener:
 		active_gardener.stop_editing()
 		if active_gardener.is_connected("tree_exited", self, "set_gardener_edit_state"):
 			active_gardener.disconnect("tree_exited", self, "set_gardener_edit_state")
-		active_gardener = null
+		if active_gardener.is_connected("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed"):
+			active_gardener.disconnect("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed")
+		
+	active_gardener = null
 
 
 

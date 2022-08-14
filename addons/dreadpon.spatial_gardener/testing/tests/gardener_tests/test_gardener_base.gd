@@ -54,11 +54,11 @@ func create_and_start_gardener_editing():
 	
 	gardener.owner = get_tree().get_edited_scene_root()
 	gardener.garden_work_directory = greenhouse_path
+	gardener.gardening_collision_mask = pow(2, 0)
 	
 	for plant_state in gardener.greenhouse.greenhouse_plant_states:
 		plant_state.request_prop_action(PA_PropSet.new("plant/plant_brush_active", true))
 	select_brush(0)
-	gardener.gardening_collision_mask = pow(2, 0)
 
 
 func _enter_tree():

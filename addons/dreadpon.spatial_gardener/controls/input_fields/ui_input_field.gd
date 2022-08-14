@@ -89,6 +89,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	if settings.has("tab"):
 		tab_index = settings.tab
 	
+	set_stylebox(get_stylebox('panel', 'PanelContainer'))
+	
 	set_tooltip(tooltip)
 
 
@@ -104,14 +106,16 @@ func _ready():
 func _set_tab(index:int):
 	tab_index = index
 	tab_spacer.rect_min_size.x = tab_index * tab_size
+	tab_spacer.rect_size.x = tab_spacer.rect_min_size.x
+	tab_spacer.visible = false if tab_index <= 0 else true
 	
 	if tab_index > 0:
 		var styleboxes = ThemeAdapter.lookup_sub_inspector_styleboxes(self, tab_index - 1)
-		add_stylebox_override("panel", styleboxes.sub_inspector_bg)
+		set_stylebox(styleboxes.sub_inspector_bg)
 	else:
 		var stylebox = StyleBoxFlat.new()
 		stylebox.bg_color = Color.transparent
-		add_stylebox_override("panel", stylebox)
+		set_stylebox(stylebox)
 
 
 func set_tooltip(tooltip:String):
@@ -121,6 +125,15 @@ func set_tooltip(tooltip:String):
 		label.hint_tooltip = tooltip
 	else:
 		label.mouse_filter = MOUSE_FILTER_IGNORE
+
+
+func set_stylebox(stylebox:StyleBox):
+	stylebox = stylebox.duplicate()
+	stylebox.content_margin_bottom = 1
+	stylebox.content_margin_top = 1
+	stylebox.content_margin_right = 0
+	stylebox.content_margin_left = 0
+	add_stylebox_override("panel", stylebox)
 
 
 

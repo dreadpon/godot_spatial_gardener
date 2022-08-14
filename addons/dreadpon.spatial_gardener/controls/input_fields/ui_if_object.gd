@@ -9,6 +9,8 @@ extends "ui_input_field.gd"
 #-------------------------------------------------------------------------------
 
 
+const UI_FoldableSection_SCN = preload('../side_panel/ui_foldable_section.tscn')
+
 var margin_container:MarginContainer = null
 var input_field_container:VBoxContainer = null
 var _base_control:Control = null
@@ -29,11 +31,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	margin_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	margin_container.name = "margin_container"
-#	margin_container.set_anchors_preset(Control.PRESET_WIDE)
 	
 	input_field_container = VBoxContainer.new()
 	input_field_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	input_field_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	input_field_container.add_constant_override('separation', 0)
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
@@ -52,8 +54,32 @@ func _ready():
 func rebuild_object_input_fields(object:Object):
 	FunLib.clear_children(input_field_container)
 	if is_instance_valid(object):
+		
+		var property_sections := {}
+		
 		for input_field in object.create_input_fields(_base_control, _resource_previewer):
-			input_field_container.add_child(input_field)
+			var nesting := (input_field.prop_name as String).split('/')
+			if nesting.size() >= 2:
+				if !property_sections.has(nesting[0]): 
+					var section = UI_FoldableSection_SCN.instance()
+					property_sections[nesting[0]] = {'section': section, 'subsections': {}}
+					input_field_container.add_child(section)
+					section.set_button_text(nesting[0].capitalize())
+					section.set_nesting_level(0)
+				
+				if nesting.size() >= 3:
+					if !property_sections[nesting[0]].subsections.has(nesting[1]):
+						var subsection = UI_FoldableSection_SCN.instance()
+						property_sections[nesting[0]].subsections[nesting[1]] = {'subsection': subsection} 
+						property_sections[nesting[0]].section.add_child(subsection)
+						subsection.set_button_text(nesting[1].capitalize())
+						subsection.set_nesting_level(1)
+					
+					property_sections[nesting[0]].subsections[nesting[1]].add_prop_node(input_field)
+				else:
+					property_sections[nesting[0]].section.add_prop_node(input_field)
+			else:
+				input_field_container.add_child(input_field)
 
 
 

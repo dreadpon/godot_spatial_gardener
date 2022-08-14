@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="StyleBoxEmpty" id=1]
+
+[node name="UI_Category_Greenhouse" type="VBoxContainer"]
+margin_top = 120.0
+margin_right = 348.0
+margin_bottom = 582.0
+
+[node name="PanelContainer_Category" type="PanelContainer" parent="."]
+margin_right = 348.0
+margin_bottom = 28.0
+size_flags_horizontal = 3
+
+[node name="Label_Category" type="Label" parent="PanelContainer_Category"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 341.0
+margin_bottom = 21.0
+text = "Plants"
+align = 1
+valign = 1
+
+[node name="VSplitContainer" type="VSplitContainer" parent="."]
+margin_top = 32.0
+margin_right = 348.0
+margin_bottom = 462.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PanelContainer_PlantThumbnails" type="PanelContainer" parent="VSplitContainer"]
+margin_right = 348.0
+margin_bottom = 93.0
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="ScrollContainer_PlantThumbnails" type="ScrollContainer" parent="VSplitContainer/PanelContainer_PlantThumbnails"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 341.0
+margin_bottom = 86.0
+size_flags_vertical = 3
+
+[node name="TabContainer_Properties" type="TabContainer" parent="VSplitContainer"]
+margin_top = 105.0
+margin_right = 348.0
+margin_bottom = 430.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_styles/tab_fg = SubResource( 1 )
+custom_styles/tab_disabled = SubResource( 1 )
+custom_styles/tab_bg = SubResource( 1 )
+custom_styles/panel = SubResource( 1 )
+tabs_visible = false
+
+[node name="ScrollContainer_Properties" type="ScrollContainer" parent="VSplitContainer/TabContainer_Properties"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+scroll_horizontal_enabled = false

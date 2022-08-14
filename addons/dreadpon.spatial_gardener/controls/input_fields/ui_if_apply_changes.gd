@@ -51,6 +51,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	apply_dialog.connect("popup_hide", self, "on_dialog_hidden")
 	
 	bound_input_fields = settings.bound_input_fields
+	
+	ThemeAdapter.assign_node_type(button, 'InspectorButton')
 
 
 func _ready():

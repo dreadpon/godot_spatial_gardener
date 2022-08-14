@@ -1,0 +1,21 @@
+[gd_scene format=2]
+
+[node name="UI_Section_Brush" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 31.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="ScrollContainer_Properties" type="ScrollContainer" parent="."]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1009.0
+margin_bottom = 558.0
+size_flags_horizontal = 3
+scroll_horizontal_enabled = false
+
+[node name="VBoxContainer_Properties" type="VBoxContainer" parent="ScrollContainer_Properties"]
+margin_right = 1002.0
+size_flags_horizontal = 3

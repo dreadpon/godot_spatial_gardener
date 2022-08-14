@@ -48,6 +48,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	# release_focus() is expected to be called when pressing enter and only then we commit the value
 	value_input.connect("focus_exited", self, "focus_lost", [value_input])
 	value_input.connect("gui_input", self, "on_node_received_input", [value_input])
+	ThemeAdapter.assign_node_type(value_input, 'IF_LineEdit')
 
 
 func _ready():

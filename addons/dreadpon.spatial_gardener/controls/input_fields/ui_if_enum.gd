@@ -29,6 +29,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 		enum_selector.add_item(settings.enum_list[i], i)
 	
 	enum_selector.connect("item_selected", self, "_request_prop_action", ["PA_PropSet"])
+	ThemeAdapter.assign_node_type(enum_selector, 'InspectorButton')
 
 
 func _ready():

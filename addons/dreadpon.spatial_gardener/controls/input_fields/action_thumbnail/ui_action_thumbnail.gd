@@ -72,6 +72,7 @@ func _ready():
 			root_button_nd.connect("dropped", self, "on_set_drag")
 		root_button_nd.connect("pressed", self, "on_set_dialog")
 		root_button_nd.connect("pressed", self, "on_press")
+		ThemeAdapter.assign_node_type(root_button_nd, 'InspectorButton')
 	if has_node("TextureRect"):
 		texture_rect_nd = $TextureRect
 	if has_node("SelectionPanel"):
@@ -92,7 +93,7 @@ func _ready():
 		alt_text_label_nd = $AltTextMargin/AltTextLabel
 		alt_text_label_nd.add_font_override('font', get_font("font", "Label").duplicate())
 		ThemeAdapter.assign_node_type(alt_text_margin_nd, "ExternalMargin")
-		alt_text_margin_nd.visible = false
+		alt_text_label_nd.visible = false
 	if has_node('LabelLineEdit'):
 		label_line_edit_nd = $LabelLineEdit
 		label_line_edit_nd.add_font_override('font', get_font("font", "Label").duplicate())
@@ -211,7 +212,8 @@ func scale_font(node: Control, font_scale: float):
 
 
 func set_counter_val(val:int):
-	counter_label_nd.text = str(val)
+	if has_node("CounterContainer"):
+		counter_label_nd.text = str(val)
 
 
 func counter_resized():

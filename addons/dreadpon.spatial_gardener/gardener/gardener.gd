@@ -21,7 +21,8 @@ const Toolshed = preload("../toolshed/toolshed.gd")
 const Painter = preload("painter.gd")
 const Arborist = preload("../arborist/arborist.gd")
 const DebugViewer = preload("debug_viewer.gd")
-const UI_SidePanel = preload("../controls/ui_side_panel.gd")
+const UI_SidePanel_SCN = preload("../controls/side_panel/ui_side_panel.tscn")
+const UI_SidePanel = preload("../controls/side_panel/ui_side_panel.gd")
 const Globals = preload("../utility/globals.gd")
 
 const PropAction = preload("../utility/input_field_resource/prop_action.gd")
@@ -53,8 +54,8 @@ var _base_control:Control = null
 var _undo_redo:UndoRedo = null
 
 var _side_panel:UI_SidePanel = null
-var brush_panel:Control = null
-var greenhouse_panel:Control = null
+var ui_category_brushes:Control = null
+var ui_category_plants:Control = null
 
 var painting_node:Spatial = null
 
@@ -63,6 +64,7 @@ var forward_input_events:bool = true
 
 
 signal changed_initialized_for_edit(state)
+signal greenhouse_prop_action_executed(prop_action, final_val)
 
 
 
@@ -83,12 +85,19 @@ func _ready():
 	# But it is already self-sufficient, so no need to initialize it
 	if !Engine.editor_hint: return
 	
-	painting_node = Spatial.new()
-	painting_node.name = "painting"
-	add_child(painting_node)
+	if has_node('painting'):
+		painting_node = get_node('painting')
+	else:
+		painting_node = Spatial.new()
+		painting_node.name = "painting"
+		add_child(painting_node)
 	
-	debug_viewer = DebugViewer.new()
-	add_child(debug_viewer)
+	if has_node('debug_viewer'):
+		debug_viewer = get_node('debug_viewer')
+	else:
+		debug_viewer = DebugViewer.new()
+		debug_viewer.name = "debug_viewer"
+		add_child(debug_viewer)
 	
 	init_painter()
 	painter.set_brush_collision_mask(gardening_collision_mask)
@@ -203,10 +212,14 @@ func reload_resources():
 	var last_toolshed = toolshed
 	var last_greenhouse = greenhouse
 	
-	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED())
-	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres")
-	if !toolshed: toolshed = Toolshed.new()
-	if !greenhouse: greenhouse = Greenhouse.new()
+	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED(), false)
+	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres", null, false)
+	if !toolshed: 
+		toolshed = Toolshed.new()
+#		save_toolshed()
+	if !greenhouse: 
+		greenhouse = Greenhouse.new()
+#		save_greenhouse()
 	
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
@@ -235,11 +248,15 @@ func reload_resources():
 		pair_arborist_greenhouse()
 	
 	if toolshed && toolshed != last_toolshed && _side_panel:
-		brush_panel = toolshed.create_ui(_base_control, _resource_previewer)
-		_side_panel.set_tool_ui(brush_panel, 0)
+		ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
+		_side_panel.set_tool_ui(ui_category_brushes, 0)
 	if greenhouse && greenhouse != last_greenhouse && _side_panel:
-		greenhouse_panel = greenhouse.create_ui(_base_control, _resource_previewer)
-		_side_panel.set_tool_ui(greenhouse_panel, 1)
+		ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
+		_side_panel.set_tool_ui(ui_category_plants, 1)
+	
+	if arborist:
+		for i in range(0, arborist.octree_managers.size()):
+			arborist.emit_member_count(i)
 
 
 # It's possible we load a different Greenhouse while an Arborist is already initialized
@@ -291,10 +308,10 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 	_side_panel = __side_panel
 	connect("changed_initialized_for_edit", _side_panel, "set_main_control_state")
 	
-	brush_panel = toolshed.create_ui(_base_control, _resource_previewer)
-	greenhouse_panel = greenhouse.create_ui(_base_control, _resource_previewer)
-	_side_panel.set_tool_ui(brush_panel, 0)
-	_side_panel.set_tool_ui(greenhouse_panel, 1)
+	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
+	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
+	_side_panel.set_tool_ui(ui_category_brushes, 0)
+	_side_panel.set_tool_ui(ui_category_plants, 1)
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
 	
@@ -395,6 +412,7 @@ func on_greenhouse_prop_action_executed(prop_action:PropAction, final_val):
 	elif prop_action is PA_ArrayRemove:
 		arborist.on_plant_removed(prop_action.val, prop_action.index)
 		reinit_debug_draw_brush_active()
+	emit_signal('greenhouse_prop_action_executed', prop_action, final_val)
 
 
 # When Greenhouse_PlantState properties are changed

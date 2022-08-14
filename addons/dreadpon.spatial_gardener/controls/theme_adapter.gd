@@ -12,6 +12,16 @@ func _init():
 
 # Create all custom node types for this plugin
 static func adapt_theme(theme:Theme):
+	var base_color = theme.get_color('base_color', 'Editor')
+	var dark_color_1 = theme.get_color('dark_color_1', 'Editor')
+	var dark_color_2 = theme.get_color('dark_color_2', 'Editor')
+	var dark_color_3 = theme.get_color('dark_color_3', 'Editor')
+	var prop_category_color = theme.get_color('prop_category', 'Editor')
+	var prop_section_color = theme.get_color('prop_section', 'Editor')
+	var prop_subsection_color = theme.get_color('prop_subsection', 'Editor')
+	var true_prop_subsection_color = Color('2d3241')
+	var property_font_color = theme.get_color('property_color', 'Editor')
+	
 	var constant_background_margin := theme.get_stylebox("Background", "EditorStyles").content_margin_top
 	var stylebox_content := theme.get_stylebox("Content", "EditorStyles")
 	var stylebox_background := theme.get_stylebox("Background", "EditorStyles")
@@ -27,52 +37,77 @@ static func adapt_theme(theme:Theme):
 	theme.set_constant("margin_bottom", "ExternalMargin", constant_background_margin)
 	theme.set_constant("margin_right", "ExternalMargin", constant_background_margin)
 	
-	var GardenerToolPanel_stylebox_panel := StyleBoxFlat.new()
-	GardenerToolPanel_stylebox_panel.bg_color = stylebox_background.bg_color
-	GardenerToolPanel_stylebox_panel.content_margin_top = constant_background_margin
-	GardenerToolPanel_stylebox_panel.content_margin_left = constant_background_margin
-	GardenerToolPanel_stylebox_panel.content_margin_right = constant_background_margin
-	GardenerToolPanel_stylebox_panel.content_margin_bottom = constant_background_margin
-	GardenerToolPanel_stylebox_panel.set_border_width_all(stylebox_content.border_width_top)
-	GardenerToolPanel_stylebox_panel.border_color = stylebox_content.border_color
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "GardenerToolPanel", GardenerToolPanel_stylebox_panel)
-	
-	var GreenhousePanel_stylebox_panel := StyleBoxFlat.new()
-	GreenhousePanel_stylebox_panel.bg_color = stylebox_content.bg_color
-	GreenhousePanel_stylebox_panel.set_border_width_all(stylebox_content.border_width_top)
-	GreenhousePanel_stylebox_panel.border_color = stylebox_content.border_color
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "GreenhousePanel", GreenhousePanel_stylebox_panel)
-	
-	var GreenhouseTabContainerTop_stylebox_panel := StyleBoxFlat.new()
-	GreenhouseTabContainerTop_stylebox_panel.bg_color = stylebox_content.bg_color
-	GreenhouseTabContainerTop_stylebox_panel.set_border_width_all(0)
-	GreenhouseTabContainerTop_stylebox_panel.border_width_bottom = stylebox_content.border_width_bottom
-	GreenhouseTabContainerTop_stylebox_panel.border_color = stylebox_content.border_color
-	GreenhouseTabContainerTop_stylebox_panel.content_margin_top = 10
-	GreenhouseTabContainerTop_stylebox_panel.content_margin_bottom = 10
-	GreenhouseTabContainerTop_stylebox_panel.content_margin_left = 10
-	GreenhouseTabContainerTop_stylebox_panel.content_margin_right = 10
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "GreenhouseTabContainerTop", GreenhouseTabContainerTop_stylebox_panel)
-	
-	var GreenhouseTabContainerBottom_stylebox_panel = GreenhouseTabContainerTop_stylebox_panel.duplicate(true)
-	GreenhouseTabContainerBottom_stylebox_panel.border_width_bottom = 0
-	GreenhouseTabContainerBottom_stylebox_panel.border_width_top = stylebox_content.border_width_top
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "GreenhouseTabContainerBottom", GreenhouseTabContainerBottom_stylebox_panel)
-	
 	var MultiRangeValuePanel_stylebox_panel := StyleBoxFlat.new()
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "MultiRangeValuePanel", MultiRangeValuePanel_stylebox_panel)
 	
+	var IF_LineEdit_stylebox := theme.get_stylebox('normal', 'LineEdit').duplicate(true)
+	IF_LineEdit_stylebox.bg_color = dark_color_2
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "IF_LineEdit", IF_LineEdit_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", IF_LineEdit_stylebox.duplicate(true))
+	
 	var MultiRangePropLabel_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
-	MultiRangePropLabel_stylebox_panel.bg_color = stylebox_background.bg_color
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", 	MultiRangePropLabel_stylebox_panel)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", 	MultiRangePropLabel_stylebox_panel.duplicate(true))
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", 		LineEdit_stylebox_normal.duplicate(true))
+	MultiRangePropLabel_stylebox_panel.bg_color = dark_color_3
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", MultiRangePropLabel_stylebox_panel)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", MultiRangePropLabel_stylebox_panel.duplicate(true))
 	
 	var PlantTitleLineEdit_stylebox := StyleBoxFlat.new()
-	PlantTitleLineEdit_stylebox.bg_color = stylebox_background.bg_color
+	PlantTitleLineEdit_stylebox.bg_color = dark_color_3
 	PlantTitleLineEdit_stylebox.content_margin_left = 1
 	PlantTitleLineEdit_stylebox.content_margin_right = 1
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PlantTitleLineEdit", 		PlantTitleLineEdit_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PlantTitleLineEdit", PlantTitleLineEdit_stylebox)
+	
+	var InspectorPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	InspectorPanelContainer_stylebox.draw_center = true
+	InspectorPanelContainer_stylebox.bg_color = dark_color_1
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorPanelContainer", InspectorPanelContainer_stylebox)
+	
+	var InspectorWindowDialog_stylebox := theme.get_stylebox('panel', 'WindowDialog').duplicate()
+	InspectorWindowDialog_stylebox.draw_center = true
+	InspectorWindowDialog_stylebox.bg_color = dark_color_1
+	InspectorWindowDialog_stylebox.border_color = dark_color_1
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorWindowDialog", InspectorWindowDialog_stylebox)
+	
+	var InspectorInnerPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	InspectorInnerPanelContainer_stylebox.draw_center = false
+	InspectorInnerPanelContainer_stylebox.set_border_width_all(1)
+	InspectorInnerPanelContainer_stylebox.border_color = dark_color_3
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorInnerPanelContainer", InspectorInnerPanelContainer_stylebox)
+	
+	var PropertyCategory_stylebox := StyleBoxFlat.new()#theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	PropertyCategory_stylebox.draw_center = true
+	PropertyCategory_stylebox.bg_color = prop_category_color
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertyCategory", PropertyCategory_stylebox)
+	
+	var PropertySection_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	PropertySection_stylebox.draw_center = true
+	PropertySection_stylebox.bg_color = prop_subsection_color
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertySection", PropertySection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PropertySection", PropertySection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "PropertySection", PropertySection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "PropertySection", PropertySection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "PropertySection", PropertySection_stylebox)
+	
+	var PropertySubsection_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	PropertySubsection_stylebox.draw_center = true
+	PropertySubsection_stylebox.bg_color = true_prop_subsection_color
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertySubsection", PropertySubsection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PropertySubsection", PropertySubsection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "PropertySubsection", PropertySubsection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "PropertySubsection", PropertySubsection_stylebox)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "PropertySubsection", PropertySubsection_stylebox)
+	
+	var InspectorButton_stylebox_normal := theme.get_stylebox('normal', 'Button').duplicate()
+	var InspectorButton_stylebox_hover := theme.get_stylebox('hover', 'Button').duplicate()
+	var InspectorButton_stylebox_pressed := theme.get_stylebox('pressed', 'Button').duplicate()
+	var InspectorButton_stylebox_focus := theme.get_stylebox('focus', 'Button').duplicate()
+	InspectorButton_stylebox_normal.bg_color = dark_color_2
+	InspectorButton_stylebox_hover.bg_color = dark_color_2
+	InspectorButton_stylebox_pressed.bg_color = dark_color_2
+	InspectorButton_stylebox_focus.bg_color = dark_color_2
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorButton", InspectorButton_stylebox_normal)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorButton", InspectorButton_stylebox_hover)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorButton", InspectorButton_stylebox_pressed)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorButton", InspectorButton_stylebox_focus)
 
 
 # Iterate through controls and return the first found theme
@@ -130,7 +165,6 @@ class ThemeOverrider extends Reference:
 	
 	func set_overrides(target_control:Control, node_type:String):
 		var theme := get_theme(target_control)
-		
 		
 		
 		for item_name in theme.get_color_list(node_type):
