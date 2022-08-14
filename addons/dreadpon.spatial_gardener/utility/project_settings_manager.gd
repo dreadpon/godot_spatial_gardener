@@ -15,6 +15,14 @@ const Logger = preload("logger.gd")
 
 # Add all settings for this plugin
 static func add_plugin_project_settings():
+	
+	
+	# Remove settings from the previous plugin version
+	if ProjectSettings.has_setting("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button"):
+		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button")
+	if ProjectSettings.has_setting("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key"):
+		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key")
+	
 	# Input and UI
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo",
@@ -25,11 +33,11 @@ static func add_plugin_project_settings():
 		1.0,
 		TYPE_REAL)
 	add_project_setting_globals_enum(
-		"dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key",
-		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
-	add_project_setting_globals_enum(
-		"dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button",
+		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button",
 		Globals.ButtonList.BUTTON_RIGHT, Globals.ButtonList)
+	add_project_setting_globals_enum(
+		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier",
+		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/focus_painter_key",
 		Globals.KeyList.KEY_Q, Globals.KeyList)

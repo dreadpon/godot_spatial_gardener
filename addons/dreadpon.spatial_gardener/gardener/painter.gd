@@ -119,7 +119,7 @@ func forwarded_input(camera:Camera, event):
 	# If inactive property edit/modifier key pressed
 	# And event == modifier key pressed
 	# -> remember/forget the modifier
-	if brush_prop_edit_flag <= BrushPropEditFlag.NONE && event is InputEventKey && event.scancode == get_property_edit_modifier_key():
+	if brush_prop_edit_flag <= BrushPropEditFlag.NONE && event is InputEventKey && event.scancode == get_property_edit_modifier():
 		if event.pressed:
 			brush_prop_edit_flag = BrushPropEditFlag.MODIFIER
 		if !event.pressed:
@@ -165,15 +165,15 @@ func forwarded_input(camera:Camera, event):
 	return handled
 
 
-func get_property_edit_modifier_key():
+func get_property_edit_modifier():
 	# This convolution exists because a project setting with default value is not saved for some reason and load as "null"
 	# See https://github.com/godotengine/godot/issues/56598
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key", Globals.KeyList.KEY_SHIFT)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier", Globals.KeyList.KEY_SHIFT)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
 func get_property_edit_button():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button", Globals.ButtonList.BUTTON_RIGHT)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button", Globals.ButtonList.BUTTON_RIGHT)
 	return Globals.index_to_enum(key, Globals.ButtonList)
 
 

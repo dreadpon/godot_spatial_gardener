@@ -8,9 +8,7 @@ extends "ui_input_field.gd"
 #-------------------------------------------------------------------------------
 
 
-const UI_SignalingHSlider = preload("../extensions/ui_signaling_hslider.gd")
-
-var real_slider:UI_SignalingHSlider = null
+var real_slider:HSlider = null
 var value_input:LineEdit = null
 
 
@@ -24,7 +22,7 @@ var value_input:LineEdit = null
 func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
 	set_meta("class", "UI_IF_RealSlider")
 	
-	real_slider = UI_SignalingHSlider.new()
+	real_slider = HSlider.new()
 	real_slider.name = "real_slider"
 	real_slider.size_flags_horizontal = SIZE_EXPAND_FILL
 	real_slider.min_value = settings.min
@@ -34,7 +32,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	real_slider.allow_lesser = settings.allow_lesser
 	real_slider.size_flags_vertical = SIZE_SHRINK_CENTER
 	real_slider.connect("value_changed", self, "_convert_and_request", ["PA_PropEdit"])
-	real_slider.connect("drag_stopped", self, "_convert_and_request", ["PA_PropSet"])
+	real_slider.connect("drag_ended", self, "_slider_drag_ended", ["PA_PropSet"])
 	
 	value_input = LineEdit.new()
 	value_input.name = "value_input"
@@ -80,6 +78,10 @@ func _update_ui_to_val(val):
 	value_input.text = String(float(str("%.3f" % val)))
 	
 	._update_ui_to_val(val)
+
+
+func _slider_drag_ended(value_changed: bool, prop_action_class:String):
+	_convert_and_request(String(real_slider.value), prop_action_class)
 
 
 func _convert_and_request(val, prop_action_class:String):

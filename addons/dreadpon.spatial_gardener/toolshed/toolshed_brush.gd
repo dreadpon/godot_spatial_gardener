@@ -176,10 +176,12 @@ func get_prop_tooltip(prop:String) -> String:
 			return "The brush type enum, that defines it's behavior (paint, erase, etc.)"
 		"shape/shape_size":
 			return "The diameter of this brush, in world units\n" \
-				+ "Can be edited by holding 'brush_property_edit_button' and dragging in the editor viewport\n" \
+				+ "Can be edited by dragging in the editor viewport while holding\n" \
+				+ "[brush_prop_edit_button]\n" \
 				+ Globals.AS_IN_SETTINGS_STRING
 		"behavior/behavior_strength":
 			return "The plant density multiplier of this brush\n" \
-				+ "Can be edited by holding 'brush_property_edit_modifier_key' + 'brush_property_edit_button' and dragging in the editor viewport\n" \
+				+ "Can be edited by dragging in the editor viewport while holding\n" \
+				+ "[brush_prop_edit_modifier] + [brush_prop_edit_button]\n" \
 				+ Globals.AS_IN_SETTINGS_STRING
 	return ""
