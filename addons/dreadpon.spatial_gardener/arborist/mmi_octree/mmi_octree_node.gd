@@ -183,6 +183,8 @@ func set_LODs_to_active_index():
 				# Assign the LOD variant mesh
 				MMI.multimesh.mesh = new_mesh
 				clear_and_spawn_all_member_spatials(active_LOD_index)
+			# Update cast_shadow as well
+			MMI.cast_shadow = shared_LOD_variants[active_LOD_index].cast_shadow
 		else:
 			# Reset members
 			reset_members()
@@ -255,6 +257,7 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	# But non-leaves do not have an MMI and can't spawn spatials
 	if is_leaf:
 		MMI.multimesh.mesh = shared_LOD_variants[LOD_index].mesh
+		MMI.cast_shadow = shared_LOD_variants[LOD_index].cast_shadow
 		clear_and_spawn_all_member_spatials(last_LOD_index)
 
 
@@ -460,7 +463,7 @@ func reset_member_spatials():
 # This is used to update spatials in case their LOD variant changes
 func clear_and_spawn_all_member_spatials(last_LOD_index:int = -1):
 	# Here we compare spawned_spatials before and after changing an LOD index
-	# We they're the same - no need to update the spawned_spatials
+	# When they're the same - no need to update the spawned_spatials
 	# But first, make sure our shared_LOD_variants actually contain that index
 	if shared_LOD_variants.size() > last_LOD_index && last_LOD_index >= 0:
 		# Then compare spawned_spatials themselves
