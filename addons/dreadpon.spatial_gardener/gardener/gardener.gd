@@ -308,6 +308,8 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 	
 	for i in range(0, arborist.octree_managers.size()):
 		arborist.emit_member_count(i)
+	# Make sure LOD_Variants in a shared Octree array are up-to-date
+	set_refresh_octree_shared_LOD_variants(true)
 
 
 # Stop editing (painting) a scene
@@ -442,9 +444,9 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 		"spawned_spatial":
 			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
 				arborist.on_LOD_variant_prop_changed_spawned_spatial(plant_index, mesh_index, final_val)
-		"shadow_casting_mode":
+		"cast_shadow":
 			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
-				arborist.recenter_octree(plant_state, plant_index) #to force a refresh
+				arborist.set_LODs_to_active_index(plant_index)
 
 
 # A request to reconfigure an octree

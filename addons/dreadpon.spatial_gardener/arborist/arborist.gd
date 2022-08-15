@@ -202,6 +202,13 @@ func on_LOD_variant_prop_changed_spawned_spatial(plant_index:int, mesh_index:int
 	octree_manager.reset_member_spatials()
 
 
+# Make sure LODs in OctreeNodes correspond to their active_LOD_index
+# This is the preffered way to 'refresh' MMIs inside OctreeNodes
+func set_LODs_to_active_index(plant_index:int):
+	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
+	octree_manager.set_LODs_to_active_index()
+
+
 # Initialize an OctreeManager for a given plant
 func add_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = MMIOctreeManager.new()
@@ -355,6 +362,7 @@ func _action_apply_changes(changes):
 #-------------------------------------------------------------------------------
 
 
+# Replace LOD_Variants inside of a shared array owned by this OctreeManager
 func refresh_octree_shared_LOD_variants(plant_index:int, LOD_variants:Array):
 	if octree_managers.size() > plant_index:
 		octree_managers[plant_index].set_LOD_variants(LOD_variants)

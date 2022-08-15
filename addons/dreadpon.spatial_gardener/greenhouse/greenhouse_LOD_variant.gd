@@ -12,9 +12,8 @@ var Globals = preload("../utility/globals.gd")
 
 var mesh:Mesh = null
 var spawned_spatial:PackedScene = null
-
-#Toggle for shadow casting mode on multimeshes
-var shadow_casting_mode:int = GeometryInstance.SHADOW_CASTING_SETTING_ON
+# Toggle for shadow casting mode on multimeshes
+var cast_shadow:int = GeometryInstance.SHADOW_CASTING_SETTING_ON
 
 
 
@@ -54,9 +53,9 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 				"_resource_previewer": _resource_previewer,
 				}
 			input_field = UI_IF_ThumbnailObject.new(spawned_spatial, "Spawned Spatial", prop, settings)
-		"shadow_casting_mode":
-			var settings := {"enum_list": ["Off", "On"]}
-			input_field = UI_IF_Enum.new(shadow_casting_mode, "Shadow Casting Mode", prop, settings)
+		"cast_shadow":
+			var settings := {"enum_list": ["Off", "On", "Double-Sided", "Shadows Only"]}
+			input_field = UI_IF_Enum.new(cast_shadow, "Shadow Casting Mode", prop, settings)
 	
 	return input_field
 
@@ -77,8 +76,8 @@ func _set(prop, val):
 			mesh = val
 		"spawned_spatial":
 			spawned_spatial = val
-		"shadow_casting_mode":
-			shadow_casting_mode = val
+		"cast_shadow":
+			cast_shadow = val
 		_:
 			return_val = false
 	
@@ -94,8 +93,8 @@ func _get(prop):
 			return mesh
 		"spawned_spatial":
 			return spawned_spatial
-		"shadow_casting_mode":
-			return shadow_casting_mode
+		"cast_shadow":
+			return cast_shadow
 	
 	return null
 
@@ -105,7 +104,7 @@ func _get_property_list():
 	var props := [
 			prop_dict["mesh"],
 			prop_dict["spawned_spatial"],
-			prop_dict["shadow_casting_mode"]
+			prop_dict["cast_shadow"]
 		]
 	
 	return props
@@ -125,13 +124,13 @@ func _get_prop_dictionary():
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE,
 		},
-		"shadow_casting_mode":
+		"cast_shadow":
 		{
-			"name": "shadow_casting_mode",
+			"name": "cast_shadow",
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "Off,On"
+			"hint_string": "Off,On,Double-Sided,Shadows Only"
 		}
 	}
 
@@ -150,7 +149,7 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "But if all your LODs reference the same PackedScene - they will persist across the LOD changes and won't cause any lag spikes\n" \
 				+ "The alternative would be to optimise yout octrees to contain only a small amount of Spawned Spatials - 10-20 at most\n" \
 				+ "Then the process of switching LODs will go a lot smoother"
-		"shadow_casting_mode":
-			return "Whether this specific LOD is enabled for shadow casting\n" \
-				+ "Disabling slightly improves performance and is recommended for higher LODs (far away)"
+		"cast_shadow":
+			return "Shadow casting mode for this specific LOD\n" \
+				+ "Disabling shadow casting slightly improves performance and is recommended for higher LODs (those further away)"
 	return ""

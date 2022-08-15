@@ -290,7 +290,11 @@ func set_LOD_variant(variant, index:int):
 # Up-to-date LOD variants of an OctreeNode
 func set_LOD_variant_spawned_spatial(variant, index:int):
 	# No need to manually set spawned_spatial, it will be inherited from parent resource
-	LOD_variants[index].spawned_spatial = variant
+	
+	# /\ I don't quite remember what this comment meant, but since LOD_Variants are shared
+	# It seems to imply that the line below in not neccessary
+	# So I commented it out for now
+#	LOD_variants[index].spawned_spatial = variant
 	pass
 
 
@@ -299,6 +303,7 @@ func reset_member_spatials():
 
 
 # Make sure LODs in OctreeNodes correspond to their active_LOD_index
+# This is the preffered way to 'refresh' MMIs inside OctreeNodes
 func set_LODs_to_active_index():
 	root_octree_node.set_LODs_to_active_index()
 
