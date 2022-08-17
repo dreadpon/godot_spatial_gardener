@@ -65,7 +65,7 @@ func get_stroke_update_changes(brush_data:Dictionary, container_transform:Transf
 	
 	var msec_start = FunLib.get_msec()
 	
-	brush_data.brush_pos = container_transform.affine_inverse().xform(brush_data.brush_pos)
+	brush_data.brush_volume_pos = container_transform.affine_inverse().xform(brush_data.brush_volume_pos)
 	
 	for plant_index in range(0, plant_states.size()):
 		if !plant_states[plant_index].plant_brush_active: continue
@@ -74,7 +74,7 @@ func get_stroke_update_changes(brush_data:Dictionary, container_transform:Transf
 		var new_brush_data = modify_brush_data_to_plant(brush_data, plant)
 		
 		# BrushPlacementArea is the "brains" of my placement logic, so we initialize it here
-		var brush_placement_area := BrushPlacementArea.new(new_brush_data.brush_pos, brush.shape_size * 0.5, new_brush_data.brush_normal, plant.offset_jitter_fraction)
+		var brush_placement_area := BrushPlacementArea.new(new_brush_data.brush_volume_pos, brush.shape_volume_size * 0.5, new_brush_data.brush_normal, plant.offset_jitter_fraction)
 		var octree_manager = octree_managers[plant_index]
 		
 		make_stroke_update_changes(new_brush_data, plant, plant_index, octree_manager, brush_placement_area, container_transform, painting_changes, node)
@@ -92,7 +92,7 @@ func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, p
 
 
 # Modify the brush data according to the plant
-# Fow now just used to snap the brush_pos to the virtual density grid of a plant
+# Fow now just used to snap the brush_volume_pos to the virtual density grid of a plant
 func modify_brush_data_to_plant(brush_data:Dictionary, plant) -> Dictionary:
 	# Disabled for now as it feels weird when erasing plants on low density
 	# Plants that are clearly overlapped visually aren't overlapped after snapping (due to origin changing it's position)
@@ -100,9 +100,9 @@ func modify_brush_data_to_plant(brush_data:Dictionary, plant) -> Dictionary:
 	
 	var new_brush_data := brush_data.duplicate()
 	var point_distance:float = BrushPlacementArea.get_point_distance(plant.density_per_units, brush.behavior_strength)
-	var cell_coord:Vector3 = new_brush_data.brush_pos / point_distance
+	var cell_coord:Vector3 = new_brush_data.brush_volume_pos / point_distance
 	cell_coord = Vector3(round(cell_coord.x), round(cell_coord.y), round(cell_coord.z))
-	new_brush_data.brush_pos = cell_coord * point_distance
+	new_brush_data.brush_volume_pos = cell_coord * point_distance
 	return new_brush_data
 
 

@@ -22,6 +22,8 @@ static func add_plugin_project_settings():
 		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_button")
 	if ProjectSettings.has_setting("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key"):
 		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_property_edit_modifier_key")
+	if ProjectSettings.has_setting("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value"):
+		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value")
 	
 	# Input and UI
 	add_project_setting(
@@ -39,11 +41,18 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier",
 		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
 	add_project_setting_globals_enum(
+		"dreadpons_spatial_gardener/input_and_ui/brush_overlap_mode_button",
+		Globals.KeyList.KEY_QUOTELEFT, Globals.KeyList)
+	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/focus_painter_key",
 		Globals.KeyList.KEY_Q, Globals.KeyList)
 	add_project_setting(
-		"dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value",
+		"dreadpons_spatial_gardener/input_and_ui/brush_volume_size_slider_max_value",
 		100.0,
+		TYPE_REAL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/input_and_ui/brush_projection_size_slider_max_value",
+		1000.0,
 		TYPE_REAL)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value",

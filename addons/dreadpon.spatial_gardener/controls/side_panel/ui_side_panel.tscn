@@ -30,7 +30,7 @@ margin_left = 7.0
 margin_top = 7.0
 margin_right = 435.0
 margin_bottom = 581.0
-split_offset = 80
+split_offset = 100
 
 [node name="Label_Error" type="Label" parent="."]
 visible = false

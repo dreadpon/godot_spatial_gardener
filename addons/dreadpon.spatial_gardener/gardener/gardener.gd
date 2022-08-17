@@ -176,8 +176,7 @@ func propagate_camera(camera:Camera):
 func init_painter():
 	painter = Painter.new(painting_node)
 	painter.connect("stroke_updated", self, "on_painter_stroke_updated")
-	painter.connect("changed_active_brush_size", self, "on_changed_active_brush_size")
-	painter.connect("changed_active_brush_strength", self, "on_changed_active_brush_strength")
+	painter.connect("changed_active_brush_prop", self, "on_changed_active_brush_prop")
 	painter.connect("stroke_started", self, "on_painter_stroke_started")
 	painter.connect("stroke_finished", self, "on_painter_stroke_finished")
 
@@ -523,13 +522,8 @@ func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 
 func painter_update_to_active_brush(active_brush):
 	assert(active_brush)
-	var max_size = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value", 100.0)
-	var max_strength = 1.0
-	
-	painter.set_active_brush_max_size(max_size)
-	painter.set_active_brush_max_strength(max_strength)
-	painter.set_active_brush_size(active_brush.shape_size)
-	painter.set_active_brush_strength(active_brush.behavior_strength)
+	painter.queue_call_when_camera('update_all_props_to_active_brush', [active_brush])
+
 
 
 
@@ -538,26 +532,16 @@ func painter_update_to_active_brush(active_brush):
 #-------------------------------------------------------------------------------
 
 
-# Property change instigated by painter
-func on_changed_active_brush_size(val, final:bool):
-	var prop_action
+# Property change instigated by Painter
+func on_changed_active_brush_prop(prop: String, val, final:bool):
+	var prop_action: PropAction = null
 	if final:
-		prop_action = PA_PropSet.new("shape/shape_size", val)
+		prop_action = PA_PropSet.new(prop, val)
 	else:
-		prop_action = PA_PropEdit.new("shape/shape_size", val)
+		prop_action = PA_PropEdit.new(prop, val)
 	
-	toolshed.active_brush.request_prop_action(prop_action)
-
-
-# Property change instigated by painter
-func on_changed_active_brush_strength(val, final:bool):
-	var prop_action
-	if final:
-		prop_action = PA_PropSet.new("behavior/behavior_strength", val)
-	else:
-		prop_action = PA_PropEdit.new("behavior/behavior_strength", val)
-	
-	toolshed.active_brush.request_prop_action(prop_action)
+	if prop_action:
+		toolshed.active_brush.request_prop_action(prop_action)
 
 
 # Propagate active_brush property changes to Painter
@@ -566,10 +550,15 @@ func on_toolshed_prop_action_executed_on_brush(prop_action:PropAction, final_val
 	if !(prop_action is PA_PropSet) && !(prop_action is PA_PropEdit): return
 	if brush != toolshed.active_brush: return
 	
-	if prop_action.prop == "shape/shape_size":
-		painter.set_active_brush_size(final_val)
-	elif prop_action.prop == "behavior/behavior_strength":
-		painter.set_active_brush_strength(final_val)
+	match prop_action.prop:
+		"shape/shape_volume_size":
+			painter.set_active_brush_size(final_val)
+		"shape/shape_projection_size":
+			painter.set_active_brush_size(final_val)
+		"behavior/behavior_strength":
+			painter.set_active_brush_strength(final_val)
+		"behavior/behavior_overlap_mode":
+			painter_update_to_active_brush(brush)
 
 
 

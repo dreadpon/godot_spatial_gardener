@@ -318,7 +318,7 @@ func generate_raycast_positions():
 			raycast_positions.append([raycast_start, raycast_end])
 	
 	# This was made to make sure we don't go over a max instance limit
-	# I refactored placement logic to snap brush_pos to a density grid
+	# I refactored placement logic to snap brush_volume_pos to a density grid
 	# Yet it doesn't 100% work on angled surfaces
 	# We still might go over max placements, hence the limit check below
 	# The percieved visual density should be unaffected though, especially at high (>= 0.5) jitter
