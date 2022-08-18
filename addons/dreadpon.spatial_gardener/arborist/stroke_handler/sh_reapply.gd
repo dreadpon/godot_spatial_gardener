@@ -15,15 +15,15 @@ var reapplied_octree_members:Array
 
 
 
-func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _collision_mask:int).(
-	_brush, _plant_states, _octree_managers, _space_state, _collision_mask):
+func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int).(
+	_brush, _plant_states, _octree_managers, _space_state, _camera, _collision_mask):
 	
 	set_meta("class", "SH_Reapply")
 	reapplied_octree_members = []
 
 
-func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int,
-	octree_manager:MMIOctreeManager, brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges, node):
+func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
+	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
 	
 	# We detect overlaps first
 	brush_placement_area.init_placement_overlaps(octree_manager)
@@ -48,7 +48,3 @@ func make_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, p
 		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
 			{"member": new_placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address},
 			{"member": placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address})
-
-
-func modify_brush_data_to_plant(brush_data, plant):
-	return brush_data.duplicate()

@@ -223,3 +223,88 @@ static func generate_cube(extents:Vector3, color:Color):
 	mesh.surface_set_material(0, material)
 	
 	return mesh
+
+
+# Draw a line plane
+# And set it on a timer
+func draw_plane(pos:Vector3, extents:float, normal:Vector3, color:Color, node_context:Spatial, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP, lifetime := 0.0):
+	var geom = static_draw_plane(pos, extents, normal, color, node_context)
+	cached_geometry.append({"geometry": geom, "lifetime": lifetime})
+
+
+# Draw a line cube
+static func static_draw_plane(pos:Vector3, extents:float, normal:Vector3, color:Color, node_context:Spatial, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP):
+	if node_context == null: return
+	
+	normal = normal.normalized()
+	var mesh_instance = MeshInstance.new()
+	var basis = Basis()
+	basis.z = normal
+	basis.x = normal.cross(up_vector)
+	basis.y = basis.x.cross(normal)
+	basis.x = normal.cross(basis.y)
+	mesh_instance.transform.basis = basis.orthonormalized()
+	mesh_instance.transform.origin = pos
+	node_context.add_child(mesh_instance)
+	
+	mesh_instance.mesh = generate_plane(extents, color, normal_length)
+	mesh_instance.cast_shadow = GeometryInstance.SHADOW_CASTING_SETTING_OFF
+	
+	return mesh_instance
+
+
+# Generate a line cube's ArrayMesh
+static func generate_plane(extents:float, color:Color, normal_length: float):
+	var mesh := ArrayMesh.new()
+	
+	var points := PoolVector3Array()
+	points.append_array([
+		Vector3(-extents, -extents, 0),
+		Vector3(-extents, extents, 0),
+		Vector3(extents, extents, 0),
+		Vector3(extents, -extents, 0),
+		Vector3(0, 0, 0),
+		Vector3(0, 0, normal_length),
+		Vector3(-extents, -extents, 0),
+		Vector3(-extents, -extents, normal_length),
+		Vector3(-extents, extents, 0),
+		Vector3(-extents, extents, normal_length),
+		Vector3(extents, extents, 0),
+		Vector3(extents, extents, normal_length),
+		Vector3(extents, -extents, 0),
+		Vector3(extents, -extents, normal_length),
+	])
+	
+	var vertices := PoolVector3Array()
+	vertices.append_array([
+		points[0], points[1],
+		points[1], points[2],
+		points[2], points[3],
+		points[3], points[0],
+		
+		points[0], points[2],
+		points[1], points[3],
+		points[4], points[5],
+		
+		points[6], points[7],
+		points[8], points[9],
+		points[10], points[11],
+		points[12], points[13],
+	])
+	
+	var colors := PoolColorArray()
+	for i in range(0, vertices.size()):
+		colors.append(color)
+	
+	var arrays = []
+	arrays.resize(ArrayMesh.ARRAY_MAX)
+	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
+	arrays[ArrayMesh.ARRAY_COLOR] = colors
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, arrays)
+	
+	var material := SpatialMaterial.new()
+	material.flags_unshaded = true
+	material.vertex_color_use_as_albedo = true
+	mesh.surface_set_material(0, material)
+	
+	return mesh
