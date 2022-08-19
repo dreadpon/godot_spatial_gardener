@@ -33,6 +33,7 @@ const UI_IF_IntLineEdit = preload("../../controls/input_fields/ui_if_int_line_ed
 const UI_IF_ThumbnailArray = preload("../../controls/input_fields/ui_if_thumbnail_array.gd")
 const UI_IF_ApplyChanges = preload("../../controls/input_fields/ui_if_apply_changes.gd")
 const UI_IF_Button = preload("../../controls/input_fields/ui_if_button.gd")
+const UI_IF_PlainText = preload("../../controls/input_fields/ui_if_plain_text.gd")
 const UI_IF_Object = preload("../../controls/input_fields/ui_if_object.gd")
 const UI_IF_ThumbnailObject = preload("../../controls/input_fields/ui_if_thumbnail_object.gd")
 
@@ -57,6 +58,7 @@ var logger = null
 
 signal prop_action_executed(prop_action, final_val)
 signal req_change_interaction_feature(prop, index, feature, val)
+signal prop_list_changed(prop_names)
 
 
 
@@ -313,8 +315,9 @@ func _get_prop_dictionary() -> Dictionary:
 # Allows easier management of hidden/shown properties based on arbitrary conditions in a subclass
 # To be overridden and (usually) called inside a _get_property_list() 
 # 	With a dictionary created by _get_prop_dictionary()
-func _filter_prop_dictionary(prop_dict) -> Array:
-	return prop_dict.values()
+# Return the same prop_dict passed to it (for convenience in function calls)
+func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
+	return prop_dict
 
 
 func _set(property, val):
@@ -325,11 +328,22 @@ func _get(property):
 	pass
 
 
-# Default functionality for _get_property_list() 
-# Is to get all {prop_name: prop_data_dictionary} defined by _get_prop_dictionary()
-# And return filtered prop_data_dictionaries (optionally rejecting some of them based on arbitrary conditions
+# Default functionality for _get_property_list():
+# Get all {prop_name: prop_data_dictionary} defined by _get_prop_dictionary()
+# Filter them (optionally rejecting some of them based on arbitrary conditions)
+# Return a prop_dict values array
 func _get_property_list():
-	return _filter_prop_dictionary(_get_prop_dictionary())
+	var prop_dict = _get_prop_dictionary()
+	_filter_prop_dictionary(prop_dict)
+	return prop_dict.values()
+
+
+# A wrapper around built-in property_list_changed_notify()
+# To support a custom signal we can bind manually
+func _emit_property_list_changed_notify():
+	property_list_changed_notify()
+	emit_signal('prop_list_changed', _filter_prop_dictionary(_get_prop_dictionary()))
+
 
 
 
@@ -357,9 +371,11 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 		if input_field:
 			input_field.name = prop
 			input_field.set_tooltip(get_prop_tooltip(prop))
+			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
 			
 			input_field.connect("prop_action_requested", self, "request_prop_action")
 			self.connect("prop_action_executed", input_field, "on_prop_action_executed")
+			self.connect("prop_list_changed", input_field, "on_prop_list_changed")
 			input_field.connect("ready", self, "on_if_ready", [input_field])
 			
 			if input_field is UI_IF_ThumbnailArray:

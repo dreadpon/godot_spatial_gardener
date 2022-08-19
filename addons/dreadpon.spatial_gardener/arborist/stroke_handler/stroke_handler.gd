@@ -105,6 +105,10 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 		Toolshed_Brush.OverlapMode.PROJECTION:
 			var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 			var frustum_planes := []
+			# This will store dictionaries so it shares the same data structure as brush_placement_area.overlapped_octree_members
+			# But with member itself added into the mix
+			# So it'll look like this:
+			# [{"node_address": node_address, "member_index": member_index, "member": placement_transform}, ...]
 			var members_in_brush := []
 			
 			var context = camera.get_tree().edited_scene_root.find_node('Gardener').get_parent()
@@ -116,8 +120,9 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 			proj_define_frustum(brush_data, frustum_planes)
 			proj_get_members_in_frustum(frustum_planes, members_in_brush,  octree_manager.root_octree_node, container_transform)
 			proj_filter_members_to_brush_circle(members_in_brush, container_transform)
-			proj_filter_obstructed_members(members_in_brush, container_transform)
-			proj_get_stroke_update_changes(members_in_brush, plant_index, painting_changes)
+			if !brush.behavior_passthrough:
+				proj_filter_obstructed_members(members_in_brush, container_transform)
+			proj_get_stroke_update_changes(members_in_brush, plant, plant_index, octree_manager, painting_changes)
 
 
 
@@ -155,7 +160,7 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 
 # Called when the Painter brush stroke is updated (moved)
 # To be overridden
-func proj_get_stroke_update_changes(members_in_brush: Array, plant_index: int, painting_changes:PaintingChanges):
+func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
 	return null
 
 
@@ -163,16 +168,19 @@ func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_tr
 	var mouse_pos := camera.get_viewport().get_mouse_position()
 	var brush_radius: float = brush.shape_projection_size * 0.5
 	var viewport_size := camera.get_viewport().size
-	for member in members_in_frustum.duplicate():
-		var placement = container_transform.xform(member.placement)
+	
+	for i in range(members_in_frustum.size() -1, -1, -1):
+		var member_data = members_in_frustum[i]
+		var placement = container_transform.xform(member_data.member.placement)
 		var screen_space_pos := camera.unproject_position(placement)
 		var dist = (screen_space_pos - mouse_pos).length()
+		
 		# Remove those outside brush radius
 		if dist > brush_radius:
-			members_in_frustum.erase(member)
+			members_in_frustum.remove(i)
 		# Remove those outside viewport
 		elif screen_space_pos.x < 0 || screen_space_pos.y < 0 || screen_space_pos.x > viewport_size.x || screen_space_pos.y > viewport_size.y:
-			members_in_frustum.erase(member)
+			members_in_frustum.remove(i)
 
 
 func proj_filter_obstructed_members(members_in_frustum: Array, container_transform:Transform):
@@ -180,14 +188,15 @@ func proj_filter_obstructed_members(members_in_frustum: Array, container_transfo
 	# And built-in collision shape margin
 	# Not off-setting an endpoint will mark some visible instances as obstructed
 	var raycast_margin = FunLib.get_setting_safe("dreadpons_spatial_gardener/painting/projection_raycast_margin", 0.1)
-	for member in members_in_frustum.duplicate():
+	for i in range(members_in_frustum.size() -1, -1, -1):
+		var member_data = members_in_frustum[i]
 		var ray_start: Vector3 = camera.global_transform.origin
-		var ray_vector = container_transform.xform(member.placement) - ray_start
+		var ray_vector = container_transform.xform(member_data.member.placement) - ray_start
 		var ray_end: Vector3 = ray_start + ray_vector.normalized() * (ray_vector.length() - raycast_margin)
 		var ray_result = space_state.intersect_ray(ray_start, ray_end)
 		
 		if !ray_result.empty() && ray_result.collider.collision_layer & collision_mask:
-			members_in_frustum.erase(member)
+			members_in_frustum.remove(i)
 
 
 func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
@@ -225,7 +234,10 @@ func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Arra
 	
 	if is_box_intersecting_frustum(frustum_planes, octree_node_transform, octree_node_extents):
 		if octree_node.is_leaf:
-			members_in_frustum.append_array(octree_node.members)
+			var node_address = octree_node.get_address()
+			for member_index in range(0, octree_node.members.size()):
+				var member = octree_node.members[member_index]
+				members_in_frustum.append({"node_address": node_address, "member_index": member_index, "member": member})
 		else:
 			for child_node in octree_node.child_nodes:
 				proj_get_members_in_frustum(frustum_planes, members_in_frustum, child_node, container_transform)

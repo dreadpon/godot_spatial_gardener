@@ -48,3 +48,25 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
 			{"member": new_placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address},
 			{"member": placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address})
+
+
+func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
+	for member_data in members_in_brush:
+		var octree_node = octree_manager.root_octree_node.find_child_by_address(member_data.node_address)
+		var placement_transform = octree_node.members[member_data.member_index]
+		
+		# We use Vector3.to_string() to generate our reference keys
+		# I assume it's fully deterministic at least in the scope of an individual OS
+		var octree_member_key = str(placement_transform.placement)
+		if reapplied_octree_members.has(octree_member_key): continue
+		reapplied_octree_members.append(octree_member_key)
+		
+		var plant_transform := TransformGenerator.generate_plant_transform(placement_transform.placement, placement_transform.surface_normal, plant, randomizer)
+		var new_placement_transform := PlacementTransform.new(placement_transform.placement, placement_transform.surface_normal, plant_transform, placement_transform.octree_octant)
+		
+		# Painting changes here are non-standart: they actually have an octree node address and member index bundled
+		# We can't reliably use an address when adding/removing members since the octree might grow/collapse
+		# But here it's fine since we don't change the amount of members
+		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
+			{"member": new_placement_transform, "index": member_data.member_index, "address": member_data.node_address},
+			{"member": placement_transform, "index": member_data.member_index, "address": member_data.node_address})
