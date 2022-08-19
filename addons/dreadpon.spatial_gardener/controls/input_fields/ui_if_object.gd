@@ -35,7 +35,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	input_field_container = VBoxContainer.new()
 	input_field_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	input_field_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	input_field_container.add_constant_override('separation', 0)
+#	input_field_container.add_constant_override('separation', 0)
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility

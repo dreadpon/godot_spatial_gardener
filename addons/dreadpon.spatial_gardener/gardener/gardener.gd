@@ -351,14 +351,14 @@ func validate_initialized_for_edit():
 func up_to_date_debug_view_menu(debug_view_menu:MenuButton):
 	assert(debug_viewer)
 	debug_viewer.up_to_date_debug_view_menu(debug_view_menu)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 # Pass a request for checking a debug view menu flag
 func debug_view_flag_checked(debug_view_menu:MenuButton, flag:int):
 	assert(debug_viewer)
 	debug_viewer.flag_checked(debug_view_menu, flag)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 
@@ -411,6 +411,10 @@ func on_greenhouse_prop_action_executed(prop_action:PropAction, final_val):
 	elif prop_action is PA_ArrayRemove:
 		arborist.on_plant_removed(prop_action.val, prop_action.index)
 		reinit_debug_draw_brush_active()
+	elif prop_action is PA_PropSet && prop_action.prop == "plant_types/selected_for_edit_resource":
+		debug_viewer.set_prop_edit_selected_plant(greenhouse.greenhouse_plant_states.find(final_val))
+		debug_viewer.request_debug_redraw(arborist.octree_managers)
+	
 	emit_signal('greenhouse_prop_action_executed', prop_action, final_val)
 
 
@@ -422,7 +426,7 @@ func on_greenhouse_prop_action_executed_on_plant_state(prop_action:PropAction, f
 		"plant/plant_brush_active":
 			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
 				debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
-				debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+				debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 # When Greenhouse_Plant properties are changed
@@ -479,7 +483,7 @@ func reinit_debug_draw_brush_active():
 	for plant_index in range(0, greenhouse.greenhouse_plant_states.size()):
 		var plant_state = greenhouse.greenhouse_plant_states[plant_index]
 		debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 

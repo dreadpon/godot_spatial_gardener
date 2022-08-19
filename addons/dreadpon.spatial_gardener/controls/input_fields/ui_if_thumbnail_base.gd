@@ -59,6 +59,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	value_container.alignment = BoxContainer.ALIGN_BEGIN
 
 
 func _enter_tree():

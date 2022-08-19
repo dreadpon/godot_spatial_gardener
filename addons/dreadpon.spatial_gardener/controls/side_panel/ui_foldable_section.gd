@@ -1,5 +1,5 @@
 tool
-extends VBoxContainer
+extends MarginContainer
 
 
 const ThemeAdapter = preload("../theme_adapter.gd")
@@ -22,6 +22,10 @@ func _ready():
 	set_folded(folded)
 	set_button_text(button_text)
 	set_nesting_level(nesting_level)
+	
+	if get_parent() is BoxContainer:
+		var separation = get_parent().get_constant('separation')
+		add_constant_override('margin_bottom', -separation)
 
 
 func toggle_folded():
@@ -31,15 +35,15 @@ func toggle_folded():
 func set_folded(val):
 	folded = val
 	if is_inside_tree():
-		$HBoxContainer_Offset.visible = !folded
-		$Button_Fold.icon.image = arrow_right if folded else arrow_down
+		$VBoxContainer_Main/HBoxContainer_Offset.visible = !folded
+		$VBoxContainer_Main/Button_Fold.icon.image = arrow_right if folded else arrow_down
 	emit_signal('folding_state_changed', folded)
 
 
 func set_button_text(val):
 	button_text = val
 	if is_inside_tree():
-		$Button_Fold.text = button_text
+		$VBoxContainer_Main/Button_Fold.text = button_text
 
 
 func add_prop_node(prop_node: Control):
@@ -47,7 +51,7 @@ func add_prop_node(prop_node: Control):
 		pending_children.append(prop_node)
 	if is_inside_tree():
 		for child in pending_children:
-			$HBoxContainer_Offset/VBoxContainer_Properties.add_child(child)
+			$VBoxContainer_Main/HBoxContainer_Offset/VBoxContainer_Properties.add_child(child)
 		pending_children = []
 
 
@@ -56,6 +60,6 @@ func set_nesting_level(val):
 	if is_inside_tree():
 		match nesting_level:
 			0:
-				ThemeAdapter.assign_node_type($Button_Fold, 'PropertySection')
+				ThemeAdapter.assign_node_type($VBoxContainer_Main/Button_Fold, 'PropertySection')
 			1:
-				ThemeAdapter.assign_node_type($Button_Fold, 'PropertySubsection')
+				ThemeAdapter.assign_node_type($VBoxContainer_Main/Button_Fold, 'PropertySubsection')

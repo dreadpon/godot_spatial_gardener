@@ -581,9 +581,9 @@ func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
 	if fwd_vector_secondary_type != DirectionVectorType.CUSTOM:
 		props_to_hide.append("fwd_vector/fwd_vector_secondary")
 	
-	if up_vector_primary_type == up_vector_secondary_type:
+	if up_vector_primary_type == up_vector_secondary_type && up_vector_primary_type != DirectionVectorType.CUSTOM:
 		props_to_hide.append("up_vector/up_vector_blending")
-	if fwd_vector_primary_type == fwd_vector_secondary_type:
+	if fwd_vector_primary_type == fwd_vector_secondary_type && fwd_vector_primary_type != DirectionVectorType.CUSTOM:
 		props_to_hide.append("fwd_vector/fwd_vector_blending")
 	
 	for prop in props_to_hide:

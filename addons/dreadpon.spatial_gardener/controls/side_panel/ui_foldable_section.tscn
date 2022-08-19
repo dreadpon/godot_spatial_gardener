@@ -41,14 +41,19 @@ resource_local_to_scene = true
 image = SubResource( 7 )
 size = Vector2( 12, 12 )
 
-[node name="UI_FoldableSection" type="VBoxContainer"]
+[node name="UI_FoldableSection" type="MarginContainer"]
 margin_right = 322.0
 margin_bottom = 146.0
 script = ExtResource( 2 )
 arrow_down = SubResource( 5 )
 arrow_right = SubResource( 6 )
 
-[node name="Button_Fold" type="Button" parent="."]
+[node name="VBoxContainer_Main" type="VBoxContainer" parent="."]
+margin_right = 322.0
+margin_bottom = 146.0
+custom_constants/separation = 0
+
+[node name="Button_Fold" type="Button" parent="VBoxContainer_Main"]
 margin_right = 322.0
 margin_bottom = 22.0
 custom_styles/hover = SubResource( 3 )
@@ -60,21 +65,21 @@ text = "Section"
 icon = SubResource( 4 )
 align = 0
 
-[node name="HBoxContainer_Offset" type="HBoxContainer" parent="."]
-margin_top = 26.0
+[node name="HBoxContainer_Offset" type="HBoxContainer" parent="VBoxContainer_Main"]
+margin_top = 22.0
 margin_right = 322.0
-margin_bottom = 26.0
+margin_bottom = 22.0
 size_flags_horizontal = 3
 
-[node name="Offset" type="Control" parent="HBoxContainer_Offset"]
+[node name="Offset" type="Control" parent="VBoxContainer_Main/HBoxContainer_Offset"]
 margin_right = 4.0
 rect_min_size = Vector2( 4, 0 )
 size_flags_vertical = 3
 
-[node name="VBoxContainer_Properties" type="VBoxContainer" parent="HBoxContainer_Offset"]
+[node name="VBoxContainer_Properties" type="VBoxContainer" parent="VBoxContainer_Main/HBoxContainer_Offset"]
 margin_left = 8.0
 margin_right = 322.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[connection signal="pressed" from="Button_Fold" to="." method="toggle_folded"]
+[connection signal="pressed" from="VBoxContainer_Main/Button_Fold" to="." method="toggle_folded"]

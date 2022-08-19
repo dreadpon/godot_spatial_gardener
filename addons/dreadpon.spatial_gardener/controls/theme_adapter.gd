@@ -59,12 +59,14 @@ static func adapt_theme(theme:Theme):
 	var InspectorPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
 	InspectorPanelContainer_stylebox.draw_center = true
 	InspectorPanelContainer_stylebox.bg_color = dark_color_1
+	InspectorPanelContainer_stylebox.set_border_width_all(1)
+	InspectorPanelContainer_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorPanelContainer", InspectorPanelContainer_stylebox)
 	
 	var InspectorWindowDialog_stylebox := theme.get_stylebox('panel', 'WindowDialog').duplicate()
 	InspectorWindowDialog_stylebox.draw_center = true
 	InspectorWindowDialog_stylebox.bg_color = dark_color_1
-	InspectorWindowDialog_stylebox.border_color = dark_color_1
+	InspectorWindowDialog_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorWindowDialog", InspectorWindowDialog_stylebox)
 	
 	var InspectorInnerPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()

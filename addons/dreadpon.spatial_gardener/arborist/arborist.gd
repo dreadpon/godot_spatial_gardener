@@ -562,7 +562,7 @@ func request_debug_redraw():
 		requested_indexes.append(octree_managers.find(octree_manager))
 	
 	if !requested_indexes.empty():
-		emit_signal("req_debug_redraw", octree_managers, requested_indexes)
+		emit_signal("req_debug_redraw", octree_managers)
 	debug_redraw_requested_managers = []
 
 
