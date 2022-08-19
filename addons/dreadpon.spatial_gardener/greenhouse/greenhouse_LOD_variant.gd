@@ -91,16 +91,6 @@ func _get(prop):
 	return null
 
 
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-			prop_dict["mesh"],
-			prop_dict["spawned_spatial"],
-		]
-	
-	return props
-
-
 func _get_prop_dictionary():
 	return {
 		"mesh" : {

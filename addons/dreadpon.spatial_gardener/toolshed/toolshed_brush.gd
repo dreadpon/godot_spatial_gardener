@@ -33,6 +33,7 @@ func _init(__behavior_brush_type:int = BrushType.PAINT, __behavior_strength:floa
 	set_meta("class", "Toolshed_Brush")
 	resource_name = "Toolshed_Brush"
 	
+	input_field_blacklist = ['behavior/behavior_brush_type']
 	behavior_brush_type = __behavior_brush_type
 	behavior_strength = __behavior_strength
 	shape_volume_size = __shape_volume_size
@@ -79,6 +80,15 @@ func _modify_prop(prop:String, val):
 	match prop:
 		"behavior/behavior_strength":
 			val = clamp(val, 0.0, 1.0)
+		"behavior/behavior_overlap_mode":
+			match behavior_brush_type:
+				BrushType.PAINT, BrushType.SINGLE:
+					val = OverlapMode.VOLUME
+		"behavior/shape_volume_size":
+			print('yay')
+			match behavior_brush_type:
+				BrushType.SINGLE:
+					val = 1.0
 	return val
 
 
@@ -89,7 +99,6 @@ func _set(prop, val):
 	match prop:
 		"behavior/behavior_brush_type":
 			behavior_brush_type = val
-			blacklist_input_fields()
 			property_list_changed_notify()
 		"shape/shape_volume_size":
 			shape_volume_size = val
@@ -99,7 +108,6 @@ func _set(prop, val):
 			behavior_strength = val
 		"behavior/behavior_overlap_mode":
 			behavior_overlap_mode = val
-			blacklist_input_fields()
 			property_list_changed_notify()
 		_:
 			return_val = false
@@ -126,27 +134,55 @@ func _get(prop):
 	return null
 
 
-func _get_property_list():
-	var prop_dict = _get_prop_dictionary()
+func _filter_prop_dictionary(prop_dict) -> Array:
+	var prop_names := []
 	var props := []
 	
-	for propertyName in _get_properties_for_brush_type():
-		props.append(prop_dict[propertyName])
+	match behavior_overlap_mode:
+		OverlapMode.VOLUME:
+			match behavior_brush_type:
+				BrushType.PAINT:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+						"shape/shape_volume_size",
+						"behavior/behavior_strength",
+					])
+				BrushType.ERASE:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+						"shape/shape_volume_size",
+						"behavior/behavior_strength",
+						"behavior/behavior_overlap_mode",
+					])
+				BrushType.SINGLE:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+					])
+				BrushType.REAPPLY:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+						"shape/shape_volume_size",
+						"behavior/behavior_overlap_mode",
+					])
+		OverlapMode.PROJECTION:
+			match behavior_brush_type:
+				BrushType.ERASE:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+						"shape/shape_projection_size",
+						"behavior/behavior_overlap_mode",
+					])
+				BrushType.REAPPLY:
+					prop_names.append_array([
+						"behavior/behavior_brush_type",
+						"shape/shape_projection_size",
+						"behavior/behavior_overlap_mode",
+					])
+	
+	for prop_name in prop_names:
+		props.append(prop_dict[prop_name])
 	
 	return props
-
-
-func blacklist_input_fields():
-	input_field_blacklist = []
-	match behavior_brush_type:
-		BrushType.SINGLE:
-			input_field_blacklist.append("behavior/behavior_strength")
-		BrushType.REAPPLY:
-			input_field_blacklist.append("behavior/behavior_strength")
-	match behavior_overlap_mode:
-		OverlapMode.PROJECTION:
-			if !input_field_blacklist.has("behavior/behavior_strength"):
-				input_field_blacklist.append("behavior/behavior_strength")
 
 
 func _get_prop_dictionary():
@@ -187,22 +223,6 @@ func _get_prop_dictionary():
 			"hint_string": "Volume,Projection"
 		},
 	}
-
-
-func _get_properties_for_brush_type():
-	var props = [
-		"behavior/behavior_brush_type",
-		"shape/shape_volume_size",
-		"shape/shape_projection_size",
-		"behavior/behavior_overlap_mode"]
-	
-	match behavior_brush_type:
-		BrushType.PAINT, BrushType.ERASE:
-			props.append_array([
-				"behavior/behavior_strength",
-			])
-	
-	return props
 
 
 func get_prop_tooltip(prop:String) -> String:

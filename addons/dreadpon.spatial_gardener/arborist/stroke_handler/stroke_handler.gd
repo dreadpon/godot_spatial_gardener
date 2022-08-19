@@ -99,7 +99,7 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 		Toolshed_Brush.OverlapMode.VOLUME:
 			var plant_brush_data = volume_modify_brush_data_to_plant(brush_data, plant)
 			# BrushPlacementArea is the "brains" of my placement logic, so we initialize it here
-			var brush_placement_area := BrushPlacementArea.new(plant_brush_data.brush_volume_pos, brush.shape_volume_size * 0.5, plant_brush_data.brush_normal, plant.offset_jitter_fraction)
+			var brush_placement_area := BrushPlacementArea.new(plant_brush_data.brush_pos, brush.shape_volume_size * 0.5, plant_brush_data.brush_normal, plant.offset_jitter_fraction)
 			var octree_manager = octree_managers[plant_index]
 			volume_get_stroke_update_changes(plant_brush_data, plant, plant_index, octree_manager, brush_placement_area, container_transform, painting_changes)
 		Toolshed_Brush.OverlapMode.PROJECTION:
@@ -116,6 +116,7 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 			proj_define_frustum(brush_data, frustum_planes)
 			proj_get_members_in_frustum(frustum_planes, members_in_brush,  octree_manager.root_octree_node, container_transform)
 			proj_filter_members_to_brush_circle(members_in_brush, container_transform)
+			proj_filter_obstructed_members(members_in_brush, container_transform)
 			proj_get_stroke_update_changes(members_in_brush, plant_index, painting_changes)
 
 
@@ -128,13 +129,13 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 
 func volume_modify_brush_data_to_container(brush_data:Dictionary, container_transform:Transform):
 	brush_data = brush_data.duplicate()
-	brush_data.brush_volume_pos = container_transform.affine_inverse().xform(brush_data.brush_volume_pos)
+	brush_data.brush_pos = container_transform.affine_inverse().xform(brush_data.brush_pos)
 	return brush_data
 
 
 # Modify the brush data according to the plant
 func volume_modify_brush_data_to_plant(brush_data:Dictionary, plant) -> Dictionary:
-	# Here used to be code to snap the brush_volume_pos to the virtual density grid of a plant
+	# Here used to be code to snap the brush_pos to the virtual density grid of a plant
 	return brush_data.duplicate()
 
 
@@ -156,6 +157,37 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 # To be overridden
 func proj_get_stroke_update_changes(members_in_brush: Array, plant_index: int, painting_changes:PaintingChanges):
 	return null
+
+
+func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_transform:Transform):
+	var mouse_pos := camera.get_viewport().get_mouse_position()
+	var brush_radius: float = brush.shape_projection_size * 0.5
+	var viewport_size := camera.get_viewport().size
+	for member in members_in_frustum.duplicate():
+		var placement = container_transform.xform(member.placement)
+		var screen_space_pos := camera.unproject_position(placement)
+		var dist = (screen_space_pos - mouse_pos).length()
+		# Remove those outside brush radius
+		if dist > brush_radius:
+			members_in_frustum.erase(member)
+		# Remove those outside viewport
+		elif screen_space_pos.x < 0 || screen_space_pos.y < 0 || screen_space_pos.x > viewport_size.x || screen_space_pos.y > viewport_size.y:
+			members_in_frustum.erase(member)
+
+
+func proj_filter_obstructed_members(members_in_frustum: Array, container_transform:Transform):
+	# This is a margin to offset our cast due to miniscule errors in placement
+	# And built-in collision shape margin
+	# Not off-setting an endpoint will mark some visible instances as obstructed
+	var raycast_margin = FunLib.get_setting_safe("dreadpons_spatial_gardener/painting/projection_raycast_margin", 0.1)
+	for member in members_in_frustum.duplicate():
+		var ray_start: Vector3 = camera.global_transform.origin
+		var ray_vector = container_transform.xform(member.placement) - ray_start
+		var ray_end: Vector3 = ray_start + ray_vector.normalized() * (ray_vector.length() - raycast_margin)
+		var ray_result = space_state.intersect_ray(ray_start, ray_end)
+		
+		if !ray_result.empty() && ray_result.collider.collision_layer & collision_mask:
+			members_in_frustum.erase(member)
 
 
 func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
@@ -230,17 +262,6 @@ func is_box_intersecting_frustum(frustum_planes: Array, box_transform: Transform
 		if points_inside == 0:
 			return false
 	return true
-
-
-func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_transform:Transform):
-	var mouse_pos := camera.get_viewport().get_mouse_position()
-	var brush_radius: float = brush.shape_projection_size * 0.5
-	for member in members_in_frustum.duplicate():
-		var placement = container_transform.xform(member.placement)
-		var screen_space_pos := camera.unproject_position(placement)
-		var dist = (screen_space_pos - mouse_pos).length()
-		if dist > brush_radius:
-			members_in_frustum.erase(member)
 
 
 func project_frustum_points(frustum_points: Array, idx_0: int, idx_1: int, offset: Vector2):

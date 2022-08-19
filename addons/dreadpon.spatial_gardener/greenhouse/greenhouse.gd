@@ -273,16 +273,6 @@ func _set(prop, val):
 	return return_val
 
 
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-		prop_dict["plant_types/greenhouse_plant_states"],
-		prop_dict["plant_types/selected_for_edit_resource"],
-		]
-	
-	return props
-
-
 func _get_prop_dictionary():
 	return {
 		"plant_types/greenhouse_plant_states":

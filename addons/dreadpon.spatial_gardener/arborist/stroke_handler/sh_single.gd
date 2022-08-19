@@ -19,7 +19,7 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
 	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
 	
-	var member_pos = brush_data.brush_volume_pos
+	var member_pos = brush_data.brush_pos
 	
 	var plant_transform:Transform = TransformGenerator.generate_plant_transform(member_pos, brush_data.brush_normal, plant, randomizer)
 	var placement_transform:PlacementTransform = PlacementTransform.new(member_pos, brush_data.brush_normal, plant_transform)

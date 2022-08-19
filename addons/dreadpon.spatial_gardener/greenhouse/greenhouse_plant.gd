@@ -569,8 +569,7 @@ func _get(property):
 	return null
 
 
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
+func _filter_prop_dictionary(prop_dict) -> Array:
 	var props := [
 		prop_dict["mesh/mesh_LOD_variants"],
 		prop_dict["mesh/selected_for_edit_resource"],

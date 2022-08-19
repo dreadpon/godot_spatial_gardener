@@ -27,6 +27,10 @@ static func add_plugin_project_settings():
 	
 	# Input and UI
 	add_project_setting(
+		"dreadpons_spatial_gardener/painting/projection_raycast_margin",
+		0.1,
+		TYPE_REAL)
+	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo",
 		true,
 		TYPE_BOOL)

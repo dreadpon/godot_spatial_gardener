@@ -41,6 +41,11 @@ var _undo_redo:UndoRedo = null setget set_undo_redo
 # Backups that can be restored when using non-destructive PA_PropEdit
 var prop_edit_backups:Dictionary = {}
 # Properties added here will be ignored when creating input fields
+# NOTE: this is meant to exclude properties from generating an input field AT ALL
+#		it's NOT a conditional check to show/hide fields
+#		it will be used once when generating a UI layout, but not to modify it
+# NOTE: for conditional checks see 'visibility_tracked_properties' in ui_input_filed.gd
+#		to hide properties from editor's inspector see _get_prop_dictionary()
 var input_field_blacklist:Array = []
 # All properties that are linked together for showing an element of an Array
 var res_edit_data:Array = []
@@ -299,10 +304,17 @@ func _modify_prop(prop:String, val):
 
 
 # Map property info to a dictionary for convinience
-# Allows easier management of hidden/shown properties based on user-defined conditions
 # To be overridden and (usually) called inside a _get_property_list()
 func _get_prop_dictionary() -> Dictionary:
 	return {}
+
+
+# Get property data from a dictionary and filter it
+# Allows easier management of hidden/shown properties based on arbitrary conditions in a subclass
+# To be overridden and (usually) called inside a _get_property_list() 
+# 	With a dictionary created by _get_prop_dictionary()
+func _filter_prop_dictionary(prop_dict) -> Array:
+	return prop_dict.values()
 
 
 func _set(property, val):
@@ -311,6 +323,13 @@ func _set(property, val):
 
 func _get(property):
 	pass
+
+
+# Default functionality for _get_property_list() 
+# Is to get all {prop_name: prop_data_dictionary} defined by _get_prop_dictionary()
+# And return filtered prop_data_dictionaries (optionally rejecting some of them based on arbitrary conditions
+func _get_property_list():
+	return _filter_prop_dictionary(_get_prop_dictionary())
 
 
 

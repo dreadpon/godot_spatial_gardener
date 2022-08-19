@@ -214,16 +214,6 @@ func _get_prop_dictionary():
 	}
 
 
-func _get_property_list():
-	var prop_dict = _get_prop_dictionary()
-	var props := [
-		prop_dict["brush/brushes"],
-		prop_dict["brush/active_brush"],
-	]
-	
-	return props
-
-
 func get_prop_tooltip(prop:String) -> String:
 	match prop:
 		"brush/brushes":

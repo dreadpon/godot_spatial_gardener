@@ -9,6 +9,7 @@ extends Reference
 
 
 const FunLib = preload("../utility/fun_lib.gd")
+const DebugDraw = preload("../utility/debug_draw.gd")
 const Toolshed_Brush = preload("../toolshed/toolshed_brush.gd")
 const Globals = preload("../utility/globals.gd")
 
@@ -41,7 +42,7 @@ var brush_collision_mask:int setget set_brush_collision_mask
 # This bunch here is to sync quick brush property edit with UI and vice-versa
 var pending_draw:bool = false
 var active_brush_overlap_mode: int = Toolshed_Brush.OverlapMode.VOLUME
-var active_brush_data:Dictionary = {}
+var active_brush_data:Dictionary = {'brush_pos': Vector3.ZERO, 'brush_normal': Vector3.UP, 'brush_basis': Basis()} 
 var active_brush_size:float setget set_active_brush_size
 var active_brush_strength:float setget set_active_brush_strength
 var active_brush_max_size:float setget set_active_brush_max_size
@@ -246,7 +247,7 @@ func start_brush_stroke():
 func stop_brush_stroke():
 	if !is_drawing: return
 	is_drawing = false
-	active_brush_data = {}
+	active_brush_data = {'brush_pos': Vector3.ZERO, 'brush_normal': Vector3.UP, 'brush_basis': Basis()} 
 	emit_signal("stroke_finished", active_brush_data)
 
 
@@ -273,14 +274,14 @@ func update_active_brush_data(camera:Camera):
 	var end = start + camera.project_ray_normal(mouse_pos) * camera.far
 	var ray_result:Dictionary = space_state.intersect_ray(start, end, [], brush_collision_mask)
 	if !ray_result.empty():
-		active_brush_data.brush_volume_pos = ray_result.position
+		active_brush_data.brush_pos = ray_result.position
 		active_brush_data.brush_normal = ray_result.normal
 	else:
-		active_brush_data.brush_volume_pos = Vector3.ZERO
-		active_brush_data.brush_normal = Vector3.UP
+		var camera_normal = -camera.global_transform.basis.z
+		var planar_dist_to_camera = (active_brush_data.brush_pos - camera.global_transform.origin).dot(camera_normal)
+		var circle_center:Vector3 = project_mouse(camera, planar_dist_to_camera)
+		active_brush_data.brush_pos = circle_center
 	
-	var circle_center := project_mouse(camera, camera.far * 0.5)
-	active_brush_data.brush_projection_pos = circle_center
 	active_brush_data.brush_basis = camera.global_transform.basis
 
 
@@ -289,11 +290,12 @@ func refresh_brush_transform():
 	
 	match active_brush_overlap_mode:
 		Toolshed_Brush.OverlapMode.VOLUME:
-			paint_brush_node.global_transform.origin = active_brush_data.brush_volume_pos
+			paint_brush_node.global_transform.origin = active_brush_data.brush_pos
 			paint_brush_node.global_transform.basis = Basis()
 		Toolshed_Brush.OverlapMode.PROJECTION:
-			paint_brush_node.global_transform.origin = active_brush_data.brush_projection_pos
+			paint_brush_node.global_transform.origin = active_brush_data.brush_pos
 			paint_brush_node.global_transform.basis = active_brush_data.brush_basis
+			set_brush_diameter(active_brush_size)
 
 
 
@@ -447,10 +449,12 @@ func set_brush_diameter(diameter: float):
 			paint_brush_node.mesh.height = diameter
 		
 		Toolshed_Brush.OverlapMode.PROJECTION:
-			var circle_center := project_mouse(camera, camera.far * 0.5)
-			var circle_edge := project_mouse(camera, camera.far * 0.5, Vector2(diameter, 0))
+			var camera_normal = -camera.global_transform.basis.z
+			var planar_dist_to_camera = (active_brush_data.brush_pos - camera.global_transform.origin).dot(camera_normal)
+			var circle_center:Vector3 = active_brush_data.brush_pos
+			var circle_edge := project_mouse(camera, planar_dist_to_camera, Vector2(diameter * 0.5, 0))
 			var size = (circle_edge - circle_center).length()
-			paint_brush_node.mesh.size = Vector2(size, size)
+			paint_brush_node.mesh.size = Vector2(size, size) * 2.0
 
 
 func set_brush_collision_mask(val):

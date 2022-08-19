@@ -154,17 +154,6 @@ func _get_prop_dictionary():
 		}
 
 
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-			prop_dict["plant/plant_brush_active"],
-			prop_dict["plant/plant_label"],
-			prop_dict["plant/plant"],
-		]
-	
-	return props
-
-
 func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
 	if plant:
 		return plant.create_input_fields(_base_control, _resource_previewer, whitelist)
