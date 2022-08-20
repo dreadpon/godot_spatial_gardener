@@ -26,148 +26,71 @@ static func snapshot_greenhouse(greenhouse:Greenhouse) -> Dictionary:
 	return snapshot
 
 
-# TODO add a check for both res_edit
 static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop_edit_actions:bool = true) -> Array:
 	if !initial || !target: return []
+	var nested_prop_name_classes := {
+		"plant_types/greenhouse_plant_states": "Greenhouse_PlantState", 
+		"plant/plant": "Greenhouse_Plant", 
+		"mesh/mesh_LOD_variants": "Greenhouse_LODVariant"}
 	var morph_actions := []
 	
-	morph_actions.append_array(get_array_morph_actions(
-		target.greenhouse_plant_states, initial.greenhouse_plant_states,
-		[], "plant_types/greenhouse_plant_states"))
-	
-	for i in range(0, target.greenhouse_plant_states.size()):
-		var adrs := ["plant_types/greenhouse_plant_states", i]
-		
-		var t_plant_state:Greenhouse_PlantState = target.greenhouse_plant_states[i]
-		var i_plant_state:Greenhouse_PlantState = Greenhouse_PlantState.new()
-		if initial.greenhouse_plant_states.size() > i:
-			i_plant_state = initial.greenhouse_plant_states[i]
-		
-		morph_actions.append_array(get_prop_morph_actions(
-				t_plant_state, i_plant_state,
-				adrs.duplicate(), "plant/plant_brush_active"))
-		
-		adrs.append("plant/plant")
-		
-		var t_plant:Greenhouse_Plant = t_plant_state.plant
-		var i_plant:Greenhouse_Plant = Greenhouse_Plant.new()
-		if i_plant_state:
-			i_plant = i_plant_state.plant
-		
-		morph_actions.append_array(get_array_morph_actions(
-			t_plant.mesh_LOD_variants, i_plant.mesh_LOD_variants,
-			adrs.duplicate(),  "mesh/mesh_LOD_variants"))
-		
-		for k in range(0, t_plant.mesh_LOD_variants.size()):
-			var adrs_1 := adrs.duplicate()
-			adrs_1.append_array(["mesh/mesh_LOD_variants", k])
-			
-			var t_LOD:Greenhouse_LODVariant = t_plant.mesh_LOD_variants[k]
-			var i_LOD:Greenhouse_LODVariant = Greenhouse_LODVariant.new()
-			if i_plant && i_plant.mesh_LOD_variants.size() > k:
-				i_LOD = i_plant.mesh_LOD_variants[k]
-			
-			morph_actions.append_array(get_prop_morph_actions(
-				t_LOD, i_LOD,
-				adrs_1.duplicate(), "mesh"))
-			
-			morph_actions.append_array(get_prop_morph_actions(
-				t_LOD, i_LOD,
-				adrs_1.duplicate(), "spawned_spatial"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "mesh/mesh_LOD_max_distance", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "mesh/mesh_LOD_kill_distance", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "mesh/mesh_LOD_max_capacity"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "mesh/mesh_LOD_min_size", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "density/density_per_units", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "scale/scale_scaling_type"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "scale/scale_range"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "up_vector/up_vector_primary_type"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "up_vector/up_vector_primary"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "up_vector/up_vector_secondary_type"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "up_vector/up_vector_secondary"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "up_vector/up_vector_blending", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "fwd_vector/fwd_vector_primary_type"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "fwd_vector/fwd_vector_primary"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "fwd_vector/fwd_vector_secondary_type"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "fwd_vector/fwd_vector_secondary"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "fwd_vector/fwd_vector_blending", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "offset/offset_y_range"))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "offset/offset_jitter_fraction", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "rotation/rotation_random_y", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "rotation/rotation_random_x", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "rotation/rotation_random_z", enable_prop_edit_actions))
-		
-		morph_actions.append_array(get_prop_morph_actions(
-			t_plant, i_plant,
-			adrs.duplicate(), "slope/slope_allowed_range"))
+	get_morph_actions_recursive(
+		initial.greenhouse_plant_states, target.greenhouse_plant_states, [], "plant_types/greenhouse_plant_states",
+		nested_prop_name_classes, morph_actions, enable_prop_edit_actions)
 	
 	return morph_actions
+
+
+static func get_morph_actions_recursive(initial, target, address:Array, prop_name, nested_prop_name_classes:Dictionary, morph_actions: Array, enable_prop_edit_actions:bool = true):
+#	print(address)
+	if target is Object:
+		if target.has_meta("class") && nested_prop_name_classes.values().has(target.get_meta("class")):
+			for nested_prop in target._get_prop_dictionary():
+				var t_next = target.get(nested_prop)
+				var i_next = initial.get(nested_prop)
+				var next_address = address.duplicate()
+				next_address.append_array([prop_name])
+				get_morph_actions_recursive(i_next, t_next, next_address.duplicate(), nested_prop, nested_prop_name_classes, morph_actions, enable_prop_edit_actions)
+		else:
+			morph_actions.append_array(get_prop_morph_actions(
+				target, initial, address.duplicate(), prop_name, false))
+	
+	elif target is Array && nested_prop_name_classes.has(prop_name):
+		morph_actions.append_array(get_array_morph_actions(
+			target, initial, address.duplicate(), prop_name))
+		for idx in range(0, target.size()):
+			var t_next = target[idx]
+			var i_next = null
+			if initial.size() > idx:
+				i_next = initial[idx]
+			elif nested_prop_name_classes.has(prop_name):
+				i_next = mk_object_for_class(nested_prop_name_classes[prop_name])
+			
+			var next_address = address.duplicate()
+			next_address.append_array([prop_name])
+			get_morph_actions_recursive(i_next, t_next, next_address, idx, nested_prop_name_classes, morph_actions, enable_prop_edit_actions)
+	
+#	elif target is Dictionary:
+#		pass
+	
+	else:
+		var do_edit_actions = false
+		if typeof(target) == typeof(initial) && typeof(target) == TYPE_REAL:
+			do_edit_actions = enable_prop_edit_actions
+		
+		morph_actions.append_array(get_prop_morph_actions(
+			target, initial, address.duplicate(), prop_name, do_edit_actions))
+
+
+static func mk_object_for_class(class_string: String) -> Object:
+	match class_string:
+		'Greenhouse_PlantState':
+			return Greenhouse_PlantState.new()
+		'Greenhouse_Plant':
+			return Greenhouse_Plant.new()
+		'Greenhouse_LODVariant':
+			return Greenhouse_LODVariant.new()
+	return null
 
 
 static func get_array_morph_actions(t_array:Array, i_array:Array, adrs:Array, prop:String) -> Array:
@@ -193,10 +116,10 @@ static func get_array_morph_actions(t_array:Array, i_array:Array, adrs:Array, pr
 	return morph_actions
 
 
-static func get_prop_morph_actions(t_res:Resource, i_res:Resource, adrs:Array, prop:String, edit_beforehand:bool = false):
+static func get_prop_morph_actions(t_val, i_val, adrs:Array, prop:String, edit_beforehand:bool = false):
 	var morph_actions := []
-	var t_val = t_res.get(prop)
-	var i_val = i_res.get(prop)
+#	var t_val = t_res.get(prop)
+#	var i_val = i_res.get(prop)
 	
 	if !are_props_equal(t_val, i_val):
 		if t_val is Array || t_val is Dictionary:
@@ -206,9 +129,9 @@ static func get_prop_morph_actions(t_res:Resource, i_res:Resource, adrs:Array, p
 			t_val = t_val.duplicate_ifr(false, true)
 		
 		elif edit_beforehand:
-				morph_actions.append(MorphAction.new(
-					adrs,
-					PA_PropEdit.new(prop, (t_val - i_val) * 0.5 + t_val)))
+			morph_actions.append(MorphAction.new(
+				adrs,
+				PA_PropEdit.new(prop, (t_val - i_val) * 0.5 + t_val)))
 		
 		morph_actions.append(MorphAction.new(
 			adrs,
