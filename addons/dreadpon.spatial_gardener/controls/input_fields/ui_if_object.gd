@@ -11,7 +11,7 @@ extends "ui_input_field.gd"
 
 const UI_FoldableSection_SCN = preload('../side_panel/ui_foldable_section.tscn')
 
-var margin_container:MarginContainer = null
+var margin_container:PanelContainer = null
 var input_field_container:VBoxContainer = null
 var _base_control:Control = null
 var _resource_previewer = null
@@ -27,7 +27,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	set_meta("class", "UI_IF_ApplyChanges")
 	
-	margin_container = MarginContainer.new()
+	margin_container = PanelContainer.new()
 	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	margin_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	margin_container.name = "margin_container"
@@ -35,7 +35,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	input_field_container = VBoxContainer.new()
 	input_field_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	input_field_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-#	input_field_container.add_constant_override('separation', 0)
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
@@ -49,6 +48,11 @@ func _ready():
 	value_container.add_child(margin_container)
 	
 	_init_ui()
+	
+	if tab_index > 0:
+		ThemeAdapter.assign_node_type(margin_container, 'PanelContainer')
+	else:
+		margin_container.add_stylebox_override('panel', StyleBoxEmpty.new())
 
 
 func rebuild_object_input_fields(object:Object):
