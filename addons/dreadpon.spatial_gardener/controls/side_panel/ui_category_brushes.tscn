@@ -1,0 +1,25 @@
+[gd_scene format=2]
+
+[node name="UI_Category_Brushes" type="VBoxContainer"]
+margin_right = 348.0
+margin_bottom = 112.0
+
+[node name="PanelContainer_Category" type="PanelContainer" parent="."]
+margin_right = 348.0
+margin_bottom = 28.0
+size_flags_horizontal = 3
+
+[node name="Label_Category" type="Label" parent="PanelContainer_Category"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 341.0
+margin_bottom = 21.0
+text = "Brushes"
+align = 1
+
+[node name="TabContainer_Brushes" type="TabContainer" parent="."]
+margin_top = 32.0
+margin_right = 348.0
+margin_bottom = 112.0
+size_flags_vertical = 3
+tab_align = 0

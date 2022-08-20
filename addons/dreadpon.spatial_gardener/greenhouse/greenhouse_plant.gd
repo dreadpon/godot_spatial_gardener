@@ -51,7 +51,7 @@ var up_vector_primary_type:int = DirectionVectorType.WORLD_Y
 # Custom value for primary up vector if enabled
 var up_vector_primary:Vector3 = Vector3()
 # How we choose the secondary up vector
-var up_vector_secondary_type:int = DirectionVectorType.NORMAL
+var up_vector_secondary_type:int = DirectionVectorType.WORLD_Y
 # Custom value for secondary up vector if enabled
 var up_vector_secondary:Vector3 = Vector3()
 # Weight for blending between two up vectors
@@ -192,8 +192,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_primary, "Up-Vector Primary", prop, settings)
-			input_field.add_tracked_property("up_vector/up_vector_primary_type", DirectionVectorType.CUSTOM, up_vector_primary_type)
-			input_field.set_visibility_is_tracked(true)
+#			input_field.add_tracked_property("up_vector/up_vector_primary_type", DirectionVectorType.CUSTOM, up_vector_primary_type)
+#			input_field.set_visibility_is_tracked(true)
 		"up_vector/up_vector_secondary_type":
 			var settings := {"enum_list": FunLib.capitalize_string_array(DirectionVectorType.keys())}
 			input_field = UI_IF_Enum.new(up_vector_secondary_type, "Secondary Up-Vector", prop, settings)
@@ -204,8 +204,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_secondary, "Up-Vector Secondary", prop, settings)
-			input_field.add_tracked_property("up_vector/up_vector_secondary_type", DirectionVectorType.CUSTOM, up_vector_secondary_type)
-			input_field.set_visibility_is_tracked(true)
+#			input_field.add_tracked_property("up_vector/up_vector_secondary_type", DirectionVectorType.CUSTOM, up_vector_secondary_type)
+#			input_field.set_visibility_is_tracked(true)
 		"up_vector/up_vector_blending":
 			var settings := {"min": 0.0, "max": 1.0,  "step": 0.01,  "allow_greater": false,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(up_vector_blending, "Up-Vector Blending", prop, settings)
@@ -220,8 +220,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_primary, "Forward-Vector Primary", prop, settings)
-			input_field.add_tracked_property("fwd_vector/fwd_vector_primary_type", DirectionVectorType.CUSTOM, fwd_vector_primary_type)
-			input_field.set_visibility_is_tracked(true)
+#			input_field.add_tracked_property("fwd_vector/fwd_vector_primary_type", DirectionVectorType.CUSTOM, fwd_vector_primary_type)
+#			input_field.set_visibility_is_tracked(true)
 		"fwd_vector/fwd_vector_secondary_type":
 			var settings := {"enum_list": FunLib.capitalize_string_array(DirectionVectorType.keys())}
 			input_field = UI_IF_Enum.new(fwd_vector_secondary_type, "Secondary Forward-Vector", prop, settings)
@@ -232,8 +232,8 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_secondary, "Forward-Vector Secondary", prop, settings)
-			input_field.add_tracked_property("fwd_vector/fwd_vector_secondary_type", DirectionVectorType.CUSTOM, fwd_vector_secondary_type)
-			input_field.set_visibility_is_tracked(true)
+#			input_field.add_tracked_property("fwd_vector/fwd_vector_secondary_type", DirectionVectorType.CUSTOM, fwd_vector_secondary_type)
+#			input_field.set_visibility_is_tracked(true)
 		"fwd_vector/fwd_vector_blending":
 			var settings := {"min": 0.0, "max": 1.0,  "step": 0.01,  "allow_greater": false,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(fwd_vector_blending, "Forward-Vector Blending", prop, settings)
@@ -347,15 +347,7 @@ func _modify_prop(prop:String, val):
 			# TODO retain Greenhouse_LODVariant if it already exists when drag-and-dropping a .mesh or a .tscn resource
 			for i in range(0, val.size()):
 				if !(val[i] is Greenhouse_LODVariant):
-#					var backup_val = val[i]
 					val[i] = Greenhouse_LODVariant.new()
-					
-#					if backup_val is PackedScene:
-#						val[i].spawned_spatial = backup_val
-#					else:
-#						for mesh_class in Globals.MESH_CLASSES:
-#							if FunLib.obj_is_class_string(backup_val, mesh_class):
-#								val[i].mesh = backup_val
 				
 				FunLib.ensure_signal(val[i], "changed", self, "on_changed_LOD_variant")
 				FunLib.ensure_signal(val[i], "prop_action_executed", self, "on_prop_action_executed_on_LOD_variant", [val[i]])
@@ -458,18 +450,18 @@ func _set(prop, val):
 		
 		"scale/scale_scaling_type":
 			scale_scaling_type = val
-			property_list_changed_notify()
+			_emit_property_list_changed_notify()
 		"scale/scale_range":
 			scale_range = val
 		
 		"up_vector/up_vector_primary_type":
 			up_vector_primary_type = val
-			property_list_changed_notify()
+			_emit_property_list_changed_notify()
 		"up_vector/up_vector_primary":
 			up_vector_primary = val
 		"up_vector/up_vector_secondary_type":
 			up_vector_secondary_type = val
-			property_list_changed_notify()
+			_emit_property_list_changed_notify()
 		"up_vector/up_vector_secondary":
 			up_vector_secondary = val
 		"up_vector/up_vector_blending":
@@ -477,12 +469,12 @@ func _set(prop, val):
 		
 		"fwd_vector/fwd_vector_primary_type":
 			fwd_vector_primary_type = val
-			property_list_changed_notify()
+			_emit_property_list_changed_notify()
 		"fwd_vector/fwd_vector_primary":
 			fwd_vector_primary = val
 		"fwd_vector/fwd_vector_secondary_type":
 			fwd_vector_secondary_type = val
-			property_list_changed_notify()
+			_emit_property_list_changed_notify()
 		"fwd_vector/fwd_vector_secondary":
 			fwd_vector_secondary = val
 		"fwd_vector/fwd_vector_blending":
@@ -577,72 +569,27 @@ func _get(property):
 	return null
 
 
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-		prop_dict["mesh/mesh_LOD_variants"],
-		prop_dict["mesh/selected_for_edit_resource"],
-		prop_dict["mesh/mesh_LOD_max_distance"],
-		prop_dict["mesh/mesh_LOD_kill_distance"],
-		prop_dict["mesh/mesh_LOD_max_capacity"],
-		prop_dict["mesh/mesh_LOD_min_size"],
-		prop_dict["octree/octree_reconfigure_button"],
-		prop_dict["octree/octree_recenter_button"],
-		#======================================================
-		prop_dict["density/density_per_units"],
-		#======================================================
-		prop_dict["scale/scale_scaling_type"],
-		prop_dict["scale/scale_range"],
-	]
+func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
+	var props_to_hide := []
+
+	if up_vector_primary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("up_vector/up_vector_primary")
+	if up_vector_secondary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("up_vector/up_vector_secondary")
+	if fwd_vector_primary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("fwd_vector/fwd_vector_primary")
+	if fwd_vector_secondary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("fwd_vector/fwd_vector_secondary")
 	
-	props.append(
-		prop_dict["up_vector/up_vector_primary_type"]
-		)
-	if up_vector_primary_type == DirectionVectorType.CUSTOM:
-		props.append(
-			prop_dict["up_vector/up_vector_primary"]
-		)
-	props.append(
-		prop_dict["up_vector/up_vector_secondary_type"]
-		)
-	if up_vector_secondary_type == DirectionVectorType.CUSTOM:
-		props.append(
-			prop_dict["up_vector/up_vector_secondary"]
-		)
-	props.append(
-		prop_dict["up_vector/up_vector_blending"]
-		)
+	if up_vector_primary_type == up_vector_secondary_type && up_vector_primary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("up_vector/up_vector_blending")
+	if fwd_vector_primary_type == fwd_vector_secondary_type && fwd_vector_primary_type != DirectionVectorType.CUSTOM:
+		props_to_hide.append("fwd_vector/fwd_vector_blending")
 	
-	props.append(
-		prop_dict["fwd_vector/fwd_vector_primary_type"]
-		)
-	if fwd_vector_primary_type == DirectionVectorType.CUSTOM:
-		props.append(
-			prop_dict["fwd_vector/fwd_vector_primary"]
-		)
-	props.append(
-		prop_dict["fwd_vector/fwd_vector_secondary_type"]
-		)
-	if fwd_vector_secondary_type == DirectionVectorType.CUSTOM:
-		props.append(
-			prop_dict["fwd_vector/fwd_vector_secondary"]
-		)
-	props.append(
-		prop_dict["fwd_vector/fwd_vector_blending"]
-		)
+	for prop in props_to_hide:
+		prop_dict[prop].usage = PROPERTY_USAGE_NOEDITOR
 	
-	props.append_array([
-		prop_dict["offset/offset_y_range"],
-		prop_dict["offset/offset_jitter_fraction"],
-		#======================================================
-		prop_dict["rotation/rotation_random_y"],
-		prop_dict["rotation/rotation_random_x"],
-		prop_dict["rotation/rotation_random_z"],
-		#======================================================
-		prop_dict["slope/slope_allowed_range"],
-	])
-	
-	return props
+	return prop_dict
 
 
 func _get_prop_dictionary():

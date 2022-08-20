@@ -154,6 +154,10 @@ func on_check(state, thumb):
 	emit_signal("requested_check", thumb.get_index(), state)
 
 
+func on_label_edit(label_text, thumb):
+	emit_signal("requested_label_edit", thumb.get_index(), label_text)
+
+
 func on_press(thumb):
 	emit_signal("requested_press", thumb.get_index())
 

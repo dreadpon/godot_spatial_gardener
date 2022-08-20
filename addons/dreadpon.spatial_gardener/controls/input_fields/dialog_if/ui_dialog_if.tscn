@@ -9,36 +9,32 @@ window_title = "Apply Changes"
 resizable = true
 script = ExtResource( 1 )
 __meta__ = {
-"_edit_use_anchors_": false,
 "class": "UI_Dialog_IF"
 }
 
-[node name="VBoxContainer_main" type="VBoxContainer" parent="."]
+[node name="VBoxContainer_Main" type="VBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
+margin_left = 4.0
+margin_top = 8.0
+margin_right = -4.0
+margin_bottom = -4.0
 
-[node name="MarginContainer_fields" type="MarginContainer" parent="VBoxContainer_main"]
-margin_right = 371.0
-margin_bottom = 169.0
+[node name="PanelContainer_Fields" type="PanelContainer" parent="VBoxContainer_Main"]
+margin_right = 363.0
+margin_bottom = 147.0
 size_flags_vertical = 3
-custom_constants/margin_right = 10
-custom_constants/margin_top = 10
-custom_constants/margin_left = 10
-custom_constants/margin_bottom = 10
 
-[node name="VBoxContainer_fields" type="VBoxContainer" parent="VBoxContainer_main/MarginContainer_fields"]
-margin_left = 10.0
-margin_top = 10.0
-margin_right = 361.0
-margin_bottom = 159.0
+[node name="VBoxContainer_Fields" type="VBoxContainer" parent="VBoxContainer_Main/PanelContainer_Fields"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 356.0
+margin_bottom = 140.0
 
-[node name="MarginContainer_actions" type="MarginContainer" parent="VBoxContainer_main"]
-margin_top = 173.0
-margin_right = 371.0
-margin_bottom = 203.0
+[node name="MarginContainer_Actions" type="MarginContainer" parent="VBoxContainer_Main"]
+margin_top = 151.0
+margin_right = 363.0
+margin_bottom = 191.0
 custom_constants/margin_right = 10
 custom_constants/margin_top = 10
 custom_constants/margin_left = 10
@@ -47,24 +43,25 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="HBoxContainer_actions" type="HBoxContainer" parent="VBoxContainer_main/MarginContainer_actions"]
-margin_left = 124.0
+[node name="HBoxContainer_Actions" type="HBoxContainer" parent="VBoxContainer_Main/MarginContainer_Actions"]
+margin_left = 120.0
 margin_top = 10.0
-margin_right = 246.0
+margin_right = 242.0
 margin_bottom = 30.0
 size_flags_horizontal = 6
 custom_constants/separation = 20
 
-[node name="Button_apply" type="Button" parent="VBoxContainer_main/MarginContainer_actions/HBoxContainer_actions"]
+[node name="Button_Apply" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
 margin_right = 48.0
 margin_bottom = 20.0
 text = "Apply"
 
-[node name="Button_cancel" type="Button" parent="VBoxContainer_main/MarginContainer_actions/HBoxContainer_actions"]
+[node name="Button_Cancel" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
 margin_left = 68.0
 margin_right = 122.0
 margin_bottom = 20.0
 text = "Cancel"
 
-[connection signal="pressed" from="VBoxContainer_main/MarginContainer_actions/HBoxContainer_actions/Button_apply" to="." method="on_button_apply_pressed"]
-[connection signal="pressed" from="VBoxContainer_main/MarginContainer_actions/HBoxContainer_actions/Button_cancel" to="." method="on_button_cancel_pressed"]
+[connection signal="about_to_show" from="." to="." method="_on_about_to_show"]
+[connection signal="pressed" from="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions/Button_Apply" to="." method="on_button_apply_pressed"]
+[connection signal="pressed" from="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions/Button_Cancel" to="." method="on_button_cancel_pressed"]

@@ -10,14 +10,21 @@ extends "../utility/input_field_resource/input_field_resource.gd"
 
 const Greenhouse_PlantState = preload("greenhouse_plant_state.gd")
 const ThemeAdapter = preload("../controls/theme_adapter.gd")
+const ui_category_greenhouse_SCN = preload("../controls/side_panel/ui_category_greenhouse.tscn")
 
 # All the plants (plant states) we have
 var greenhouse_plant_states:Array = []
 # Keep a reference to selected resource to easily display it
 var selected_for_edit_resource:Resource = null
 
-var select_container:UI_IF_ThumbnailArray = null
-var settings_container:Control = null
+var ui_category_greenhouse: Control = null
+var scroll_container_plant_thumbnails_nd:Control = null
+var scroll_container_properties_nd: Control = null
+var panel_container_properties_nd: Control = null
+var panel_container_category_nd:Control = null
+
+var grid_container_plant_thumbnails_nd:UI_IF_ThumbnailArray = null
+var vbox_container_properties_nd:Control = null
 var _base_control:Control = null
 var _resource_previewer = null
 
@@ -49,58 +56,31 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
-	var greenhouse_panel := PanelContainer.new()
-	greenhouse_panel.name = "greenhouse_panel"
-	greenhouse_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	greenhouse_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ui_category_greenhouse = ui_category_greenhouse_SCN.instance()
+	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_node('ScrollContainer_PlantThumbnails')
+	scroll_container_properties_nd = ui_category_greenhouse.find_node('ScrollContainer_Properties')
+	panel_container_properties_nd = ui_category_greenhouse.find_node('PanelContainer_PlantThumbnails')
+	panel_container_category_nd = ui_category_greenhouse.find_node('PanelContainer_Category')
 	
-	var split := VSplitContainer.new()
-	split.name = "split"
-	split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	var tab_select := TabContainer.new()
-	tab_select.name = "tab_select"
-	tab_select.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tab_select.tabs_visible = false
-	tab_select.size_flags_stretch_ratio = 0.3
-	
-	var tab_settings := TabContainer.new()
-	tab_settings.name = "tab_settings"
-	tab_settings.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tab_settings.tabs_visible = false
-	
-	var scroll_select := ScrollContainer.new()
-	scroll_select.name = "scroll_select"
-	
-	var scroll_settings := ScrollContainer.new()
-	scroll_settings.name = "scroll_settings"
-	scroll_settings.scroll_horizontal_enabled = false
+	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
+	ThemeAdapter.assign_node_type(panel_container_properties_nd, 'InspectorInnerPanelContainer')
 	
 	var input_fields = create_input_fields(_base_control, _resource_previewer)
 	
-	select_container = input_fields[0]
-	select_container.label.visible = false
-	select_container.name = "select_container"
-	select_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	select_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	select_container.connect("requested_check", self, "on_plant_state_check")
+	grid_container_plant_thumbnails_nd = input_fields[0]
+	grid_container_plant_thumbnails_nd.label.visible = false
+	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
+	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid_container_plant_thumbnails_nd.connect("requested_check", self, "on_plant_state_check")
+	grid_container_plant_thumbnails_nd.connect("requested_label_edit", self, "on_plant_label_edit")
 	
-	settings_container = input_fields[1]
-	ThemeAdapter.assign_node_type(settings_container, "ExternalMargin")
+	vbox_container_properties_nd = input_fields[1]
 	
-	greenhouse_panel.add_child(split)
-	split.add_child(tab_select)
-	split.add_child(tab_settings)
-	tab_select.add_child(scroll_select)
-	tab_settings.add_child(scroll_settings)
-	scroll_select.add_child(select_container)
-	scroll_settings.add_child(settings_container)
-	ThemeAdapter.assign_node_type(greenhouse_panel, "GreenhousePanel")
-	ThemeAdapter.assign_node_type(tab_select, "GreenhouseTabContainerTop")
-	ThemeAdapter.assign_node_type(tab_settings, "GreenhouseTabContainerBottom")
+	scroll_container_plant_thumbnails_nd.add_child(grid_container_plant_thumbnails_nd)
+	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
 	
-	return greenhouse_panel
+	return ui_category_greenhouse
 
 
 func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
@@ -137,9 +117,21 @@ func on_plant_state_check(index:int, state:bool):
 	plant_state.request_prop_action(prop_action)
 
 
+# Edit Greenhouse_PlantState's label
+func on_plant_label_edit(index:int, label_text:String):
+	var plant_state = greenhouse_plant_states[index]
+	var prop_action = PA_PropSet.new("plant/plant_label", label_text)
+	plant_state.request_prop_action(prop_action)
+
+
 func select_plant_state_for_brush(index:int, state:bool):
-	if is_instance_valid(select_container):
-		select_container.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.CHECK, state, {"index": index})
+	if is_instance_valid(grid_container_plant_thumbnails_nd):
+		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.CHECK, state, {"index": index})
+
+
+func set_plant_state_label(index:int, label_text:String):
+	if is_instance_valid(grid_container_plant_thumbnails_nd):
+		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.EDIT_LABEL, label_text, {"index": index})
 
 
 func on_if_ready(input_field:UI_InputField):
@@ -148,11 +140,12 @@ func on_if_ready(input_field:UI_InputField):
 	if input_field.prop_name == "plant_types/greenhouse_plant_states":
 		for i in range(0, greenhouse_plant_states.size()):
 			select_plant_state_for_brush(i, greenhouse_plant_states[i].plant_brush_active)
+			set_plant_state_label(i, greenhouse_plant_states[i].plant_label)
 
 
 func plant_count_updated(plant_index, new_count):
-	if select_container:
-		select_container.flex_grid.get_child(plant_index).set_counter_val(new_count)
+	if grid_container_plant_thumbnails_nd && grid_container_plant_thumbnails_nd.flex_grid.get_child_count() > plant_index:
+		grid_container_plant_thumbnails_nd.flex_grid.get_child(plant_index).set_counter_val(new_count)
 
 
 
@@ -190,6 +183,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 					# This is deferred because the action thumbnail is not ready yet
 					call_deferred("plant_count_updated", prop_action.index, 0)
 					call_deferred("select_plant_state_for_brush", prop_action.index, final_val[prop_action.index].plant_brush_active)
+					call_deferred("set_plant_state_label", prop_action.index, final_val[prop_action.index].plant_label)
 	
 
 
@@ -199,6 +193,8 @@ func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
 		match prop_action.prop:
 			"plant/plant_brush_active":
 				select_plant_state_for_brush(plant_index, final_val)
+			"plant/plant_label":
+				set_plant_state_label(plant_index, final_val)
 	
 	emit_signal("prop_action_executed_on_plant_state", prop_action, final_val, plant_state)
 
@@ -208,8 +204,8 @@ func on_prop_action_executed_on_plant_state_plant(prop_action, final_val, plant,
 	
 	# Any prop action on LOD variants - update thumbnail
 	var update_thumbnail = prop_action.prop == "mesh/mesh_LOD_variants"
-	if update_thumbnail && select_container:
-		select_container._update_thumbnail(plant_state, plant_index)
+	if update_thumbnail && grid_container_plant_thumbnails_nd:
+		grid_container_plant_thumbnails_nd._update_thumbnail(plant_state, plant_index)
 	
 	emit_signal("prop_action_executed_on_plant_state_plant", prop_action, final_val, plant, plant_state)
 
@@ -244,7 +240,6 @@ func _get(prop):
 func _modify_prop(prop:String, val):
 	match prop:
 		"plant_types/greenhouse_plant_states":
-#			val = val.duplicate()
 			for i in range(0, val.size()):
 				if !(val[i] is Greenhouse_PlantState):
 					val[i] = Greenhouse_PlantState.new()
@@ -276,16 +271,6 @@ func _set(prop, val):
 	if return_val:
 		emit_changed()
 	return return_val
-
-
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-		prop_dict["plant_types/greenhouse_plant_states"],
-		prop_dict["plant_types/selected_for_edit_resource"],
-		]
-	
-	return props
 
 
 func _get_prop_dictionary():

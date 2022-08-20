@@ -16,7 +16,7 @@ const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
 # How many/which plants we want to preview
 enum PlantViewModeFlags {
 	VIEW_NONE = 0,
-	VIEW_FIRST_ACTIVE_PLANT = 1,
+	VIEW_SELECTED_PLANT = 1,
 	VIEW_ALL_ACTIVE_PLANTS = 2,
 	VIEW_MAX = 3,
 	}
@@ -33,6 +33,7 @@ var active_plant_view_mode:int = PlantViewModeFlags.VIEW_NONE
 var active_render_modes:Array = [RenderModeFlags.DRAW_OCTREE_NODES]
 
 var brush_active_plants:Array = []
+var prop_edit_selected_plant: int = -1
 
 
 
@@ -128,18 +129,26 @@ func reset_brush_active_plants():
 
 
 #-------------------------------------------------------------------------------
+# Selected for prop edit plants
+#-------------------------------------------------------------------------------
+
+
+func set_prop_edit_selected_plant(plant_index:int):
+	prop_edit_selected_plant = plant_index
+
+
+func reset_prop_edit_selected_plant():
+	prop_edit_selected_plant = -1
+
+
+
+
+#-------------------------------------------------------------------------------
 # Debug redraw requests
 #-------------------------------------------------------------------------------
 
 
-func request_debug_redraw_all_active(octree_managers:Array):
-	request_debug_redraw(octree_managers, brush_active_plants)
-
-
-# Initially was able to skip updating if no plants were selected
-# But "not selected" means it should be updated still - to actually hide it
-# TODO Find a way to optimise this?
-func request_debug_redraw(octree_managers:Array, requested_indexes:Array):
+func request_debug_redraw(octree_managers:Array):
 	debug_redraw(octree_managers)
 
 
@@ -158,11 +167,11 @@ func debug_redraw(octree_managers:Array):
 		# Don't draw anything
 		PlantViewModeFlags.VIEW_NONE:
 			ensure_MMIs(0)
-		# Draw only the first brush active plant
-		PlantViewModeFlags.VIEW_FIRST_ACTIVE_PLANT:
-			if brush_active_plants.size() > 0:
+		# Draw only the plant selected for prop edit
+		PlantViewModeFlags.VIEW_SELECTED_PLANT:
+			if prop_edit_selected_plant >= 0:
 				ensure_MMIs(1)
-				used_octree_managers.append(octree_managers[brush_active_plants[0]])
+				used_octree_managers.append(octree_managers[prop_edit_selected_plant])
 			else:
 				ensure_MMIs(0)
 		# Draw all brush active plants

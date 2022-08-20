@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://addons/dreadpon.spatial_gardener/shaders/sh_circle_brush.shader" type="Shader" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/albedo = Color( 0.172549, 0.32549, 0.65098, 0.501961 )

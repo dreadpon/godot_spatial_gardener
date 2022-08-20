@@ -10,11 +10,14 @@ extends "../utility/input_field_resource/input_field_resource.gd"
 
 const Toolshed_Brush = preload("toolshed_brush.gd")
 const ThemeAdapter = preload("../controls/theme_adapter.gd")
-
+const ui_category_brushes_SCN = preload("../controls/side_panel/ui_category_brushes.tscn")
+const ui_section_brush_SCN = preload("../controls/side_panel/ui_section_brush.tscn")
 
 var brushes:Array = []
 var active_brush:Toolshed_Brush = null
-var brush_panel:TabContainer = null
+var ui_category_brushes_nd:Control = null
+var tab_container_brushes_nd:Control = null
+var panel_container_category_nd:Control = null
 
 var _base_control:Control = null
 var _resource_previewer = null
@@ -44,40 +47,28 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
-	brush_panel = TabContainer.new()
-	brush_panel.name = "brush_panel"
-	brush_panel.tab_align = TabContainer.ALIGN_LEFT
-	brush_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	brush_panel.set_anchors_preset(Control.PRESET_WIDE)
+	ui_category_brushes_nd = ui_category_brushes_SCN.instance()
+	tab_container_brushes_nd = ui_category_brushes_nd.find_node('TabContainer_Brushes')
+	panel_container_category_nd = ui_category_brushes_nd.find_node('PanelContainer_Category')
+	
+	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
 	
 	for brush in brushes:
-		var scroll_container := ScrollContainer.new()
-		scroll_container.scroll_horizontal_enabled = false
-		scroll_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll_container.name = FunLib.capitalize_string_array(brush.BrushType.keys())[brush.behavior_brush_type]
-		
-		var margin_container := MarginContainer.new()
-		margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		margin_container.name = "margin_container"
-		margin_container.set_anchors_preset(Control.PRESET_WIDE)
-		
-		var box_container := VBoxContainer.new()
-		box_container.name = "box_container"
-		box_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var section_brush = ui_section_brush_SCN.instance()
+		var vbox_container_properties = section_brush.find_node('VBoxContainer_Properties')
+		section_brush.name = FunLib.capitalize_string_array(brush.BrushType.keys())[brush.behavior_brush_type]
+		tab_container_brushes_nd.add_child(section_brush)
 		
 		for input_field in brush.create_input_fields(_base_control, _resource_previewer):
-			box_container.add_child(input_field)
+			vbox_container_properties.add_child(input_field)
 		
-		brush_panel.add_child(scroll_container)
-		scroll_container.add_child(margin_container)
-		margin_container.add_child(box_container)
-		ThemeAdapter.assign_node_type(margin_container, "ExternalMargin")
+		ThemeAdapter.assign_node_type(section_brush, 'InspectorPanelContainer')
 	
 	if brushes.size() > 0:
-		brush_panel.current_tab = brushes.find(active_brush)
-	brush_panel.connect("tab_changed", self, "on_active_brush_tab_changed")
+		tab_container_brushes_nd.current_tab = brushes.find(active_brush)
+	tab_container_brushes_nd.connect("tab_changed", self, "on_active_brush_tab_changed")
 	
-	return brush_panel
+	return ui_category_brushes_nd
 
 
 func _fix_duplicate_signals(copy):
@@ -121,10 +112,10 @@ func on_active_brush_tab_changed(active_tab):
 func on_prop_action_executed(prop_action:PropAction, final_val):
 	if prop_action is PA_PropSet:
 		if prop_action.prop == "brush/active_brush":
-			if brush_panel:
-				brush_panel.disconnect("tab_changed", self, "on_active_brush_tab_changed")
-				brush_panel.current_tab = brushes.find(final_val)
-				brush_panel.connect("tab_changed", self, "on_active_brush_tab_changed")
+			if tab_container_brushes_nd:
+				tab_container_brushes_nd.disconnect("tab_changed", self, "on_active_brush_tab_changed")
+				tab_container_brushes_nd.current_tab = brushes.find(final_val)
+				tab_container_brushes_nd.connect("tab_changed", self, "on_active_brush_tab_changed")
 
 
 
@@ -221,16 +212,6 @@ func _get_prop_dictionary():
 			"hint": PROPERTY_HINT_NONE
 		},
 	}
-
-
-func _get_property_list():
-	var prop_dict = _get_prop_dictionary()
-	var props := [
-		prop_dict["brush/brushes"],
-		prop_dict["brush/active_brush"],
-	]
-	
-	return props
 
 
 func get_prop_tooltip(prop:String) -> String:

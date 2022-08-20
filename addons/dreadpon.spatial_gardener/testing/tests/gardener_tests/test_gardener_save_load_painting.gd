@@ -73,7 +73,7 @@ func save_gardener():
 	reassign_gardener_tree_owner(gardener.arborist, gardener)
 	var packed_scene = PackedScene.new()
 	packed_scene.pack(gardener)
-	FunLib.save_res(packed_scene, greenhouse_path, "gardener.tscn", false)
+	FunLib.save_res(packed_scene, greenhouse_path, "gardener.tscn")
 	remove_child(gardener)
 	editor_selection.clear()
 

@@ -49,8 +49,8 @@ var tab_index:int = 0
 	# -1 - don't force any visibility state
 	# 0/1 force invisible/visible state
 var visibility_forced:int = -1
-var visibility_tracked_properties:Array = []
-var visibility_is_tracked:bool = false setget set_visibility_is_tracked
+#var visibility_tracked_properties:Array = []
+#var visibility_is_tracked:bool = false setget set_visibility_is_tracked
 
 var _undo_redo:UndoRedo = null
 var disable_history:bool = false
@@ -89,6 +89,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	if settings.has("tab"):
 		tab_index = settings.tab
 	
+	set_stylebox(get_stylebox('panel', 'PanelContainer'))
+	
 	set_tooltip(tooltip)
 
 
@@ -104,14 +106,16 @@ func _ready():
 func _set_tab(index:int):
 	tab_index = index
 	tab_spacer.rect_min_size.x = tab_index * tab_size
+	tab_spacer.rect_size.x = tab_spacer.rect_min_size.x
+	tab_spacer.visible = false if tab_index <= 0 else true
 	
 	if tab_index > 0:
 		var styleboxes = ThemeAdapter.lookup_sub_inspector_styleboxes(self, tab_index - 1)
-		add_stylebox_override("panel", styleboxes.sub_inspector_bg)
+		set_stylebox(styleboxes.sub_inspector_bg)
 	else:
 		var stylebox = StyleBoxFlat.new()
 		stylebox.bg_color = Color.transparent
-		add_stylebox_override("panel", stylebox)
+		set_stylebox(stylebox)
 
 
 func set_tooltip(tooltip:String):
@@ -121,6 +125,15 @@ func set_tooltip(tooltip:String):
 		label.hint_tooltip = tooltip
 	else:
 		label.mouse_filter = MOUSE_FILTER_IGNORE
+
+
+func set_stylebox(stylebox:StyleBox):
+	stylebox = stylebox.duplicate()
+	stylebox.content_margin_bottom = 1
+	stylebox.content_margin_top = 1
+	stylebox.content_margin_right = 0
+	stylebox.content_margin_left = 0
+	add_stylebox_override("panel", stylebox)
 
 
 
@@ -135,7 +148,14 @@ func set_tooltip(tooltip:String):
 func on_prop_action_executed(prop_action:PropAction, final_val):
 	if prop_action.prop == prop_name:
 		_update_ui_to_prop_action(prop_action, final_val)
-	on_tracked_property_changed(prop_action.prop, final_val)
+#	on_tracked_property_changed(prop_action.prop, final_val)
+
+
+func on_prop_list_changed(prop_dict: Dictionary):
+	if visibility_forced >= 0:
+		visible = true if visibility_forced == 1 else false
+	else:
+		visible =  prop_dict[prop_name].usage & PROPERTY_USAGE_EDITOR
 
 
 # Actually respond to different PropActions
@@ -205,56 +225,56 @@ func on_node_received_input(event, node):
 # If all of them have the target value - show this Control. Otherwise - hide it
 
 # Add a new property to track
-func add_tracked_property(prop:String, target_val, initial_val = null):
-	visibility_tracked_properties.append({
-		"prop": prop,
-		"target_val": target_val,
-		"last_val": initial_val,
-	})
-
-
-# Reset all properties from being tracked
-func reset_visibility_tracked_properties(val):
-	visibility_tracked_properties = []
-
-
-# A property has changed. Check if it is being tracked and update its value
-func on_tracked_property_changed(prop:String, val):
-	var prop_dict = null
-	for prop_dict_search in visibility_tracked_properties:
-		if prop_dict_search.prop == prop:
-			prop_dict = prop_dict_search
-	
-	if prop_dict:
-		prop_dict.last_val = val
-	
-	_try_visibility_check()
-
-
-# Enable/disable conditional visibility tracking
-func set_visibility_is_tracked(val):
-	visibility_is_tracked = val
-	_try_visibility_check()
-
-
-# Test if all tracked properties are of the needed value
-func _try_visibility_check():
-	if !visibility_is_tracked: return
-	
-	if visibility_forced == 0:
-		visible = false
-		return
-	elif visibility_forced > 0:
-		visible = true
-		return
-	
-	var result := true
-	for prop_dict in visibility_tracked_properties:
-		if prop_dict.last_val != prop_dict.target_val:
-			result = false
-			break
-	
-	visible = result
+#func add_tracked_property(prop:String, target_val, initial_val = null):
+#	visibility_tracked_properties.append({
+#		"prop": prop,
+#		"target_val": target_val,
+#		"last_val": initial_val,
+#	})
+#
+#
+## Reset all properties from being tracked
+#func reset_visibility_tracked_properties(val):
+#	visibility_tracked_properties = []
+#
+#
+## A property has changed. Check if it is being tracked and update its value
+#func on_tracked_property_changed(prop:String, val):
+#	var prop_dict = null
+#	for prop_dict_search in visibility_tracked_properties:
+#		if prop_dict_search.prop == prop:
+#			prop_dict = prop_dict_search
+#
+#	if prop_dict:
+#		prop_dict.last_val = val
+#
+#	_try_visibility_check()
+#
+#
+## Enable/disable conditional visibility tracking
+#func set_visibility_is_tracked(val):
+#	visibility_is_tracked = val
+#	_try_visibility_check()
+#
+#
+## Test if all tracked properties are of the needed value
+#func _try_visibility_check():
+#	if !visibility_is_tracked: return
+#
+#	if visibility_forced == 0:
+#		visible = false
+#		return
+#	elif visibility_forced > 0:
+#		visible = true
+#		return
+#
+#	var result := true
+#	for prop_dict in visibility_tracked_properties:
+#		if prop_dict.last_val != prop_dict.target_val:
+#			result = false
+#			break
+#
+#	visible = result
 
 
 

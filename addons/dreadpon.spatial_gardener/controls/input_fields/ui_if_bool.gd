@@ -22,10 +22,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	bool_check = CheckBox.new()
 	bool_check.name = "bool_check"
+	bool_check.text = "On"
 	bool_check.size_flags_horizontal = SIZE_EXPAND_FILL
 	bool_check.size_flags_vertical = SIZE_SHRINK_CENTER
-	bool_check.align = Button.ALIGN_RIGHT
 	bool_check.connect("toggled", self, "_request_prop_action", ["PA_PropSet"])
+	ThemeAdapter.assign_node_type(bool_check, 'InspectorButton')
 
 
 func _ready():

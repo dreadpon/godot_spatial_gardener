@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/dreadpon.spatial_gardener/controls/side_panel/ui_side_panel.gd" type="Script" id=3]
+
+[node name="SidePanel" type="TabContainer"]
+margin_right = 450.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 300, 0 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.3
+tabs_visible = false
+script = ExtResource( 3 )
+__meta__ = {
+"class": "UI_SidePanel"
+}
+
+[node name="PanelContainer_Tools" type="PanelContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 8.0
+margin_right = -4.0
+margin_bottom = -4.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer_Tools"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 435.0
+margin_bottom = 581.0
+split_offset = 100
+
+[node name="Label_Error" type="Label" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 5.0
+margin_top = 5.0
+margin_right = -5.0
+margin_bottom = -5.0
+text = "To begin, set the Gardener's Work Directory in the Inspector"
+align = 1
+valign = 1
+autowrap = true

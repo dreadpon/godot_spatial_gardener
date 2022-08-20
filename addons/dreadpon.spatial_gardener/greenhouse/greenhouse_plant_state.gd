@@ -11,6 +11,7 @@ const Greenhouse_Plant = preload("greenhouse_plant.gd")
 
 
 var plant_brush_active:bool = false
+var plant_label:String = ''
 var plant:Greenhouse_Plant = null
 
 
@@ -100,6 +101,8 @@ func _get(prop):
 	match prop:
 		"plant/plant_brush_active":
 			return plant_brush_active
+		"plant/plant_label":
+			return plant_label
 		"plant/plant":
 			return plant
 	
@@ -113,6 +116,8 @@ func _set(prop, val):
 	match prop:
 		"plant/plant_brush_active":
 			plant_brush_active = val
+		"plant/plant_label":
+			plant_label = val
 		"plant/plant":
 			plant = val
 		_:
@@ -132,6 +137,13 @@ func _get_prop_dictionary():
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
+		"plant/plant_label":
+		{
+			"name": "plant/plant_label",
+			"type": TYPE_STRING,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_NONE
+		},
 		"plant/plant":
 		{
 			"name": "plant/plant",
@@ -140,16 +152,6 @@ func _get_prop_dictionary():
 			"hint": PROPERTY_HINT_RESOURCE_TYPE
 		},
 		}
-
-
-func _get_property_list():
-	var prop_dict:Dictionary = _get_prop_dictionary()
-	var props := [
-			prop_dict["plant/plant_brush_active"],
-			prop_dict["plant/plant"],
-		]
-	
-	return props
 
 
 func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
@@ -165,6 +167,8 @@ func get_prop_tooltip(prop:String) -> String:
 	match prop:
 		"plant/plant_brush_active":
 			return "The flag that defines if plant will be used during painting or not"
+		"plant/plant_brush_active":
+			return "The label to be displayed on top of the plant's thumbnail"
 		"plant/plant":
 			return "The contained plant itself"
 	

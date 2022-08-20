@@ -3,14 +3,10 @@ extends "ui_input_field.gd"
 
 
 #-------------------------------------------------------------------------------
-# Emits a signal when button is pressed
+# Displays some text
 #-------------------------------------------------------------------------------
 
-
-var button:Button = null
-
-
-signal pressed
+var displayed_label: Label = null
 
 
 
@@ -22,30 +18,34 @@ signal pressed
 
 func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
 	
-	set_meta("class", "UI_IF_Button")
+	set_meta("class", "UI_IF_PlainText")
 	
-	button = Button.new()
-	button.name = "button"
-	button.size_flags_horizontal = SIZE_EXPAND_FILL
-	button.size_flags_vertical = SIZE_SHRINK_CENTER
-	button.text = settings.button_text
-	button.connect("pressed", self, "on_button_pressed")
-	ThemeAdapter.assign_node_type(button, 'InspectorButton')
+	displayed_label = Label.new()
+	displayed_label.name = "displayed_label"
+	displayed_label.size_flags_horizontal = SIZE_EXPAND_FILL
+	displayed_label.align = Label.ALIGN_CENTER
+	
+	if settings.has("label_visibility"):
+		label.visible = settings.label_visibility
 
 
 func _ready():
-	value_container.add_child(button)
-	
+	value_container.add_child(displayed_label)
 	_init_ui()
 
 
 
 
-
 #-------------------------------------------------------------------------------
-# Button presses
+# Updaing the UI
 #-------------------------------------------------------------------------------
 
 
-func on_button_pressed():
-	emit_signal("pressed")
+func _update_ui_to_prop_action(prop_action:PropAction, final_val):
+	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+		_update_ui_to_val(final_val)
+
+
+func _update_ui_to_val(val):
+	displayed_label.text = val
+	._update_ui_to_val(val)

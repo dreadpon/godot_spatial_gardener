@@ -21,7 +21,8 @@ const Toolshed = preload("../toolshed/toolshed.gd")
 const Painter = preload("painter.gd")
 const Arborist = preload("../arborist/arborist.gd")
 const DebugViewer = preload("debug_viewer.gd")
-const UI_SidePanel = preload("../controls/ui_side_panel.gd")
+const UI_SidePanel_SCN = preload("../controls/side_panel/ui_side_panel.tscn")
+const UI_SidePanel = preload("../controls/side_panel/ui_side_panel.gd")
 const Globals = preload("../utility/globals.gd")
 
 const PropAction = preload("../utility/input_field_resource/prop_action.gd")
@@ -53,8 +54,8 @@ var _base_control:Control = null
 var _undo_redo:UndoRedo = null
 
 var _side_panel:UI_SidePanel = null
-var brush_panel:Control = null
-var greenhouse_panel:Control = null
+var ui_category_brushes:Control = null
+var ui_category_plants:Control = null
 
 var painting_node:Spatial = null
 
@@ -63,6 +64,7 @@ var forward_input_events:bool = true
 
 
 signal changed_initialized_for_edit(state)
+signal greenhouse_prop_action_executed(prop_action, final_val)
 
 
 
@@ -83,12 +85,19 @@ func _ready():
 	# But it is already self-sufficient, so no need to initialize it
 	if !Engine.editor_hint: return
 	
-	painting_node = Spatial.new()
-	painting_node.name = "painting"
-	add_child(painting_node)
+	if has_node('painting'):
+		painting_node = get_node('painting')
+	else:
+		painting_node = Spatial.new()
+		painting_node.name = "painting"
+		add_child(painting_node)
 	
-	debug_viewer = DebugViewer.new()
-	add_child(debug_viewer)
+	if has_node('debug_viewer'):
+		debug_viewer = get_node('debug_viewer')
+	else:
+		debug_viewer = DebugViewer.new()
+		debug_viewer.name = "debug_viewer"
+		add_child(debug_viewer)
 	
 	init_painter()
 	painter.set_brush_collision_mask(gardening_collision_mask)
@@ -167,8 +176,7 @@ func propagate_camera(camera:Camera):
 func init_painter():
 	painter = Painter.new(painting_node)
 	painter.connect("stroke_updated", self, "on_painter_stroke_updated")
-	painter.connect("changed_active_brush_size", self, "on_changed_active_brush_size")
-	painter.connect("changed_active_brush_strength", self, "on_changed_active_brush_strength")
+	painter.connect("changed_active_brush_prop", self, "on_changed_active_brush_prop")
 	painter.connect("stroke_started", self, "on_painter_stroke_started")
 	painter.connect("stroke_finished", self, "on_painter_stroke_finished")
 
@@ -203,10 +211,14 @@ func reload_resources():
 	var last_toolshed = toolshed
 	var last_greenhouse = greenhouse
 	
-	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED())
-	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres")
-	if !toolshed: toolshed = Toolshed.new()
-	if !greenhouse: greenhouse = Greenhouse.new()
+	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED(), false)
+	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres", null, false)
+	if !toolshed: 
+		toolshed = Toolshed.new()
+#		save_toolshed()
+	if !greenhouse: 
+		greenhouse = Greenhouse.new()
+#		save_greenhouse()
 	
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
@@ -235,11 +247,15 @@ func reload_resources():
 		pair_arborist_greenhouse()
 	
 	if toolshed && toolshed != last_toolshed && _side_panel:
-		brush_panel = toolshed.create_ui(_base_control, _resource_previewer)
-		_side_panel.set_tool_ui(brush_panel, 0)
+		ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
+		_side_panel.set_tool_ui(ui_category_brushes, 0)
 	if greenhouse && greenhouse != last_greenhouse && _side_panel:
-		greenhouse_panel = greenhouse.create_ui(_base_control, _resource_previewer)
-		_side_panel.set_tool_ui(greenhouse_panel, 1)
+		ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
+		_side_panel.set_tool_ui(ui_category_plants, 1)
+	
+	if arborist:
+		for i in range(0, arborist.octree_managers.size()):
+			arborist.emit_member_count(i)
 
 
 # It's possible we load a different Greenhouse while an Arborist is already initialized
@@ -291,10 +307,10 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 	_side_panel = __side_panel
 	connect("changed_initialized_for_edit", _side_panel, "set_main_control_state")
 	
-	brush_panel = toolshed.create_ui(_base_control, _resource_previewer)
-	greenhouse_panel = greenhouse.create_ui(_base_control, _resource_previewer)
-	_side_panel.set_tool_ui(brush_panel, 0)
-	_side_panel.set_tool_ui(greenhouse_panel, 1)
+	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
+	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
+	_side_panel.set_tool_ui(ui_category_brushes, 0)
+	_side_panel.set_tool_ui(ui_category_plants, 1)
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
 	
@@ -337,14 +353,14 @@ func validate_initialized_for_edit():
 func up_to_date_debug_view_menu(debug_view_menu:MenuButton):
 	assert(debug_viewer)
 	debug_viewer.up_to_date_debug_view_menu(debug_view_menu)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 # Pass a request for checking a debug view menu flag
 func debug_view_flag_checked(debug_view_menu:MenuButton, flag:int):
 	assert(debug_viewer)
 	debug_viewer.flag_checked(debug_view_menu, flag)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 
@@ -397,6 +413,11 @@ func on_greenhouse_prop_action_executed(prop_action:PropAction, final_val):
 	elif prop_action is PA_ArrayRemove:
 		arborist.on_plant_removed(prop_action.val, prop_action.index)
 		reinit_debug_draw_brush_active()
+	elif prop_action is PA_PropSet && prop_action.prop == "plant_types/selected_for_edit_resource":
+		debug_viewer.set_prop_edit_selected_plant(greenhouse.greenhouse_plant_states.find(final_val))
+		debug_viewer.request_debug_redraw(arborist.octree_managers)
+	
+	emit_signal('greenhouse_prop_action_executed', prop_action, final_val)
 
 
 # When Greenhouse_PlantState properties are changed
@@ -407,7 +428,7 @@ func on_greenhouse_prop_action_executed_on_plant_state(prop_action:PropAction, f
 		"plant/plant_brush_active":
 			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
 				debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
-				debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+				debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 # When Greenhouse_Plant properties are changed
@@ -467,7 +488,7 @@ func reinit_debug_draw_brush_active():
 	for plant_index in range(0, greenhouse.greenhouse_plant_states.size()):
 		var plant_state = greenhouse.greenhouse_plant_states[plant_index]
 		debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
-	debug_viewer.request_debug_redraw_all_active(arborist.octree_managers)
+	debug_viewer.request_debug_redraw(arborist.octree_managers)
 
 
 
@@ -510,13 +531,8 @@ func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 
 func painter_update_to_active_brush(active_brush):
 	assert(active_brush)
-	var max_size = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value", 100.0)
-	var max_strength = 1.0
-	
-	painter.set_active_brush_max_size(max_size)
-	painter.set_active_brush_max_strength(max_strength)
-	painter.set_active_brush_size(active_brush.shape_size)
-	painter.set_active_brush_strength(active_brush.behavior_strength)
+	painter.queue_call_when_camera('update_all_props_to_active_brush', [active_brush])
+
 
 
 
@@ -525,26 +541,16 @@ func painter_update_to_active_brush(active_brush):
 #-------------------------------------------------------------------------------
 
 
-# Property change instigated by painter
-func on_changed_active_brush_size(val, final:bool):
-	var prop_action
+# Property change instigated by Painter
+func on_changed_active_brush_prop(prop: String, val, final:bool):
+	var prop_action: PropAction = null
 	if final:
-		prop_action = PA_PropSet.new("shape/shape_size", val)
+		prop_action = PA_PropSet.new(prop, val)
 	else:
-		prop_action = PA_PropEdit.new("shape/shape_size", val)
+		prop_action = PA_PropEdit.new(prop, val)
 	
-	toolshed.active_brush.request_prop_action(prop_action)
-
-
-# Property change instigated by painter
-func on_changed_active_brush_strength(val, final:bool):
-	var prop_action
-	if final:
-		prop_action = PA_PropSet.new("behavior/behavior_strength", val)
-	else:
-		prop_action = PA_PropEdit.new("behavior/behavior_strength", val)
-	
-	toolshed.active_brush.request_prop_action(prop_action)
+	if prop_action:
+		toolshed.active_brush.request_prop_action(prop_action)
 
 
 # Propagate active_brush property changes to Painter
@@ -553,10 +559,15 @@ func on_toolshed_prop_action_executed_on_brush(prop_action:PropAction, final_val
 	if !(prop_action is PA_PropSet) && !(prop_action is PA_PropEdit): return
 	if brush != toolshed.active_brush: return
 	
-	if prop_action.prop == "shape/shape_size":
-		painter.set_active_brush_size(final_val)
-	elif prop_action.prop == "behavior/behavior_strength":
-		painter.set_active_brush_strength(final_val)
+	match prop_action.prop:
+		"shape/shape_volume_size":
+			painter.set_active_brush_size(final_val)
+		"shape/shape_projection_size":
+			painter.set_active_brush_size(final_val)
+		"behavior/behavior_strength":
+			painter.set_active_brush_strength(final_val)
+		"behavior/behavior_overlap_mode":
+			painter_update_to_active_brush(brush)
 
 
 

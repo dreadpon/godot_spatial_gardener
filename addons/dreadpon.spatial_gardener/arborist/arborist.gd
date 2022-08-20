@@ -291,18 +291,19 @@ func set_gardening_collision_mask(_gardening_collision_mask):
 # Create PaintingChanges and a StrokeHandler for this specific brush stroke
 func on_stroke_started(brush:Toolshed_Brush, plant_states:Array):
 	var space_state := get_world().direct_space_state
+	var camera = get_camera()
 	active_painting_changes = PaintingChanges.new()
 	match brush.behavior_brush_type:
 		brush.BrushType.PAINT:
-			active_stroke_handler = SH_Paint.new(brush, plant_states, octree_managers, space_state, gardening_collision_mask)
+			active_stroke_handler = SH_Paint.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 		brush.BrushType.ERASE:
-			active_stroke_handler = SH_Erase.new(brush, plant_states, octree_managers, space_state, gardening_collision_mask)
+			active_stroke_handler = SH_Erase.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 		brush.BrushType.SINGLE:
-			active_stroke_handler = SH_Single.new(brush, plant_states, octree_managers, space_state, gardening_collision_mask)
+			active_stroke_handler = SH_Single.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 		brush.BrushType.REAPPLY:
-			active_stroke_handler = SH_Reapply.new(brush, plant_states, octree_managers, space_state, gardening_collision_mask)
+			active_stroke_handler = SH_Reapply.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 		_:
-			active_stroke_handler = StrokeHandler.new(brush, plant_states, octree_managers, space_state, gardening_collision_mask)
+			active_stroke_handler = StrokeHandler.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 	
 	debug_print_lifecycle("Stroke %s started" % [active_stroke_handler.get_meta("class")])
 
@@ -317,7 +318,7 @@ func on_stroke_updated(brush_data:Dictionary):
 	var msec_start = FunLib.get_msec()
 	
 #	mutex_placement.lock()
-	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, global_transform, self.get_parent().get_parent())
+	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, global_transform)
 	apply_stroke_update_changes(changes)
 #	mutex_placement.unlock()
 	active_painting_changes.append_changes(changes)
@@ -569,7 +570,7 @@ func request_debug_redraw():
 		requested_indexes.append(octree_managers.find(octree_manager))
 	
 	if !requested_indexes.empty():
-		emit_signal("req_debug_redraw", octree_managers, requested_indexes)
+		emit_signal("req_debug_redraw", octree_managers)
 	debug_redraw_requested_managers = []
 
 
