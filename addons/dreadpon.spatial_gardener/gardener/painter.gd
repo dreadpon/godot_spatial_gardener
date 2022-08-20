@@ -452,7 +452,7 @@ func set_brush_diameter(diameter: float):
 			var camera_normal = -camera.global_transform.basis.z
 			var planar_dist_to_camera = (active_brush_data.brush_pos - camera.global_transform.origin).dot(camera_normal)
 			var circle_center:Vector3 = active_brush_data.brush_pos
-			var circle_edge := project_mouse(camera, planar_dist_to_camera, Vector2(diameter * 0.5, 0))
+			var circle_edge = camera.project_position(camera.unproject_position(active_brush_data.brush_pos) + Vector2(diameter * 0.5, 0), planar_dist_to_camera)#project_mouse(camera, planar_dist_to_camera, Vector2(diameter * 0.5, 0))
 			var size = (circle_edge - circle_center).length()
 			paint_brush_node.mesh.size = Vector2(size, size) * 2.0
 
