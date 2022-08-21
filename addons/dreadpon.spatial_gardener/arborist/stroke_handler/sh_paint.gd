@@ -16,7 +16,9 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 
 
 func should_abort_early(brush_data:Dictionary):
-	return brush.behavior_overlap_mode == Toolshed_Brush.OverlapMode.VOLUME && brush.behavior_strength <= 0.0
+	if brush.behavior_overlap_mode == Toolshed_Brush.OverlapMode.PROJECTION: return true
+	if brush.behavior_strength <= 0.0: return true
+	return false
 
 
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 

@@ -27,8 +27,8 @@ var _cached_camera: Camera = null
 const sphere_brush_material = preload("../shaders/shm_sphere_brush.tres")
 const circle_brush_material = preload("../shaders/shm_circle_brush.tres")
 var paint_brush_node:MeshInstance = null
-var can_draw:bool = false
 
+# Temporary variables to store current quick prop edit state
 var brush_prop_edit_flag = BrushPropEditFlag.NONE
 const brush_prop_edit_max_dist:float = 500.0
 var brush_prop_edit_max_val:float = 0.0
@@ -36,18 +36,25 @@ var brush_prop_edit_cur_val:float = 0.0
 var brush_prop_edit_start_pos:Vector2 = Vector2.ZERO
 var brush_prop_edit_offset:float = 0.0
 
+var can_draw:bool = false
 var is_drawing:bool = false
+var pending_movement_update:bool = false
 var brush_collision_mask:int setget set_brush_collision_mask
 
-# This bunch here is to sync quick brush property edit with UI and vice-versa
-var pending_draw:bool = false
-var active_brush_overlap_mode: int = Toolshed_Brush.OverlapMode.VOLUME
+# Used to pass during stroke-state signals sent to Gardener/Arborist
+# Meant to avoid retrieving transform from an actual 3D node
+# And more importantly to cache a raycast normal at every given point in time
 var active_brush_data:Dictionary = {'brush_pos': Vector3.ZERO, 'brush_normal': Vector3.UP, 'brush_basis': Basis()} 
+
+# Variables to sync quick brush property edit with UI and vice-versa
+# And also for keeping brush state up-to-date without needing a reference to actual active brush
+var active_brush_overlap_mode: int = Toolshed_Brush.OverlapMode.VOLUME
 var active_brush_size:float setget set_active_brush_size
 var active_brush_strength:float setget set_active_brush_strength
 var active_brush_max_size:float setget set_active_brush_max_size
 var active_brush_max_strength:float setget set_active_brush_max_strength
 
+# A queue of methods to be called once _cached_camera becomes available
 var when_camera_queue: Array = []
 
 # Ooooh boy
@@ -89,7 +96,7 @@ func update(delta):
 		for queue_item in when_camera_queue.duplicate():
 			callv(queue_item.method_name, queue_item.args)
 			when_camera_queue.erase(queue_item)
-	consume_pending_draw(delta)
+	consume_brush_drawing_update(delta)
 
 
 func set_brush_mesh(is_sphere: bool = false):
@@ -103,6 +110,11 @@ func set_brush_mesh(is_sphere: bool = false):
 		paint_brush_node.mesh = QuadMesh.new()
 		paint_brush_node.cast_shadow = false
 		paint_brush_node.material_override = circle_brush_material.duplicate()
+
+
+# Queue a call to method that needs a _cached_camera to be set
+func queue_call_when_camera(method_name: String, args: Array = []):
+	when_camera_queue.append({'method_name': method_name, 'args': args})
 
 
 
@@ -145,8 +157,8 @@ func forwarded_input(camera:Camera, event):
 			if mouse_move_call_delay > 0:
 				mouse_move_call_delay -= 1
 			else:
-				move_brush(camera)
-				pending_draw = true
+				move_brush()
+				pending_movement_update = true
 			# Don't handle input - moving a brush is not destructive
 	
 	# If inactive property edit
@@ -197,7 +209,7 @@ func forwarded_input(camera:Camera, event):
 	# -> start/stop the brush stroke
 	if brush_prop_edit_flag == BrushPropEditFlag.NONE && event is InputEventMouseButton && event.button_index == BUTTON_LEFT:
 		if event.pressed:
-			move_brush(camera)
+			move_brush()
 			start_brush_stroke()
 		else:
 			stop_brush_stroke()
@@ -226,7 +238,7 @@ func get_overlap_mode_key():
 
 
 #-------------------------------------------------------------------------------
-# Painting lifecycle and brush movement
+# Painting lifecycle 
 #-------------------------------------------------------------------------------
 
 
@@ -252,39 +264,50 @@ func stop_brush_stroke():
 
 
 # Actually update the stroke only if it was preceeded by the input event
-func consume_pending_draw(delta):
+func consume_brush_drawing_update(delta):
 	if !can_draw: return
 	if !is_drawing: return
-	if !pending_draw: return
+	if !pending_movement_update: return
 	
-	pending_draw = false
+	pending_movement_update = false
 	emit_signal("stroke_updated", active_brush_data)
 
 
-func move_brush(camera:Camera):
-	if !camera: return
-	update_active_brush_data(camera)
+
+
+#-------------------------------------------------------------------------------
+# Brush movement
+#-------------------------------------------------------------------------------
+
+
+func move_brush():
+	if !_cached_camera: return
+	update_active_brush_data()
 	refresh_brush_transform()
 
 
-func update_active_brush_data(camera:Camera):
-	var mouse_pos = camera.get_viewport().get_mouse_position()
-	var space_state = camera.get_world().direct_space_state
-	var start = camera.project_ray_origin(mouse_pos)
-	var end = start + camera.project_ray_normal(mouse_pos) * camera.far
+# Update brush data that is passed through signals to Gardener/Arborist
+func update_active_brush_data():
+	var space_state = _cached_camera.get_world().direct_space_state
+	var start = project_mouse_near()
+	var end = project_mouse_far()
 	var ray_result:Dictionary = space_state.intersect_ray(start, end, [], brush_collision_mask)
+	
 	if !ray_result.empty():
 		active_brush_data.brush_pos = ray_result.position
 		active_brush_data.brush_normal = ray_result.normal
 	else:
-		var camera_normal = -camera.global_transform.basis.z
-		var planar_dist_to_camera = (active_brush_data.brush_pos - camera.global_transform.origin).dot(camera_normal)
-		var circle_center:Vector3 = project_mouse(camera, planar_dist_to_camera)
-		active_brush_data.brush_pos = circle_center
+		# If raycast failed - align to camera plane, retaining current distance to camera
+		var camera_normal = -_cached_camera.global_transform.basis.z
+		var planar_dist_to_camera = (active_brush_data.brush_pos - _cached_camera.global_transform.origin).dot(camera_normal)
+		var brush_pos:Vector3 = project_mouse(planar_dist_to_camera)
+		active_brush_data.brush_pos = brush_pos
 	
-	active_brush_data.brush_basis = camera.global_transform.basis
+	# Cache to use with Projection brush
+	active_brush_data.brush_basis = _cached_camera.global_transform.basis
 
 
+# Update transform of a paint brush 3D node
 func refresh_brush_transform():
 	if active_brush_data.empty(): return
 	
@@ -295,13 +318,16 @@ func refresh_brush_transform():
 		Toolshed_Brush.OverlapMode.PROJECTION:
 			paint_brush_node.global_transform.origin = active_brush_data.brush_pos
 			paint_brush_node.global_transform.basis = active_brush_data.brush_basis
+			# Projection brush size is in viewport-space, but it will move forward and backward
+			# Thus appearing smaller or bigger
+			# So we need to update it's size to keep it consistent
 			set_brush_diameter(active_brush_size)
 
 
 
 
 #-------------------------------------------------------------------------------
-# Quick brush property edit lifecycle
+# Brush quick property edit lifecycle
 #-------------------------------------------------------------------------------
 
 
@@ -312,6 +338,9 @@ func refresh_brush_transform():
 # 3. Active brush updates it's values
 # 4. Toolshed notifies Painter of a value change
 # 5. Painter updates it's helper variables and visual representation
+
+# Switching between Volume/Projection brush is here too, but it's not connected to the whole Blender-like process
+# It's just a hotkey handling
 
 # Set the initial value of edited property and mouse offset
 func start_brush_prop_edit(mouse_pos):
@@ -381,14 +410,11 @@ func cycle_overlap_modes():
 
 
 
-#-------------------------------------------------------------------------------
-# Quick brush property edit setters
-#-------------------------------------------------------------------------------
 
-
-# Queue a call to method that needs a _cached_camera to be set
-func queue_call_when_camera(method_name: String, args: Array = []):
-	when_camera_queue.append({'method_name': method_name, 'args': args})
+#-------------------------------------------------------------------------------
+# Setters for brush parameters meant to be accessed from outside
+# In response to UI inputs
+#-------------------------------------------------------------------------------
 
 
 func update_all_props_to_active_brush(brush: Toolshed_Brush):
@@ -410,10 +436,6 @@ func update_all_props_to_active_brush(brush: Toolshed_Brush):
 	set_active_brush_max_strength(max_strength)
 	set_active_brush_size(curr_size)
 	set_active_brush_strength(curr_strength)
-	
-	# Since we are rebuilding the mesh in set_active_brush_overlap_mode()
-	# It means that we need to move it in a proper position
-	move_brush(_cached_camera)
 
 
 # Update helper variables and visuals
@@ -441,7 +463,6 @@ func set_active_brush_max_strength(val):
 
 # Update visuals
 func set_brush_diameter(diameter: float):
-	var camera = _cached_camera
 	match active_brush_overlap_mode:
 		
 		Toolshed_Brush.OverlapMode.VOLUME:
@@ -449,10 +470,18 @@ func set_brush_diameter(diameter: float):
 			paint_brush_node.mesh.height = diameter
 		
 		Toolshed_Brush.OverlapMode.PROJECTION:
-			var camera_normal = -camera.global_transform.basis.z
-			var planar_dist_to_camera = (active_brush_data.brush_pos - camera.global_transform.origin).dot(camera_normal)
+			var camera_normal = -_cached_camera.global_transform.basis.z
+			var planar_dist_to_camera = (active_brush_data.brush_pos - _cached_camera.global_transform.origin).dot(camera_normal)
 			var circle_center:Vector3 = active_brush_data.brush_pos
-			var circle_edge = camera.project_position(camera.unproject_position(active_brush_data.brush_pos) + Vector2(diameter * 0.5, 0), planar_dist_to_camera)#project_mouse(camera, planar_dist_to_camera, Vector2(diameter * 0.5, 0))
+			var circle_edge:Vector3
+			# If we're editing props (or just finished it as indicated by 'mouse_move_call_delay')
+			# Then to prevent size doubling/overflow use out brush position as mouse position
+			# (Since out mouse WILL be offset due to us dragging it to the side)
+			if brush_prop_edit_flag > BrushPropEditFlag.NONE || mouse_move_call_delay > 0:
+				var screen_space_brush_pos = _cached_camera.unproject_position(active_brush_data.brush_pos)
+				circle_edge = _cached_camera.project_position(screen_space_brush_pos + Vector2(diameter * 0.5, 0), planar_dist_to_camera)
+			else:
+				circle_edge = project_mouse(planar_dist_to_camera, Vector2(diameter * 0.5, 0))
 			var size = (circle_edge - circle_center).length()
 			paint_brush_node.mesh.size = Vector2(size, size) * 2.0
 
@@ -471,15 +500,25 @@ func set_active_brush_overlap_mode(val):
 		Toolshed_Brush.OverlapMode.PROJECTION:
 			set_brush_mesh(false)
 	
-	refresh_brush_transform()
+	# Since we are rebuilding the mesh here
+	# It means that we need to move it in a proper position as well
+	move_brush()
 
 
 
 
 #-------------------------------------------------------------------------------
-# Circle brush projeciton
+# Camera/raycasting methods
 #-------------------------------------------------------------------------------
 
 
-func project_mouse(camera: Camera, distance: float, offset: Vector2 = Vector2.ZERO) -> Vector3:
-	return camera.project_position(camera.get_viewport().get_mouse_position() + offset, distance)
+func project_mouse_near() -> Vector3:
+	return project_mouse(_cached_camera.near)
+
+
+func project_mouse_far() -> Vector3:
+	return project_mouse(_cached_camera.far - 0.1)
+
+
+func project_mouse(distance: float, offset: Vector2 = Vector2.ZERO) -> Vector3:
+	return _cached_camera.project_position(_cached_camera.get_viewport().get_mouse_position() + offset, distance)

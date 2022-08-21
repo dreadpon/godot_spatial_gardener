@@ -33,6 +33,8 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placement_transform, placement_transform)
 
 
+# No brush strength - no member filtering needed
+# Just make changes with ALL overlapped points
 func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
 	for member_data in members_in_brush:
 		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, member_data.member, member_data.member)

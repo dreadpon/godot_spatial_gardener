@@ -25,11 +25,17 @@ static func add_plugin_project_settings():
 	if ProjectSettings.has_setting("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value"):
 		ProjectSettings.clear("dreadpons_spatial_gardener/input_and_ui/brush_size_slider_max_value")
 	
-	# Input and UI
+	# Painting
 	add_project_setting(
 		"dreadpons_spatial_gardener/painting/projection_raycast_margin",
 		0.1,
 		TYPE_REAL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/painting/simplify_projection_frustum",
+		true,
+		TYPE_BOOL)
+	
+	# Input and UI
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/greenhouse_ui_enable_undo_redo",
 		true,
@@ -102,6 +108,10 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/debug/debug_viewer_octree_member_size",
 		2.0,
 		TYPE_REAL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/debug/stroke_handler_debug_draw",
+		false,
+		TYPE_BOOL)
 	
 	# Saving settings
 	var err: int = ProjectSettings.save()
