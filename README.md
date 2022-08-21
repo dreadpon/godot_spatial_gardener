@@ -7,7 +7,7 @@
 
 ![Animated cover](https://i.postimg.cc/tCq8TMBf/cover-gif-lossy.gif)
 
-# What is it for?
+## What is it for?
 
 It's meant to simplify foliage placement in a natural-feeling way without having to use heightmap terrain or writing procedural placement algorithms.
 
@@ -17,17 +17,15 @@ This is a single player plugin and works best with finite medium-sized scenes. T
 
 [![Video preview](https://i.postimg.cc/VsRnZDRn/trailer-thubmnail-360p-ext-compressed.jpg)](https://youtu.be/o_59aTeljpg)
 
-# Stability
+## Stability
 
-This plugin requires at least Godot v3.4.2, but should work fine on any subsequent versions (excluding Godot 4.0).
-
-Its relatively stable on Windows, but not tested on other platforms.
+Current stable release requires at Godot v3.5.
 
 Want a test-drive? Go to [Releases](https://github.com/dreadpon/godot_spatial_gardener/releases) and get the most recent windows build: `godot_spatial_gardener_showcase_windows_x64.zip`.
 
 ![Test-drive](https://i.postimg.cc/cLjzF4dy/showcase-gif-lossy.gif)
 
-# Installation
+## Installation
 
 This plugin is installed the same way as other Godot plugins.
 
@@ -37,7 +35,7 @@ Copy the folder `addons/dreadpon.spatial_gardener/` to `res://addons/` in your G
 
 ![Paint 1](https://i.postimg.cc/rmQFHYgr/paint-1.jpg)
 
-# Tutorial
+## Tutorial
 
 For a detailed guide you can refer to my tutorial.
 
@@ -46,15 +44,15 @@ It comes in two formats, depending on your preference:
 - **[<img src="https://i.postimg.cc/1Xd30ySv/yt-icon-rgb.png" width="16" style="margin-right:4px"/> Video (recommended)](https://youtube.com/playlist?list=PLtsfK5HW0bX-TKR8eO_uKEguii8w9dGIh)**
 - **[<img src="https://i.postimg.cc/KzF6WwQx/text-icon.png" width="16" style="margin-right:4px"/> Text](reference/TUTORIAL_ROOT.md)**
 
-Their contents are the same, but video better illustrates each step due to being a video, duh.
+Text tutorial is the most up-to-date, but video better illustrates each step due to being a video, duh.
 
-# Contribution
+## Contribution
 
 If you want to report a bug or request a feature, you should do so on GitHub using `Issues`.
 
 **[Refer here for more](reference/CONTRIBUTION.md)** details.
 
-# Sponsor this project
+## Sponsor this project
 
 You're welcome to support me on:
 
@@ -67,7 +65,7 @@ Or join me on my Discord:
 
 - **[<img src="https://i.postimg.cc/0yn7THYP/Discord-Logo-Color.png" width="16" style="margin-right:4px"/> Discord](https://discord.gg/CzRSk8E)**
 
-# Branding
+## Branding
 
 You can use 'Spatial Gardener' logos on the basis of 'fair use' whenever you mention this plugin (e.g. in a video review/tutorial).
 
@@ -75,16 +73,18 @@ As long as you don't modify them in any way, claim as your own or redistribute/r
 
 **[You can download them here.](https://www.mediafire.com/file/a7a6xoa73mu9e44/spatial_gardener_logos.zip/file)**
 
-# Third-Party Credits
+## Third-Party Credits
 
-## Algorithms and code architecture
+### Algorithms and code architecture
 
-- ***THE MAIN inspiration for algorithms behind this plugin - [***mux213***](https://www.reddit.com/user/mux213/) and their [writeup](https://www.reddit.com/r/godot/comments/bfdgc1/experimenting_with_rendering_a_large_asteroid/)***
+- ***The main inspiration for algorithms behind this plugin - [***mux213***](https://www.reddit.com/user/mux213/) and their [writeup](https://www.reddit.com/r/godot/comments/bfdgc1/experimenting_with_rendering_a_large_asteroid/)***
 - Ideas for UI and sphere brush implementations - [***Unreal Engine Team***](https://github.com/EpicGames/UnrealEngine)
 - An article that helped me understand the basics of octrees - [Introduction to Octrees by ***Eric Nevala***](https://www.gamedev.net/tutorials/programming/general-and-gameplay-programming/introduction-to-octrees-r3529/)
 - A plugin I inspected to understand Godot's plugin-making - [***Zylann's*** HeightMap Terrain](https://github.com/Zylann/godot_heightmap_plugin)
+- A 3D selection system tutorial - [3D Selection Tutorial by ***Jonathan Kreuzer***](http://www.3dkingdoms.com/selection.html)
+- A basic 3D frustum culling tutorial - [Frustum Culling by ***Dion Picco*** ](https://www.flipcode.com/archives/Frustum_Culling.shtml)
 
-## 3D models
+### 3D models
 
 - Locomotive and train carts (used as base meshes) - [Low Poly Wild West Train Diorama by ***Jorma Rysky***](https://sketchfab.com/3d-models/low-poly-wild-west-train-diorama-ac701e3b40794872beeebb6251bf09e0)
 - Buildings, caudron, crate, barrel - [eval Village Pack by ***Quaternius***](https://quaternius.com/packs/evalvillage.html)
@@ -103,7 +103,7 @@ As long as you don't modify them in any way, claim as your own or redistribute/r
 - Planet - [Planet by ***P6c6970***](https://sketchfab.com/3d-models/planet-12b9bc3d77984683a39dce16c7ba5a9f)
 - Default Blender monkey - [Suzanne by ***SLiD3***](https://www.artstation.com/slid3)
 
-## Audio
+### Audio
 
 - Jump, land, step rock, step wood - [12 Player Movement SFX by ***leohpaz***](https://opengameart.org/content/12-player-movement-sfx)
 - Step dirt - [4 dry snow steps by ***qubodup***](https://opengameart.org/content/4-dry-snow-steps)
@@ -113,7 +113,7 @@ As long as you don't modify them in any way, claim as your own or redistribute/r
 - Wind blowing - [Wind blowing gusting through french castle tower by ***Astounded***](https://freesound.org/people/Astounded/sounds/483479/)
 - Trailer music - [Where We Wanna Go by ***Patrick Patrikios***](https://www.youtube.com/watch?v=EGhPElIATSI)
 
-## Artwork
+### Artwork
 
 - Tree sprites - [Tree Collection v2.6 - Bleed's Game Art by ***Bleed***](https://opengameart.org/content/tree-collection-v26-bleeds-game-art)
 - Surface normal illustration - [Curved surface showing the unit normal vectors by ***Chetvorno***](https://commons.wikia.org/wiki/File:Normal_vectors_on_a_curved_surface.svg)

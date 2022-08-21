@@ -17,3 +17,5 @@ They's two parts to this:
 
 1. **[Quick-start tutorial](TUTORIAL_QUICK_START.md)**
 2. **[In-depth look at all the properties](TUTORIAL_IN_DEPTH.md)**
+
+**Note:** some images might be taken from different versions of this plugin, but information itself is relevant to the most recent stable one.

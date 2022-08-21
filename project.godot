@@ -11,12 +11,11 @@ config_version=4
 [application]
 
 config/name="Dreadpon's Spatial Gardener"
-run/main_scene="res://test/new scene.tscn"
 config/icon="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/dreadpon.spatial_gardener/plugin.cfg", "res://addons/editor_icon_previewer/plugin.cfg", "res://addons/zylann.editor_debugger/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/dreadpon.spatial_gardener/plugin.cfg" )
 
 [physics]
 
