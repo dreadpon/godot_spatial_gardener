@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
-## [1.1.0]() - 2022-08-24
+## [v1.1.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.1.0) - 2022-08-24
 ### Added
 
 #### Plant creation
@@ -25,6 +25,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 <br/>
 
 ### Changed
+
+#### Plant painting
+- Rework brushes to continue moving beyond the physics body's boundaries (which was annoying when painting on terrain edges)
 
 #### UI
 - Rework plant thumbnail interaction buttons (clear, delete) to prevent visual clutter and accidental presses
