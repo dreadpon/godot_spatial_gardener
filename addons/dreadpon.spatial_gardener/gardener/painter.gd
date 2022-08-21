@@ -421,7 +421,7 @@ func update_all_props_to_active_brush(brush: Toolshed_Brush):
 	var max_size = 1.0
 	var max_strength = 1.0
 	var curr_size = 1.0
-	var curr_strength = 1.0
+	var curr_strength = brush.behavior_strength
 	
 	match brush.behavior_overlap_mode:
 		Toolshed_Brush.OverlapMode.VOLUME:

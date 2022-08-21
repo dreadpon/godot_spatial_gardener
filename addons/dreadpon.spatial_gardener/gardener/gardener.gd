@@ -278,6 +278,7 @@ func pair_debug_viewer_greenhouse():
 		if !greenhouse: logger.warn("DebugViewer->Greenhouse: Greenhouse is not initialized!")
 		return
 	
+	debug_viewer.set_prop_edit_selected_plant(greenhouse.greenhouse_plant_states.find(greenhouse.selected_for_edit_resource))
 	reinit_debug_draw_brush_active()
 
 
