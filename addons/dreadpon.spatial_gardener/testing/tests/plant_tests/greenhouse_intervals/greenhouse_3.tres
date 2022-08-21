@@ -16,6 +16,7 @@ __meta__ = {
 }
 mesh = ExtResource( 8 )
 spawned_spatial = ExtResource( 5 )
+cast_shadow = 0
 
 [sub_resource type="Resource" id=43]
 resource_name = "Greenhouse_LODVariant"
@@ -25,6 +26,7 @@ __meta__ = {
 }
 mesh = ExtResource( 7 )
 spawned_spatial = ExtResource( 5 )
+cast_shadow = 1
 
 [sub_resource type="Resource" id=44]
 resource_name = "Greenhouse_Plant"
@@ -43,10 +45,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -62,6 +68,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label14"
 plant/plant = SubResource( 44 )
 
 [resource]

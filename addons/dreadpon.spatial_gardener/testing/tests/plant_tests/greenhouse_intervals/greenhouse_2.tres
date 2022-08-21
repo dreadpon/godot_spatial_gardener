@@ -16,6 +16,7 @@ __meta__ = {
 }
 mesh = ExtResource( 8 )
 spawned_spatial = ExtResource( 5 )
+cast_shadow = 1
 
 [sub_resource type="Resource" id=17]
 resource_name = "Greenhouse_LODVariant"
@@ -25,6 +26,7 @@ __meta__ = {
 }
 mesh = ExtResource( 7 )
 spawned_spatial = ExtResource( 5 )
+cast_shadow = 2
 
 [sub_resource type="Resource" id=18]
 resource_name = "Greenhouse_Plant"
@@ -43,10 +45,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 1
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 2
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 2
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 34.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -62,6 +68,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label4"
 plant/plant = SubResource( 18 )
 
 [sub_resource type="Resource" id=20]
@@ -81,10 +88,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -100,6 +111,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label5"
 plant/plant = SubResource( 20 )
 
 [sub_resource type="Resource" id=22]
@@ -108,6 +120,7 @@ script = ExtResource( 2 )
 __meta__ = {
 "class": "Greenhouse_LODVariant"
 }
+cast_shadow = 2
 
 [sub_resource type="Resource" id=23]
 resource_name = "Greenhouse_LODVariant"
@@ -115,6 +128,7 @@ script = ExtResource( 2 )
 __meta__ = {
 "class": "Greenhouse_LODVariant"
 }
+cast_shadow = 0
 
 [sub_resource type="Resource" id=24]
 resource_name = "Greenhouse_LODVariant"
@@ -122,6 +136,7 @@ script = ExtResource( 2 )
 __meta__ = {
 "class": "Greenhouse_LODVariant"
 }
+cast_shadow = 3
 
 [sub_resource type="Resource" id=25]
 resource_name = "Greenhouse_LODVariant"
@@ -129,6 +144,7 @@ script = ExtResource( 2 )
 __meta__ = {
 "class": "Greenhouse_LODVariant"
 }
+cast_shadow = 1
 
 [sub_resource type="Resource" id=26]
 resource_name = "Greenhouse_Plant"
@@ -147,10 +163,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -166,6 +186,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label6"
 plant/plant = SubResource( 26 )
 
 [sub_resource type="Resource" id=28]
@@ -185,10 +206,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -204,6 +229,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label7"
 plant/plant = SubResource( 28 )
 
 [sub_resource type="Resource" id=30]
@@ -223,10 +249,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -242,6 +272,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label8"
 plant/plant = SubResource( 30 )
 
 [sub_resource type="Resource" id=32]
@@ -261,10 +292,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -280,6 +315,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label9"
 plant/plant = SubResource( 32 )
 
 [sub_resource type="Resource" id=34]
@@ -299,10 +335,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -318,6 +358,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label10"
 plant/plant = SubResource( 34 )
 
 [sub_resource type="Resource" id=36]
@@ -337,10 +378,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -356,6 +401,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label11"
 plant/plant = SubResource( 36 )
 
 [sub_resource type="Resource" id=38]
@@ -375,10 +421,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -394,6 +444,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label12"
 plant/plant = SubResource( 38 )
 
 [sub_resource type="Resource" id=40]
@@ -413,10 +464,14 @@ density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1, 1, 1 ) ]
 up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -432,6 +487,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = false
+plant/plant_label = "Label13"
 plant/plant = SubResource( 40 )
 
 [resource]
