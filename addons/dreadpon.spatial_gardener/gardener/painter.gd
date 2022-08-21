@@ -287,10 +287,11 @@ func move_brush():
 
 
 # Update brush data that is passed through signals to Gardener/Arborist
-func update_active_brush_data():
-	var space_state = _cached_camera.get_world().direct_space_state
-	var start = project_mouse_near()
-	var end = project_mouse_far()
+# Raycast overrides exist for compatability with gardener tests
+func update_active_brush_data(raycast_overrides: Dictionary = {}):
+	var space_state = paint_brush_node.get_world().direct_space_state
+	var start = project_mouse_near() if !raycast_overrides.has('start') else raycast_overrides.start
+	var end = project_mouse_far() if !raycast_overrides.has('end') else raycast_overrides.end
 	var ray_result:Dictionary = space_state.intersect_ray(start, end, [], brush_collision_mask)
 	
 	if !ray_result.empty():
@@ -303,8 +304,11 @@ func update_active_brush_data():
 		var brush_pos:Vector3 = project_mouse(planar_dist_to_camera)
 		active_brush_data.brush_pos = brush_pos
 	
-	# Cache to use with Projection brush
-	active_brush_data.brush_basis = _cached_camera.global_transform.basis
+	# It's possible we don't have _cached_camera defined here since 
+	# Gardener tests might call update_active_brush_data() without setting it
+	if _cached_camera:
+		# Cache to use with Projection brush
+		active_brush_data.brush_basis = _cached_camera.global_transform.basis
 
 
 # Update transform of a paint brush 3D node
