@@ -30,7 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Rework brushes to continue moving beyond the physics body's boundaries (which was annoying when painting on terrain edges)
 
 #### UI
-- Rework plant thumbnail interaction buttons (clear, delete) to prevent visual clutter and accidental presses
+- Rework plant thumbnail interaction buttons (clear, delete) to prevent visual clutter and accidental presses (suggested by [@justinbarrett](https://github.com/justinbarrett))
 - Rework gardener sidepanel UI to more closely resemble Godot's native Inspector
 - Move gardener sidepanel creation from code to predefined scenes to ease it's management and clean up code
 - Change `ThemeAdapter` to use Godot's editor colors and theme classes as a base for custom UI styling
