@@ -1,4 +1,5 @@
 *.backup
+default_env.tres
 
 # Godot 4+ specific ignores
 .godot/

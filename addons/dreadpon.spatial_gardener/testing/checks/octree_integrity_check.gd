@@ -65,10 +65,10 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 		for child_node in octree_node.child_nodes:
 			var child_node_results = analyze_octree_node_structure(child_node)
 			append_results(node_results, child_node_results)
-			if child_node.members.size() > 0 || child_node.child_nodes.size() > 0:
+			if child_node.member_count() > 0 || child_node.child_nodes.size() > 0:
 				occupied_child_nodes += 1
 	else:
-		node_results.total_members += octree_node.members.size()
+		node_results.total_members += octree_node.member_count()
 	
 	if octree_node.child_nodes.size() > 0:
 		if node_results.total_members <= octree_node.max_members:
@@ -84,7 +84,7 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 		else:
 			node_results.has_only_one_child = []
 	else:
-		if octree_node.extent >= octree_node.min_leaf_extent && octree_node.members.size() > octree_node.max_members:
+		if octree_node.extent >= octree_node.min_leaf_extent && octree_node.member_count() > octree_node.max_members:
 			node_results.has_members_above_limit.append(
 				"at %s" % [str(octree_node.get_address())])
 	
@@ -114,12 +114,12 @@ static func analyze_octree_scene_tree(octree_node:OctreeNode, MMI_container:Spat
 		else:
 			node_results.accounted_MMIs.append(octree_node.MMI)
 			if spawns_spatial:
-				if octree_node.MMI.get_children().size() < octree_node.members.size():
+				if octree_node.MMI.get_children().size() < octree_node.member_count():
 					node_results.node_missing_spawned_spatials.append(
-						"at %s, from %s, %d are missing" % [str(octree_node.get_address()), octree_node.MMI, octree_node.members.size() - octree_node.MMI.get_children().size()])
-				elif octree_node.MMI.get_children().size() > octree_node.members.size():
+						"at %s, from %s, %d are missing" % [str(octree_node.get_address()), octree_node.MMI, octree_node.member_count() - octree_node.MMI.get_children().size()])
+				elif octree_node.MMI.get_children().size() > octree_node.member_count():
 					node_results.node_missing_spawned_spatials.append(
-						"at %s, from %s, %d are extra" % [str(octree_node.get_address()), octree_node.MMI, octree_node.MMI.get_children().size() - octree_node.members.size()])
+						"at %s, from %s, %d are extra" % [str(octree_node.get_address()), octree_node.MMI, octree_node.MMI.get_children().size() - octree_node.member_count()])
 	
 	return node_results
 

@@ -28,51 +28,30 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 	# We detect overlaps first
 	brush_placement_area.init_placement_overlaps(octree_manager)
 	# For each overlap we generate a new Transform and add it to the PaintingChange
-	create_painting_changes(brush_placement_area.overlapped_octree_members, plant, plant_index, octree_manager, painting_changes)
-	
-#	# For each overlap we generate a new Transform and add it to the PaintingChange
-#	for overlapped_member_data in brush_placement_area.overlapped_octree_members:
-#		var octree_node = octree_manager.root_octree_node.find_child_by_address(overlapped_member_data.node_address)
-#		var placement_transform = octree_node.members[overlapped_member_data.member_index]
-#
-#		# We use Vector3.to_string() to generate our reference keys
-#		# I assume it's fully deterministic at least in the scope of an individual OS
-#		var octree_member_key = str(placement_transform.placement)
-#		if reapplied_octree_members.has(octree_member_key): continue
-#		reapplied_octree_members.append(octree_member_key)
-#
-#		var plant_transform := TransformGenerator.generate_plant_transform(placement_transform.placement, placement_transform.surface_normal, plant, randomizer)
-#		var new_placement_transform := PlacementTransform.new(placement_transform.placement, placement_transform.surface_normal, plant_transform, placement_transform.octree_octant)
-#
-#		# Painting changes here are non-standart: they actually have an octree node address and member index bundled
-#		# We can't reliably use an address when adding/removing members since the octree might grow/collapse
-#		# But here it's fine since we don't change the amount of members
-#		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
-#			{"member": new_placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address},
-#			{"member": placement_transform, "index": overlapped_member_data.member_index, "address": overlapped_member_data.node_address})
+	create_painting_changes(brush_placement_area.overlapped_member_data, plant, plant_index, octree_manager, painting_changes)
 
 
-func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
-	create_painting_changes(members_in_brush, plant, plant_index, octree_manager, painting_changes)
+func proj_get_stroke_update_changes(placeform_data_array: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
+	create_painting_changes(placeform_data_array, plant, plant_index, octree_manager, painting_changes)
 
 
-func create_painting_changes(member_data_array: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
-	for member_data in member_data_array:
-		var octree_node = octree_manager.root_octree_node.find_child_by_address(member_data.node_address)
-		var placement_transform = octree_node.members[member_data.member_index]
+func create_painting_changes(placeform_data_array: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
+	for placeform_data in placeform_data_array:
+		var octree_node = octree_manager.root_octree_node.find_child_by_address(placeform_data.node_address)
+		var placeform = octree_node.get_placeform(placeform_data.member_idx)
 		
 		# We use Vector3.to_string() to generate our reference keys
 		# I assume it's fully deterministic at least in the scope of an individual OS
-		var octree_member_key = str(placement_transform.placement)
+		var octree_member_key = str(placeform[0])
 		if reapplied_octree_members.has(octree_member_key): continue
 		reapplied_octree_members.append(octree_member_key)
 		
-		var plant_transform := TransformGenerator.generate_plant_transform(placement_transform.placement, placement_transform.surface_normal, plant, randomizer)
-		var new_placement_transform := PlacementTransform.new(placement_transform.placement, placement_transform.surface_normal, plant_transform, placement_transform.octree_octant)
+		var plant_transform := TransformGenerator.generate_plant_transform(placeform[0], placeform[1], plant, randomizer)
+		var new_placeform := Placeform.mk(placeform[0], placeform[1], plant_transform, placeform[3])
 		
 		# Painting changes here are non-standart: they actually have an octree node address and member index bundled
 		# We can't reliably use an address when adding/removing members since the octree might grow/collapse
 		# But here it's fine since we don't change the amount of members
 		painting_changes.add_change(PaintingChanges.ChangeType.SET, plant_index,
-			{"member": new_placement_transform, "index": member_data.member_index, "address": member_data.node_address},
-			{"member": placement_transform, "index": member_data.member_index, "address": member_data.node_address})
+			{"placeform": new_placeform, "index": placeform_data.member_idx, "address": placeform_data.node_address},
+			{"placeform": placeform, "index": placeform_data.member_idx, "address": placeform_data.node_address})

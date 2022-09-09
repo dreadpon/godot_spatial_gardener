@@ -81,6 +81,12 @@ static func add_plugin_project_settings():
 		500.0,
 		TYPE_REAL)
 	
+	# Plugin
+	add_project_setting(
+		"dreadpons_spatial_gardener/plugin/scan_for_outdated_scenes",
+		true,
+		TYPE_BOOL)
+	
 	# Debug
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/debug/dump_editor_tree_key",

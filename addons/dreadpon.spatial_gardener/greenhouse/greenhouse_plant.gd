@@ -85,6 +85,11 @@ var rotation_random_z:float = 0.0
 # "Sloped" in relation to the chosen primary up vector
 var slope_allowed_range:Array = [0.0, 180.0]
 
+# A dummy variable to export plant instance transforms
+var import_export_import_button:bool = false
+# A dummy variable to import plant instance transforms
+var import_export_export_button:bool = false
+
 
 var total_instances_in_gardener:int = 0
 var _base_control = null
@@ -95,6 +100,8 @@ var settings_container = null
 
 signal req_octree_reconfigure
 signal req_octree_recenter
+signal req_import_transforms
+signal req_export_transforms
 signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 
 
@@ -266,6 +273,15 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				"representation_type": UI_IF_MultiRange.RepresentationType.VALUE,
 				}
 			input_field = UI_IF_MultiRange.new(slope_allowed_range, "Allowed Slope Range", prop, settings)
+		#======================================================
+		"import_export/import_button":
+			var settings := {"button_text": "Import"}
+			input_field = UI_IF_Button.new(import_export_import_button, "Import Transforms", prop, settings)
+			input_field.connect("pressed", self, "on_if_button", [input_field])
+		"import_export/export_button":
+			var settings := {"button_text": "Export"}
+			input_field = UI_IF_Button.new(import_export_export_button, "Export Transforms", prop, settings)
+			input_field.connect("pressed", self, "on_if_button", [input_field])
 	
 	return input_field
 
@@ -332,6 +348,10 @@ func on_if_button(input_field:UI_InputField):
 	match input_field.prop_name:
 		"octree/octree_recenter_button":
 			emit_signal("req_octree_recenter")
+		"import_export/import_button":
+			emit_signal("req_import_transforms")
+		"import_export/export_button":
+			emit_signal("req_export_transforms")
 
 
 
@@ -494,6 +514,11 @@ func _set(prop, val):
 		
 		"slope/slope_allowed_range":
 			slope_allowed_range = val
+		
+		"import_export/import_button":
+			import_export_import_button = val
+		"import_export/export_button":
+			import_export_export_button = val
 		_:
 			return_val = false
 	
@@ -565,6 +590,11 @@ func _get(property):
 		
 		"slope/slope_allowed_range":
 			return slope_allowed_range
+		
+		"import_export/import_button":
+			return import_export_import_button
+		"import_export/export_button":
+			return import_export_export_button
 	
 	return null
 
@@ -639,14 +669,14 @@ func _get_prop_dictionary():
 		"octree/octree_reconfigure_button":
 		{
 			"name": "octree/octree_reconfigure_button",
-			"type": TYPE_REAL,
+			"type": TYPE_BOOL,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
 		"octree/octree_recenter_button":
 		{
 			"name": "octree/octree_recenter_button",
-			"type": TYPE_REAL,
+			"type": TYPE_BOOL,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -799,7 +829,22 @@ func _get_prop_dictionary():
 			"type": TYPE_ARRAY,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
-		}
+		},
+		#======================================================
+		"import_export/import_button":
+		{
+			"name": "import_export/export_button",
+			"type": TYPE_BOOL,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_NONE
+		},
+		"import_export/export_button":
+		{
+			"name": "import_export/export_button",
+			"type": TYPE_BOOL,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_NONE
+		},
 	}
 
 
@@ -912,6 +957,24 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "\n" \
 				+ "NOTE: slope is calculated in relation to the Primary Up Vector\n" \
 				+ "If you wish to align your plant to Surface Normal and use the slope\n" \
-				+ "Set Primary Up Vector to World Y, secondary to Normal and just blend all the way to the secondary vector (blend = 1.0)" \
+				+ "Set Primary Up Vector to World Y, secondary to Normal and just blend all the way to the secondary vector (blend = 1.0)" 
+		
+		"import_export/import_button":
+			return "The button to import instance transforms for the current plant inside a current Gardener\n" \
+				+ "To then import them to a different scene\n" \
+				+ "Or when switching between plugin versions (whenever necessary)\n" \
+				+ "Instances are ADDED to the existing ones; to replace you'll need to manually erase the old instances first\n" \
+				+ "\n" \
+				+ "NOTE: import recreates your octree nodes anew and they won't be the same\n" \
+				+ "(but they were killed already by an export operation to begin with)\n" \
+				+ "Most of the time this can be ignored since you likely Rebuild/Recenter your octrees on a regular basis anyway"
+		"import_export/export_button":
+			return "The button to export all instance transforms of current plant inside a current Gardener\n" \
+				+ "To import them to a different scene\n" \
+				+ "Or when switching between plugin versions (whenever necessary)\n" \
+				+ "\n" \
+				+ "NOTE: export kills whatever octree nodes you have\n" \
+				+ "(and import recreates them anew but they won't be the same)\n" \
+				+ "Most of the time this can be ignored since you likely Rebuild/Recenter your octrees on a regular basis anyway"
 	
 	return ""

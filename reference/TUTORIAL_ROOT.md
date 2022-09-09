@@ -1,4 +1,9 @@
 # Spatial Gardener Tutorial
+
+<br>
+
+## Plugin usage tutorial
+
 Welcome to the Spatial Gardener tutorial for Godot, a plugin for painting plants and props in your levels.
 
 I will teach you how to add a Gardener to your scene; how to setup up a plant mesh and configure its placement settings; how to paint, erase and update your plants; and what kind of optimization this plugin uses.
@@ -19,3 +24,13 @@ They's two parts to this:
 2. **[In-depth look at all the properties](TUTORIAL_IN_DEPTH.md)**
 
 **Note:** some images might be taken from different versions of this plugin, but information itself is relevant to the most recent stable one.
+
+<br>
+
+## Scene converter tutorial
+
+At some point, specification for storing scenes might change; in that case you might want convert your scenes to a newer format. 
+
+Here's how:
+
+- **[Scene conversion](TUTORIAL_SCENE_CONVERSION.md)**

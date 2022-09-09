@@ -7,6 +7,8 @@
 
 ![Animated cover](https://i.postimg.cc/tCq8TMBf/cover-gif-lossy.gif)
 
+</br>
+
 ## What is it for?
 
 It's meant to simplify foliage placement in a natural-feeling way without having to use heightmap terrain or writing procedural placement algorithms.
@@ -17,6 +19,8 @@ This is a single player plugin and works best with finite medium-sized scenes. T
 
 [![Video preview](https://i.postimg.cc/VsRnZDRn/trailer-thubmnail-360p-ext-compressed.jpg)](https://youtu.be/o_59aTeljpg)
 
+</br>
+
 ## Stability
 
 Current stable release requires at Godot v3.5.
@@ -24,6 +28,8 @@ Current stable release requires at Godot v3.5.
 Want a test-drive? Go to [Releases](https://github.com/dreadpon/godot_spatial_gardener/releases) and get the most recent windows build: `godot_spatial_gardener_showcase_windows_x64.zip`.
 
 ![Test-drive](https://i.postimg.cc/cLjzF4dy/showcase-gif-lossy.gif)
+
+</br>
 
 ## Installation
 
@@ -34,6 +40,8 @@ Download the code by clicking green `Code` button and then `Download ZIP`. Unpac
 Copy the folder `addons/dreadpon.spatial_gardener/` to `res://addons/` in your Godot project and enable it from `Project -> Project Settings -> Plugins`.
 
 ![Paint 1](https://i.postimg.cc/rmQFHYgr/paint-1.jpg)
+
+</br>
 
 ## Tutorial
 
@@ -46,11 +54,15 @@ It comes in two formats, depending on your preference:
 
 Text tutorial is the most up-to-date, but video better illustrates each step due to being a video, duh.
 
+</br>
+
 ## Contribution
 
 If you want to report a bug or request a feature, you should do so on GitHub using `Issues`.
 
 **[Refer here for more](reference/CONTRIBUTION.md)** details.
+
+</br>
 
 ## Sponsor this project
 
@@ -59,11 +71,18 @@ You're welcome to support me on:
 - **[<img src="https://i.postimg.cc/QCfW2L37/Digital-Patreon-Logo-Fiery-Coral.png" width="16" style="margin-right:4px"/> Patreon](https://www.patreon.com/dreadpon)**
 - **[<img src="https://i.postimg.cc/Hkc7hPPJ/Color.png" width="16" style="margin-right:4px"/> Boosty](https://boosty.to/dreadpon)**
 
-This will help make updates for this plugin and embark on any new projects I set my eyes on.
+Or with crypto:
 
-Or join me on my Discord:
+- **[`BTC` bc1qr7wrgagssy5gu03l7r92rsd59qpcwnp49qkjnf](bitcoin:bc1qr7wrgagssy5gu03l7r92rsd59qpcwnp49qkjnf?amount=0.0005&message=Support%20the%20developer)**
+- **`ETH` 0xbf8596a783c473A259F07b472FbcfA3aB1E52956**
+
+This will help make updates for this plugin and embark on new exciting projects!
+
+You can also join me on Discord:
 
 - **[<img src="https://i.postimg.cc/0yn7THYP/Discord-Logo-Color.png" width="16" style="margin-right:4px"/> Discord](https://discord.gg/CzRSk8E)**
+
+</br>
 
 ## Branding
 
@@ -72,6 +91,8 @@ You can use 'Spatial Gardener' logos on the basis of 'fair use' whenever you men
 As long as you don't modify them in any way, claim as your own or redistribute/resell you should be fine.
 
 **[You can download them here.](https://www.mediafire.com/file/a7a6xoa73mu9e44/spatial_gardener_logos.zip/file)**
+
+</br>
 
 ## Third-Party Credits
 

@@ -11,7 +11,7 @@ const Logger = preload("../../utility/logger.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
 const DebugDraw = preload("../../utility/debug_draw.gd")
 const Greenhouse_Plant = preload("../../greenhouse/greenhouse_plant.gd")
-const PlacementTransform = preload("../placement_transform.gd")
+const Placeform = preload("../placeform.gd")
 const Toolshed_Brush = preload("../../toolshed/toolshed_brush.gd")
 const BrushPlacementArea = preload("../brush_placement_area.gd")
 const TransformGenerator = preload("../transform_generator.gd")
@@ -121,19 +121,19 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 			volume_get_stroke_update_changes(plant_brush_data, plant, plant_index, octree_manager, brush_placement_area, container_transform, painting_changes)
 			
 		Toolshed_Brush.OverlapMode.PROJECTION:
-			# This will store dictionaries so it shares the same data structure as brush_placement_area.overlapped_octree_members
+			# This will store dictionaries so it shares the same data structure as brush_placement_area.overlapped_member_data
 			# But with member itself added into the mix. It'll look like this:
-			# [{"node_address": node_address, "member_index": member_index, "member": placement_transform}, ...]
-			var members_in_brush := []
+			# [{"node_address": node_address, "member_idx": member_idx, "placeform": placeform}, ...]
+			var placeforms_in_brush := []
 			var frustum_planes := []
 			_cached_mouse_pos = camera.get_viewport().get_mouse_position()
 			
 			proj_define_frustum(brush_data, frustum_planes)
-			proj_get_members_in_frustum(frustum_planes, members_in_brush,  octree_manager.root_octree_node, container_transform)
-			proj_filter_members_to_brush_circle(members_in_brush, container_transform)
+			proj_get_placeforms_data_in_frustum(frustum_planes, placeforms_in_brush, octree_manager.root_octree_node, container_transform)
+			proj_filter_placeforms_to_brush_circle(placeforms_in_brush, container_transform)
 			if !brush.behavior_passthrough:
-				proj_filter_obstructed_members(members_in_brush, container_transform)
-			proj_get_stroke_update_changes(members_in_brush, plant, plant_index, octree_manager, painting_changes)
+				proj_filter_obstructed_placeforms(placeforms_in_brush, container_transform)
+			proj_get_stroke_update_changes(placeforms_in_brush, plant, plant_index, octree_manager, painting_changes)
 
 
 
@@ -169,22 +169,22 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 #-------------------------------------------------------------------------------
 
 
-func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_transform:Transform):
+func proj_filter_placeforms_to_brush_circle(placeforms_data_in_frustum: Array, container_transform:Transform):
 	var brush_radius_squared: float = pow(brush.shape_projection_size * 0.5, 2.0)
 	var viewport_size := camera.get_viewport().size
 	
-	for i in range(members_in_frustum.size() -1, -1, -1):
-		var member_data = members_in_frustum[i]
-		var placement = container_transform.xform(member_data.member.placement)
+	for i in range(placeforms_data_in_frustum.size() -1, -1, -1):
+		var placeform_data = placeforms_data_in_frustum[i]
+		var placement = container_transform.xform(placeform_data.placeform[0])
 		var screen_space_pos := camera.unproject_position(placement)
 		var dist_squared = (screen_space_pos - _cached_mouse_pos).length_squared()
 		
 		# Remove those outside brush radius
 		if dist_squared > brush_radius_squared:
-			members_in_frustum.remove(i)
+			placeforms_data_in_frustum.remove(i)
 		# Remove those outside viewport
 		elif screen_space_pos.x < 0 || screen_space_pos.y < 0 || screen_space_pos.x > viewport_size.x || screen_space_pos.y > viewport_size.y:
-			members_in_frustum.remove(i)
+			placeforms_data_in_frustum.remove(i)
 
 
 func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
@@ -203,25 +203,25 @@ func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
 	return frustum_planes
 
 
-func proj_filter_obstructed_members(members_in_frustum: Array, container_transform:Transform):
+func proj_filter_obstructed_placeforms(placeforms_data_in_frustum: Array, container_transform:Transform):
 	# This is a margin to offset our cast due to miniscule errors in placement
 	# And built-in collision shape margin
 	# Not off-setting an endpoint will mark some visible instances as obstructed
 	var raycast_margin = FunLib.get_setting_safe("dreadpons_spatial_gardener/painting/projection_raycast_margin", 0.1)
-	for i in range(members_in_frustum.size() -1, -1, -1):
-		var member_data = members_in_frustum[i]
+	for i in range(placeforms_data_in_frustum.size() -1, -1, -1):
+		var placeform_data = placeforms_data_in_frustum[i]
 		var ray_start: Vector3 = camera.global_transform.origin
-		var ray_vector = container_transform.xform(member_data.member.placement) - ray_start
+		var ray_vector = container_transform.xform(placeform_data.placeform[0]) - ray_start
 		var ray_end: Vector3 = ray_start + ray_vector.normalized() * (ray_vector.length() - raycast_margin)
 		var ray_result = space_state.intersect_ray(ray_start, ray_end)
 		
 		if !ray_result.empty() && ray_result.collider.collision_layer & collision_mask:
-			members_in_frustum.remove(i)
+			placeforms_data_in_frustum.remove(i)
 
 
 # Called when the Painter brush stroke is updated (moved)
 # To be overridden
-func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
+func proj_get_stroke_update_changes(placeforms_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
 	return null
 
 
@@ -233,7 +233,7 @@ func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Pl
 
 
 # Recursively iterate over octree nodes to find nodes and members within brush frustum
-func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Array, octree_node: MMIOctreeNode, container_transform:Transform):
+func proj_get_placeforms_data_in_frustum(frustum_planes: Array, placeforms_data_in_frustum: Array, octree_node: MMIOctreeNode, container_transform:Transform):
 	var octree_node_transform := Transform(container_transform.basis, container_transform.xform(octree_node.center_pos))
 	var octree_node_extents := Vector3(octree_node.extent, octree_node.extent, octree_node.extent)
 	debug_draw_cube(octree_node_transform.origin, octree_node_extents, octree_node_transform.basis.get_rotation_quat(), octree_node_transform.basis)
@@ -241,12 +241,12 @@ func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Arra
 	if is_box_intersecting_frustum(frustum_planes, octree_node_transform, octree_node_extents):
 		if octree_node.is_leaf:
 			var node_address = octree_node.get_address()
-			for member_index in range(0, octree_node.members.size()):
-				var member = octree_node.members[member_index]
-				members_in_frustum.append({"node_address": node_address, "member_index": member_index, "member": member})
+			for member_idx in range(0, octree_node.member_count()):
+				var placeform = octree_node.get_placeform(member_idx)
+				placeforms_data_in_frustum.append({"node_address": node_address, "member_idx": member_idx, "placeform": placeform})
 		else:
 			for child_node in octree_node.child_nodes:
-				proj_get_members_in_frustum(frustum_planes, members_in_frustum, child_node, container_transform)
+				proj_get_placeforms_data_in_frustum(frustum_planes, placeforms_data_in_frustum, child_node, container_transform)
 
 
 # This is an approximation (but THIS frustum check IS MEANT to be an approximation, so it's fine)
@@ -345,11 +345,11 @@ func define_frustum_plane_array(frustum_planes: Array, frustum_points: Array):
 #		= 0
 # Where ux, uy, uz are unkown variables that are substituted when solving a plane equations
 # 
-# Now we combine or scalar values and move them to the right side
+# Now we combine our scalar values and move them to the right side
 #		normal.x * ux + normal.y * uy + normal.z * uz 
 #		= normal.x * common_point.x + normal.y * common_point.y + normal.z * common_point.z
 #
-#That should be it, distance to origin is 
+# That should be it, distance to origin is 
 #		d = normal.x * common_point.x + normal.y * common_point.y + normal.z * common_point.z
 # Which is esentially a dot product :)
 func define_frustum_plane(common_point: Vector3, point_0: Vector3, point_1: Vector3):

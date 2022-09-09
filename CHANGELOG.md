@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.2.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.2.0) - 2022-12-18
+
+### Changed
+
+#### Gardener
+- Optimize Gardener storage to use less space in a .tscn file (up to 50% less) (suggested by [@rick551a](https://github.com/rick551a))
+	- This change breaks compatability with previous versions. Refer [here](reference/TUTORIAL_SCENE_CONVERSION.md) for a conversion guide
+
+<br/><br/>
+
+## [v1.1.1](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.1.1) - 2022-12-13
+### Added
+
+#### Gardener
+- Implement independent plant LODs in instanced scenes, so those far away benefit from optimizations too (suggested by **@Herger**)
+- Implement the ability to import/export instance transforms to JSON and back (for a given plant and Gardener)
+
+<br/><br/>
+
 ## [v1.1.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.1.0) - 2022-08-24
 ### Added
 

@@ -33,6 +33,11 @@ static func ensure_signal(source:Object, _signal:String, target:Object, method:S
 		source.connect(_signal, target, method, binds, flags)
 
 
+static func disconnect_all(obj: Object, signal_name: String):
+	for connection_data in obj.get_signal_connection_list(signal_name):
+		obj.disconnect(signal_name, connection_data.target, connection_data.method)
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -58,6 +63,17 @@ static func make_hint_string(array:Array):
 		if i < array.size() - 1:
 			string += ","
 	return string
+
+
+static func str_to_vec3(string: String) -> Vector3:
+	var split = string.trim_prefix('(').trim_suffix(')').split(', ')
+	return Vector3(split[0], split[1], split[2])
+
+
+static func str_to_transform(string: String) -> Transform:
+	string = string.replace(' - ', ', ')
+	var split = string.split(', ')
+	return Transform(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
 
 
 
@@ -296,3 +312,57 @@ static func combine_dir_and_file(dir_path: String, file_name: String):
 
 static func is_dir_valid(dir):
 	return dir != "" && dir != "/" && Directory.new().dir_exists(dir)
+
+
+
+
+#-------------------------------------------------------------------------------
+# Filesystem
+#-------------------------------------------------------------------------------
+
+
+static func remove_dir_recursive(path, keep_first:bool = false) -> bool:
+	var dir = Directory.new()
+	
+	var error = dir.open(path)
+	if error == OK:
+		dir.list_dir_begin(true)
+		var file_name = dir.get_next()
+		while file_name != "":
+			if dir.current_is_dir():
+				if !remove_dir_recursive(path + "/" + file_name, false):
+					return false
+			else:
+				dir.remove(file_name)
+			file_name = dir.get_next()
+		
+		if !keep_first:
+			dir.remove(path)
+		return true
+	
+	return false
+
+
+static func iterate_files(dir_path: String, deep: bool, obj: Object, method_name: String, payload):
+	if !is_instance_valid(obj): 
+		assert('Object instace invalid!')
+		return
+	if !obj.has_method(method_name): 
+		assert('%s does not have a method named "%s"!' % [str(obj), method_name])
+		return
+	var dir = Directory.new()
+	
+	var error = dir.open(dir_path)
+	if dir_path.ends_with('/'):
+		dir_path = dir_path.trim_suffix('/')
+	if error == OK:
+		dir.list_dir_begin(true)
+		var full_path = ''
+		var file_name = dir.get_next()
+		while file_name != '':
+			full_path = dir_path + "/" + file_name
+			if deep && dir.current_is_dir():
+				iterate_files(full_path, deep, obj, method_name, payload)
+			else:
+				obj.call(method_name, full_path, payload)
+			file_name = dir.get_next()

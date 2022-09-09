@@ -76,7 +76,9 @@ func finished_painter_action(painter_action:PainterAction):
 		var root_octree_node = gardener.arborist.octree_managers[i].root_octree_node
 		if member_count_snapshots_list.size() <= i:
 			member_count_snapshots_list.append([0])
-		member_count_snapshots_list[i].append(root_octree_node.get_all_members().size())
+		var all_placeforms = []
+		root_octree_node.get_nested_placeforms(all_placeforms)
+		member_count_snapshots_list[i].append(all_placeforms.size())
 
 
 func finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
@@ -90,7 +92,9 @@ func finished_undo_redo_action(current_action_index:int, action_name:String, cal
 		var root_octree_node = gardener.arborist.octree_managers[i].root_octree_node
 		var member_count_snapshots = member_count_snapshots_list[i]
 		
-		var given_total_members = root_octree_node.get_all_members().size()
+		var all_placeforms = []
+		root_octree_node.get_nested_placeforms(all_placeforms)
+		var given_total_members = all_placeforms.size()
 		var reference_total_members = member_count_snapshots[current_action_index]
 		var check_text = "during '%s' at interval '%d'" % [action_name, current_action_index]
 		

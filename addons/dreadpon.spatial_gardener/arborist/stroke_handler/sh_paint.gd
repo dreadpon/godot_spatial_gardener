@@ -43,5 +43,5 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 			# Generate transforms and add them to the array
 			var member_pos = container_transform.affine_inverse().xform(ray_result.position)
 			var plant_transform:Transform = TransformGenerator.generate_plant_transform(member_pos, ray_result.normal, plant, randomizer)
-			var placement_transform:PlacementTransform = PlacementTransform.new(member_pos, ray_result.normal, plant_transform)
-			painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placement_transform, placement_transform)
+			var placeform: Array = Placeform.mk(member_pos, ray_result.normal, plant_transform)
+			painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placeform, placeform)

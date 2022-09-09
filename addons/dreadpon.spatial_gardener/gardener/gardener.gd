@@ -33,6 +33,9 @@ const PA_ArrayRemove = preload("../utility/input_field_resource/pa_array_remove.
 const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 
 
+
+var plugin_version: String = ""
+var storage_version: int = 0
 #export
 var refresh_octree_shared_LOD_variants:bool = false setget set_refresh_octree_shared_LOD_variants
 
@@ -42,6 +45,7 @@ var garden_work_directory:String setget set_garden_work_directory
 var gardening_collision_mask := pow(2, 0) setget set_gardening_collision_mask
 
 var initialized_for_edit:bool = false setget set_initialized_for_edit
+var is_edited: bool = false
 
 var toolshed:Toolshed = null
 var greenhouse:Greenhouse = null
@@ -78,7 +82,24 @@ func _init():
 	set_meta("class", "Gardener")
 
 
+# Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
+# In case it was created in an older version of this plugin
+func update_plugin_ver():
+	plugin_version = get_plugin_ver()
+	storage_version = get_storage_ver()
+
+
+static func get_plugin_ver():
+	return '1.2.0'
+
+
+static func get_storage_ver():
+	return 2
+
+
 func _ready():
+	update_plugin_ver()
+	
 	logger = Logger.get_for(self, name)
 	
 	# Without editor we only care about an Arborist
@@ -166,9 +187,32 @@ func propagate_camera(camera:Camera):
 
 
 
+
 #-------------------------------------------------------------------------------
 # Initialization
 #-------------------------------------------------------------------------------
+
+
+# This is supposed to address a problem decribed in "start_gardener_edit()" of "plugin.gd"
+# Instead of recalculating everything, we hope it's enough to just restore the member references
+func restore_references():
+	logger = Logger.get_for(self, name)
+	if !Engine.editor_hint: return
+	
+	if has_node('painting'):
+		painting_node = get_node('painting')
+	if has_node('debug_viewer'):
+		debug_viewer = get_node('debug_viewer')
+	
+	init_painter()
+	painter.set_brush_collision_mask(gardening_collision_mask)
+	
+	reload_resources()
+	
+	if has_node("Arborist") && get_node("Arborist") is Arborist:
+		arborist = get_node("Arborist")
+	
+	set_gardening_collision_mask(gardening_collision_mask)
 
 
 # Initialize a Painter
@@ -236,12 +280,16 @@ func reload_resources():
 		last_greenhouse.disconnect("prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
 		last_greenhouse.disconnect("req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
 		last_greenhouse.disconnect("req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
+		last_greenhouse.disconnect("req_import_transforms", self, "on_greenhouse_req_import_transforms")
+		last_greenhouse.disconnect("req_export_transforms", self, "on_greenhouse_req_export_transforms")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed", self, "on_greenhouse_prop_action_executed")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state", self, "on_greenhouse_prop_action_executed_on_plant_state")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state_plant", self, "on_greenhouse_prop_action_executed_on_plant_state_plant")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
 	FunLib.ensure_signal(greenhouse, "req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
 	FunLib.ensure_signal(greenhouse, "req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
+	FunLib.ensure_signal(greenhouse, "req_import_transforms", self, "on_greenhouse_req_import_transforms")
+	FunLib.ensure_signal(greenhouse, "req_export_transforms", self, "on_greenhouse_req_export_transforms")
 	
 	if arborist:
 		pair_arborist_greenhouse()
@@ -327,6 +375,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 		arborist.emit_member_count(i)
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
+	is_edited = true
 
 
 # Stop editing (painting) a scene
@@ -337,6 +386,7 @@ func stop_editing():
 	
 	if is_instance_valid(painter):
 		painter.stop_editing()
+	is_edited = false
 
 
 # We can properly start editing only when a workDirectory is set
@@ -473,14 +523,28 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 
 # A request to reconfigure an octree
 func on_greenhouse_req_octree_reconfigure(plant, plant_state):
+	if !is_edited: return
 	var plant_index = greenhouse.greenhouse_plant_states.find(plant_state)
 	arborist.reconfigure_octree(plant_state, plant_index)
 
 
 # A request to recenter an octree
 func on_greenhouse_req_octree_recenter(plant, plant_state):
+	if !is_edited: return
 	var plant_index = greenhouse.greenhouse_plant_states.find(plant_state)
 	arborist.recenter_octree(plant_state, plant_index)
+
+
+# A request to import plant transforms
+func on_greenhouse_req_import_transforms(file_path: String, plant_idx: int):
+	if !is_edited: return
+	arborist.import_instance_transforms(file_path, plant_idx)
+
+
+# A request to export plant transforms
+func on_greenhouse_req_export_transforms(file_path: String, plant_idx: int):
+	if !is_edited: return
+	arborist.export_instance_transforms(file_path, plant_idx)
 
 
 # Update brush active indexes for DebugViewer
@@ -599,10 +663,15 @@ func save_greenhouse():
 # Writing this by hand THRICE for each property is honestly tiring
 # Built-in Godot reflection would go a long way
 func _get(property):
-	if property == "file_management/garden_work_directory":
-		return garden_work_directory
-	elif property == "gardening/gardening_collision_mask":
-		return gardening_collision_mask
+	match property:
+		"file_management/garden_work_directory":
+			return garden_work_directory
+		"gardening/gardening_collision_mask":
+			return gardening_collision_mask
+		"plugin_version":
+			return 
+		"storage_version":
+			return storage_version
 
 
 func _set(property, val):
@@ -632,6 +701,16 @@ func _get_property_list():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_LAYERS_3D_PHYSICS
+		},
+		{
+			"name": "plugin_version",
+			"type": TYPE_STRING,
+			"usage": PROPERTY_USAGE_NOEDITOR,
+		},
+		{
+			"name": "storage_version",
+			"type": TYPE_STRING,
+			"usage": PROPERTY_USAGE_NOEDITOR,
 		},
 	]
 

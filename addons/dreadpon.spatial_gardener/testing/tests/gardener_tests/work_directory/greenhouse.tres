@@ -15,6 +15,7 @@ __meta__ = {
 "class": "Greenhouse_LODVariant"
 }
 mesh = ExtResource( 6 )
+cast_shadow = 1
 
 [sub_resource type="Resource" id=2]
 resource_name = "Greenhouse_Plant"
@@ -33,10 +34,14 @@ density/density_per_units = 5000.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 0.3, 0.3, 0.3 ), Vector3( 0.6, 0.6, 0.6 ) ]
 up_vector/up_vector_primary_type = 2
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 4
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.3
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -52,6 +57,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = true
+plant/plant_label = ""
 plant/plant = SubResource( 2 )
 
 [sub_resource type="Resource" id=4]
@@ -62,6 +68,7 @@ __meta__ = {
 }
 mesh = ExtResource( 7 )
 spawned_spatial = ExtResource( 5 )
+cast_shadow = 1
 
 [sub_resource type="Resource" id=5]
 resource_name = "Greenhouse_Plant"
@@ -80,10 +87,14 @@ density/density_per_units = 1000.0
 scale/scale_scaling_type = 0
 scale/scale_range = [ Vector3( 1, 1, 1 ), Vector3( 1.5, 1.5, 1.5 ) ]
 up_vector/up_vector_primary_type = 2
+up_vector/up_vector_primary = Vector3( 0, 0, 0 )
 up_vector/up_vector_secondary_type = 4
+up_vector/up_vector_secondary = Vector3( 0, 0, 0 )
 up_vector/up_vector_blending = 0.3
 fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3( 0, 0, 0 )
 fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [ 0.0, 0.0 ]
 offset/offset_jitter_fraction = 0.6
@@ -99,6 +110,7 @@ __meta__ = {
 "class": "Greenhouse_PlantState"
 }
 plant/plant_brush_active = true
+plant/plant_label = ""
 plant/plant = SubResource( 5 )
 
 [resource]
