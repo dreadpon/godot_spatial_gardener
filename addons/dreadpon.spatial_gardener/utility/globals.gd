@@ -1,5 +1,5 @@
-tool
-
+@tool
+class_name Globals
 
 #-------------------------------------------------------------------------------
 # A list of global consts with methods to work with them
@@ -30,13 +30,13 @@ static func get_err_message(err_code):
 
 
 # All accepted mesh classes in string format
-const MESH_CLASSES:Array = ["ArrayMesh", "CapsuleMesh", "CubeMesh", "CylinderMesh", "PlaneMesh", "PointMesh", "PrismMesh", "QuadMesh", "SphereMesh"]
+const MESH_CLASSES:Array = ["ArrayMesh", "CapsuleMesh", "BoxMesh", "CylinderMesh", "PlaneMesh", "PointMesh", "PrismMesh", "QuadMesh", "SphereMesh"]
 
 # Controls per how many units is density calculated
 const PLANT_DENSITY_UNITS:int = 100
 
 # A string to be used in tooltips/hints regarding plugin settings
-const AS_IN_SETTINGS_STRING:String = "As specified in 'Project' -> 'Project Settings' -> 'Dreadpons Spatial Gardener'"
+const AS_IN_SETTINGS_STRING:String = "As specified in 'Project' -> 'Project Settings' -> 'Dreadpons Node3D Gardener'"
 
 
 
@@ -71,7 +71,7 @@ enum KeyList {
 	KEY_PAGEUP = SPKEY | 0x13,
 	KEY_PAGEDOWN = SPKEY | 0x14,
 	KEY_SHIFT = SPKEY | 0x15,
-	KEY_CONTROL = SPKEY | 0x16,
+	KEY_CTRL = SPKEY | 0x16,
 	KEY_META = SPKEY | 0x17,
 	KEY_ALT = SPKEY | 0x18,
 	KEY_CAPSLOCK = SPKEY | 0x19,
@@ -302,20 +302,20 @@ enum KeyList {
 # Taken from core/os/input_event.h
 
 enum ButtonList {
-	BUTTON_LEFT = 1,
-	BUTTON_RIGHT = 2,
-	BUTTON_MIDDLE = 3,
-	BUTTON_WHEEL_UP = 4,
-	BUTTON_WHEEL_DOWN = 5,
-	BUTTON_WHEEL_LEFT = 6,
-	BUTTON_WHEEL_RIGHT = 7,
-	BUTTON_XBUTTON1 = 8,
-	BUTTON_XBUTTON2 = 9,
-	BUTTON_MASK_LEFT = (1 << (BUTTON_LEFT - 1)),
-	BUTTON_MASK_RIGHT = (1 << (BUTTON_RIGHT - 1)),
-	BUTTON_MASK_MIDDLE = (1 << (BUTTON_MIDDLE - 1)),
-	BUTTON_MASK_XBUTTON1 = (1 << (BUTTON_XBUTTON1 - 1)),
-	BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
+	MOUSE_BUTTON_LEFT = 1,
+	MOUSE_BUTTON_RIGHT = 2,
+	MOUSE_BUTTON_MIDDLE = 3,
+	MOUSE_BUTTON_WHEEL_UP = 4,
+	MOUSE_BUTTON_WHEEL_DOWN = 5,
+	MOUSE_BUTTON_WHEEL_LEFT = 6,
+	MOUSE_BUTTON_WHEEL_RIGHT = 7,
+	MOUSE_BUTTON_XBUTTON1 = 8,
+	MOUSE_BUTTON_XBUTTON2 = 9,
+	MOUSE_BUTTON_MASK_LEFT = (1 << (MOUSE_BUTTON_LEFT - 1)),
+	MOUSE_BUTTON_MASK_RIGHT = (1 << (MOUSE_BUTTON_RIGHT - 1)),
+	MOUSE_BUTTON_MASK_MIDDLE = (1 << (MOUSE_BUTTON_MIDDLE - 1)),
+	MOUSE_BUTTON_MASK_XBUTTON1 = (1 << (MOUSE_BUTTON_XBUTTON1 - 1)),
+	MOUSE_BUTTON_MASK_XBUTTON2 = (1 << (MOUSE_BUTTON_XBUTTON2 - 1))
 };
 
 
@@ -370,6 +370,6 @@ const Error = {
 	ERR_SKIP: "Skip error",
 	ERR_HELP: "Help error",
 	ERR_BUG: "Bug error",
-	ERR_PRINTER_ON_FIRE: "Printer on fire error",
+	ERR_PRINTER_ON_FIRE: "Printer checked fire error",
 }
 

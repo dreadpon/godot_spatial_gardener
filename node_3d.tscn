@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://bfstw23kld0tl"]
+
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/gardener/gardener.gd" id="1_8xknf"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/arborist/arborist.gd" id="2_b4j77"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_lu34x"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_a15c2"]
+data = PackedVector3Array(-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(4.03602, 0, 0, 0, 1, 0, 0, 0, 3.98791, 0, 0, 0)
+mesh = SubResource("BoxMesh_lu34x")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_a15c2")
+
+[node name="Gardener" type="Node3D" parent="."]
+script = ExtResource("1_8xknf")
+file_management/garden_work_directory = ""
+gardening/gardening_collision_mask = 1.0
+metadata/class = "Gardener"
+
+[node name="Arborist" type="Node3D" parent="Gardener"]
+script = ExtResource("2_b4j77")
+octree_managers = []
+metadata/class = "Arborist"
+
+[node name="MMI_container" type="Node3D" parent="Gardener/Arborist"]

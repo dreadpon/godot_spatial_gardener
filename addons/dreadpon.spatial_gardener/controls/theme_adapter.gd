@@ -1,5 +1,5 @@
-tool
-
+@tool
+class_name ThemeAdapter
 
 #-------------------------------------------------------------------------------
 # An function library to search through themes, adapt them and assign to controls
@@ -27,15 +27,15 @@ static func adapt_theme(theme:Theme):
 	var stylebox_background := theme.get_stylebox("Background", "EditorStyles")
 	var LineEdit_stylebox_normal := theme.get_stylebox("normal", "LineEdit")
 	
-	theme.set_constant("margin_top", "NoMargin", 0)
-	theme.set_constant("margin_left", "NoMargin", 0)
-	theme.set_constant("margin_bottom", "NoMargin", 0)
-	theme.set_constant("margin_right", "NoMargin", 0)
+	theme.set_constant("offset_top", "NoMargin", 0)
+	theme.set_constant("offset_left", "NoMargin", 0)
+	theme.set_constant("offset_bottom", "NoMargin", 0)
+	theme.set_constant("offset_right", "NoMargin", 0)
 	
-	theme.set_constant("margin_top", "ExternalMargin", constant_background_margin)
-	theme.set_constant("margin_left", "ExternalMargin", constant_background_margin)
-	theme.set_constant("margin_bottom", "ExternalMargin", constant_background_margin)
-	theme.set_constant("margin_right", "ExternalMargin", constant_background_margin)
+	theme.set_constant("offset_top", "ExternalMargin", constant_background_margin)
+	theme.set_constant("offset_left", "ExternalMargin", constant_background_margin)
+	theme.set_constant("offset_bottom", "ExternalMargin", constant_background_margin)
+	theme.set_constant("offset_right", "ExternalMargin", constant_background_margin)
 	
 	var MultiRangeValuePanel_stylebox_panel := StyleBoxFlat.new()
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "MultiRangeValuePanel", MultiRangeValuePanel_stylebox_panel)
@@ -63,7 +63,7 @@ static func adapt_theme(theme:Theme):
 	InspectorPanelContainer_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorPanelContainer", InspectorPanelContainer_stylebox)
 	
-	var InspectorWindowDialog_stylebox := theme.get_stylebox('panel', 'WindowDialog').duplicate()
+	var InspectorWindowDialog_stylebox := theme.get_stylebox('panel', 'Window').duplicate()
 	InspectorWindowDialog_stylebox.draw_center = true
 	InspectorWindowDialog_stylebox.bg_color = dark_color_1
 	InspectorWindowDialog_stylebox.border_color = dark_color_3
@@ -127,7 +127,7 @@ static func assign_node_type(target_control:Control, node_type:String):
 		# We reference ThemeOverrider manually since connecting a signal doesn't
 		theme_overrider.reference()
 		# Our theme overrides can be assigned only after node enters the tree (usually)
-		target_control.connect("tree_entered", theme_overrider, "set_overrides", [target_control, node_type])
+		target_control.connect("tree_entered",Callable(theme_overrider,"set_overrides").bind(target_control, node_type))
 	else:
 		# No reference/dereference here since we don't need to keep this ThemeOverrider
 		ThemeOverrider.new().set_overrides(target_control, node_type)
@@ -158,7 +158,7 @@ static func lookup_sub_inspector_styleboxes(search_node:Node, sub_index:int):
 #-------------------------------------------------------------------------------
 # A helper object to delay theme node type assignment until Control enters the tree
 #-------------------------------------------------------------------------------
-class ThemeOverrider extends Reference:
+class ThemeOverrider extends RefCounted:
 	
 	
 	func _init():
@@ -171,27 +171,27 @@ class ThemeOverrider extends Reference:
 		
 		for item_name in theme.get_color_list(node_type):
 			var item_value = theme.get_color(item_name, node_type)
-			target_control.add_color_override(item_name, item_value)
+			target_control.add_theme_color_override(item_name, item_value)
 		
 		for item_name in theme.get_constant_list(node_type):
 			var item_value = theme.get_constant(item_name, node_type)
-			target_control.add_constant_override(item_name, item_value)
+			target_control.add_theme_constant_override(item_name, item_value)
 		
 		for item_name in theme.get_font_list(node_type):
 			var item_value = theme.get_font(item_name, node_type)
-			target_control.add_font_override(item_name, item_value)
+			target_control.add_theme_font_override(item_name, item_value)
 		
 		for item_name in theme.get_icon_list(node_type):
 			var item_value = theme.get_icon(item_name, node_type)
-			target_control.add_icon_override(item_name, item_value)
+			target_control.add_theme_icon_override(item_name, item_value)
 		
 		for item_name in theme.get_stylebox_list(node_type):
 			var item_value = theme.get_stylebox(item_name, node_type)
-			target_control.add_stylebox_override(item_name, item_value)
+			target_control.add_theme_stylebox_override(item_name, item_value)
 		
 		# If ThemeOverrider was called from a signal - unreference to free it
-		if target_control.is_connected("tree_entered", self, "set_overrides"):
-			target_control.disconnect("tree_entered", self, "set_overrides")
+		if target_control.is_connected("tree_entered",Callable(self,"set_overrides")):
+			target_control.disconnect("tree_entered",Callable(self,"set_overrides"))
 			self.unreference()
 	
 	

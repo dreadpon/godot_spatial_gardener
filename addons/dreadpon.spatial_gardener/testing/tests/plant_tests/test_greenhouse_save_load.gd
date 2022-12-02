@@ -1,17 +1,14 @@
-tool
+@tool
 extends "test_plant_base.gd"
 
 
-const GreenhouseSaveLoadNode = preload("../../utility/greenhouse_save_load_node.gd")
-
-
-export(String, DIR) var test_save_load_path:String = ""
+@export var test_save_load_path:String = "" # (String, DIR)
 
 
 
 
 func execute():
-	.execute()
+	super.execute()
 	
 	var greenhouses := load_greenhouses()
 	

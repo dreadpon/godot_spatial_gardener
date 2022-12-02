@@ -1,16 +1,11 @@
-tool
-
+@tool
+class_name FunLib
 
 #-------------------------------------------------------------------------------
 # A miscellaneous FUNction LIBrary
 #-------------------------------------------------------------------------------
 
-
-const Logger = preload("logger.gd")
-const Globals = preload("globals.gd")
 enum TimeTrimMode {NONE, EXACT, EXTRA_ONE, KEEP_ONE, KEEP_TWO, KEEP_THREE}
-
-
 
 
 #-------------------------------------------------------------------------------
@@ -29,8 +24,8 @@ static func clear_children(node):
 # A shorthand for checking/connecting a signal
 # Kinda wish Godot had a built-in one
 static func ensure_signal(source:Object, _signal:String, target:Object, method:String, binds:Array = [], flags:int = 0):
-	if !source.is_connected(_signal, target, method):
-		source.connect(_signal, target, method, binds, flags)
+	if !source.is_connected(_signal,Callable(target,method)):
+		source.connect(_signal,Callable(target,method).bind(binds),flags)
 
 
 
@@ -111,7 +106,7 @@ static func vector_tri_lerp(from:Vector3, to:Vector3, weight:Vector3):
 
 
 static func get_msec():
-	return OS.get_ticks_msec()
+	return Time.get_ticks_msec()
 
 
 static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int = TimeTrimMode.NONE):
@@ -125,23 +120,23 @@ static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int 
 			match trim_mode:
 				TimeTrimMode.EXACT:
 					if time_units[i] <= 0:
-						time_units.remove(i)
+						time_units.remove_at(i)
 					else:
 						break
 				TimeTrimMode.EXTRA_ONE:
 					if  time_units[i] > 0:
 						break
 					if i + 1 < time_units.size() && time_units[i + 1] <= 0:
-						time_units.remove(i + 1)
+						time_units.remove_at(i + 1)
 				TimeTrimMode.KEEP_ONE:
 					if i >= 1:
-						time_units.remove(i)
+						time_units.remove_at(i)
 				TimeTrimMode.KEEP_TWO:
 					if i >= 2:
-						time_units.remove(i)
+						time_units.remove_at(i)
 				TimeTrimMode.KEEP_THREE:
 					if i >= 3:
-						time_units.remove(i)
+						time_units.remove_at(i)
 			
 	
 	
@@ -160,13 +155,7 @@ static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int 
 
 
 static func print_system_time(suffix:String = ""):
-	var time = OS.get_time()
-	var msecond = OS.get_ticks_msec() % 1000
-	var time_formatted = String(time.hour) +":"+String(time.minute)+":"+String(time.second)+":"+String(msecond)
-	print(time_formatted + " " + suffix)
-
-
-
+	print("[%s] : %s" % [Time.get_time_string_from_system(), suffix])
 
 #-------------------------------------------------------------------------------
 # Object class comparison
@@ -246,7 +235,7 @@ static func save_res(res:Resource, dir:String, res_name:String):
 	var full_path = combine_dir_and_file(dir, res_name)
 	
 	# Abort explicit saving if our resource and an existing one are the same instance
-	# Since it will be saved on 'Ctrl+S' implicitly by the editor
+	# Since it will be saved checked 'Ctrl+S' implicitly by the editor
 	# And allows reverting resource by exiting the editor
 	var loaded_res = load_res(dir, res_name, null, false)
 	if res == loaded_res:
@@ -254,12 +243,12 @@ static func save_res(res:Resource, dir:String, res_name:String):
 	
 	# There was a wall of text here regarding problems of saving and re-saving custom resources
 	# But curiously, seems like it went away
-	# These comments and previous state of saving/loading logic is available on commit '7b127ad'
+	# These comments and previous state of saving/loading logic is available checked commit '7b127ad'
 	
 	# Taking over path and subpaths is still required
 	# Still keeping FLAG_CHANGE_PATH in case we want to save to a different location
 	res.take_over_path(full_path)
-	var err = ResourceSaver.save(full_path, res, ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
+	var err := ResourceSaver.save( res, full_path, ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS )
 	if err != OK:
 		logger.error("Could not save '%s', error %s!" % [full_path, Globals.get_err_message(err)])
 
@@ -268,16 +257,16 @@ static func save_res(res:Resource, dir:String, res_name:String):
 # We use it by default, but want to allow loading a cache to check if resource exists at path
 static func load_res(dir:String, res_name:String, default_res:Resource = null, no_cache: bool = true) -> Resource:
 	var full_path = combine_dir_and_file(dir, res_name)
-	var res = null
+	var res:Resource = null
 	var logger = Logger.get_for_string("FunLib")
 	
 	if ResourceLoader.exists(full_path):
-		res = ResourceLoader.load(full_path, "", no_cache)
+		res = ResourceLoader.load(full_path)
 	elif is_instance_valid(default_res):
 		res = default_res.duplicate(true)
-		logger.info("Path '%s', doesn't exist. Using default resource." % [full_path])
+		logger.info("Path3D '%s', doesn't exist. Using default resource." % [full_path])
 	else:
-		logger.warn("Path '%s', doesn't exist. No default resource exists either!" % [full_path])
+		logger.warn("Path3D '%s', doesn't exist. No default resource exists either!" % [full_path])
 	
 	if !res:
 		if !is_dir_valid(dir) || res_name == "":
@@ -294,5 +283,8 @@ static func combine_dir_and_file(dir_path: String, file_name: String):
 	return "%s%s" % [dir_path, file_name]
 
 
+
 static func is_dir_valid(dir):
-	return dir != "" && dir != "/" && Directory.new().dir_exists(dir)
+	push_warning("TODO_TEST: not sure if DirAccess.open() will validate this function")
+	# or always return error
+	return dir != "" && dir != "/" && DirAccess.open(dir) != null

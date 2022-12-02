@@ -1,44 +1,18 @@
-tool
+@tool
 extends Resource
-
+class_name InputFieldResource
 
 #-------------------------------------------------------------------------------
-# A base class for resources bound with InputFields and suporting UndoRedo
+# A base class for resources bound with InputFields and suporting EditorUndoRedoManager
 # All properties are suppposed to be set using PropAction
 # That helps to easily update UI and do/undo actions in editor
-# There's also a bit of property management sprinkled on top (conditional display, modified values, etc.)
+# There's also a bit of property management sprinkled checked top (conditional display, modified values, etc.)
 #-------------------------------------------------------------------------------
 
 
 enum PropActionLifecycle {BEFORE_DO, AFTER_DO, AFTER_UNDO}
 
-
-const Logger = preload("../logger.gd")
-const FunLib = preload("../fun_lib.gd")
-
-const PropAction = preload("prop_action.gd")
-const PA_PropSet = preload("pa_prop_set.gd")
-const PA_PropEdit = preload("pa_prop_edit.gd")
-const PA_ArrayInsert = preload("pa_array_insert.gd")
-const PA_ArrayRemove = preload("pa_array_remove.gd")
-const PA_ArraySet = preload("pa_array_set.gd")
-const UI_ActionThumbnail_GD = preload("../../controls/input_fields/action_thumbnail/ui_action_thumbnail.gd")
-
-const UI_InputField = preload("../../controls/input_fields/ui_input_field.gd")
-const UI_IF_Bool = preload("../../controls/input_fields/ui_if_bool.gd")
-const UI_IF_Enum = preload("../../controls/input_fields/ui_if_enum.gd")
-const UI_IF_MultiRange = preload("../../controls/input_fields/ui_if_multi_range.gd")
-const UI_IF_RealSlider = preload("../../controls/input_fields/ui_if_real_slider.gd")
-const UI_IF_IntLineEdit = preload("../../controls/input_fields/ui_if_int_line_edit.gd")
-const UI_IF_ThumbnailArray = preload("../../controls/input_fields/ui_if_thumbnail_array.gd")
-const UI_IF_ApplyChanges = preload("../../controls/input_fields/ui_if_apply_changes.gd")
-const UI_IF_Button = preload("../../controls/input_fields/ui_if_button.gd")
-const UI_IF_PlainText = preload("../../controls/input_fields/ui_if_plain_text.gd")
-const UI_IF_Object = preload("../../controls/input_fields/ui_if_object.gd")
-const UI_IF_ThumbnailObject = preload("../../controls/input_fields/ui_if_thumbnail_object.gd")
-
-
-var _undo_redo:UndoRedo = null setget set_undo_redo
+var _undo_redo:EditorUndoRedoManager = null : set = set_undo_redo
 # Backups that can be restored when using non-destructive PA_PropEdit
 var prop_edit_backups:Dictionary = {}
 # Properties added here will be ignored when creating input fields
@@ -75,13 +49,13 @@ func _init():
 	FunLib.ensure_signal(self, "prop_action_executed", self, "_on_prop_action_executed")
 
 
-func set_undo_redo(val:UndoRedo):
+func set_undo_redo(val:EditorUndoRedoManager):
 	_undo_redo = val
 
 
 # This doesn't account for resources inside nested Arrays/Dictionaries (i.e. [[Resource:1, Resource:2], [Resource:3]])
 func duplicate_ifr(subresources:bool = false, ifr_subresources:bool = false) -> Resource:
-	var copy = .duplicate(false)
+	var copy = super.duplicate(false)
 	
 	if subresources || ifr_subresources:
 		var property_list = copy.get_property_list()
@@ -156,14 +130,14 @@ func on_prop_action_requested(prop_action:PropAction):
 	
 	if _undo_redo && _can_prop_action_create_history(prop_action):
 		var prop_action_class = prop_action.get_meta("class")
-		_undo_redo.create_action("%s: on '%s'" % [prop_action_class, prop_action.prop])
+		_undo_redo.create_action("%s: checked '%s'" % [prop_action_class, prop_action.prop])
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.BEFORE_DO)
-		_undo_redo.add_do_method(self, "_perform_prop_action", prop_action)
+		_undo_redo.add_do_method(self, "_perform_prop_action",(prop_action))
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.AFTER_DO)
-		_undo_redo.add_undo_method(self, "_perform_prop_action", _get_opposite_prop_action(prop_action))
+		_undo_redo.add_undo_method(self, "_perform_prop_action",(_get_opposite_prop_action(prop_action)))
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.AFTER_UNDO)
 		_undo_redo.commit_action()
-	# But we don't *have* to use UndoRedo system
+	# But we don't *have* to use EditorUndoRedoManager system
 	else:
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.BEFORE_DO)
 		_perform_prop_action(prop_action)
@@ -183,7 +157,7 @@ func prop_action_request_lifecycle(prop_action:PropAction, lifecycle_stage:int):
 	pass
 
 
-# Can a given prop action create UndoRedo history?
+# Can a given prop action create EditorUndoRedoManager history?
 	# Most of the time we need this is when using a UI slider
 	# To avoid commiting dozens of history actions while dragging
 func _can_prop_action_create_history(prop_action:PropAction):
@@ -217,7 +191,7 @@ func _perform_prop_action(prop_action:PropAction):
 			prop_action.val = get(prop_action.prop)[prop_action.index]
 		"PA_ArrayRemove":
 			prop_action.val = current_val_copy[prop_action.index]
-			current_val_copy.remove(prop_action.index)
+			current_val_copy.remove_at(prop_action.index)
 			_set(prop_action.prop, current_val_copy)
 		"PA_ArraySet":
 			current_val_copy[prop_action.index] = prop_action.val
@@ -254,7 +228,7 @@ func _get_opposite_prop_action(prop_action:PropAction) -> PropAction:
 
 
 # Backup a current property before a PA_PropEdit
-# Since PA_PropEdit is non-destructive to UndoRedo history, we need a separate PA_PropSet to make do/undo actions
+# Since PA_PropEdit is non-destructive to EditorUndoRedoManager history, we need a separate PA_PropSet to make do/undo actions
 # This backup is used to cache the initial property value and retrieve it when setting an undo action
 func _make_prop_edit_backup(prop:String):
 	if prop_edit_backups.has(prop): return
@@ -312,7 +286,7 @@ func _get_prop_dictionary() -> Dictionary:
 
 
 # Get property data from a dictionary and filter it
-# Allows easier management of hidden/shown properties based on arbitrary conditions in a subclass
+# Allows easier management of hidden/shown properties based checked arbitrary conditions in a subclass
 # To be overridden and (usually) called inside a _get_property_list() 
 # 	With a dictionary created by _get_prop_dictionary()
 # Return the same prop_dict passed to it (for convenience in function calls)
@@ -330,7 +304,7 @@ func _get(property):
 
 # Default functionality for _get_property_list():
 # Get all {prop_name: prop_data_dictionary} defined by _get_prop_dictionary()
-# Filter them (optionally rejecting some of them based on arbitrary conditions)
+# Filter them (optionally rejecting some of them based checked arbitrary conditions)
 # Return a prop_dict values array
 func _get_property_list():
 	var prop_dict = _get_prop_dictionary()
@@ -338,10 +312,10 @@ func _get_property_list():
 	return prop_dict.values()
 
 
-# A wrapper around built-in property_list_changed_notify()
+# A wrapper around built-in notify_property_list_changed()
 # To support a custom signal we can bind manually
 func _emit_property_list_changed_notify():
-	property_list_changed_notify()
+	notify_property_list_changed()
 	emit_signal('prop_list_changed', _filter_prop_dictionary(_get_prop_dictionary()))
 
 
@@ -361,7 +335,7 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 	
 	for prop in prop_names:
 		# Conditional rejection of a property
-		if whitelist.empty():
+		if whitelist.is_empty():
 			if input_field_blacklist.has(prop): continue
 		else:
 			if !whitelist.has(prop): continue
@@ -373,14 +347,14 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 			input_field.set_tooltip(get_prop_tooltip(prop))
 			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
 			
-			input_field.connect("prop_action_requested", self, "request_prop_action")
-			self.connect("prop_action_executed", input_field, "on_prop_action_executed")
-			self.connect("prop_list_changed", input_field, "on_prop_list_changed")
-			input_field.connect("ready", self, "on_if_ready", [input_field])
+			input_field.connect("prop_action_requested",Callable(self,"request_prop_action"))
+			self.connect("prop_action_executed",Callable(input_field,"on_prop_action_executed"))
+			self.connect("prop_list_changed",Callable(input_field,"on_prop_list_changed"))
+			input_field.connect("ready",Callable(self,"on_if_ready").bind(input_field))
 			
 			if input_field is UI_IF_ThumbnailArray:
-				input_field.connect("requested_press", self, "on_if_thumbnail_array_press", [input_field])
-				connect("req_change_interaction_feature", input_field, "on_changed_interaction_feature")
+				input_field.connect("requested_press",Callable(self,"on_if_thumbnail_array_press").bind(input_field))
+				connect("req_change_interaction_feature",Callable(input_field,"on_changed_interaction_feature"))
 			
 			input_fields.append(input_field)
 	
@@ -395,7 +369,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 
 # Do something with an input field when it's _ready()
 func on_if_ready(input_field:UI_InputField):
-	input_field.disconnect("ready", self, "on_if_ready")
+	input_field.disconnect("ready",Callable(self,"on_if_ready"))
 	
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
@@ -428,7 +402,7 @@ func get_prop_tooltip(prop:String) -> String:
 
 
 # Register a property dependency (where any of the controlling_props might change the dependent_prop)
-# This is needed for correct UndoRedo functionality
+# This is needed for correct EditorUndoRedoManager functionality
 func _add_prop_dependency(dependent_prop:String, controlling_props:Array):
 	prop_dependency_data.append({"dependent_prop": dependent_prop, "controlling_props": controlling_props})
 
@@ -443,9 +417,9 @@ func _handle_dependency_prop_action_lifecycle(prop_action:PropAction, lifecycle_
 		
 		if _undo_redo && _can_prop_action_create_history(new_prop_action):
 			if lifecycle_stage == PropActionLifecycle.AFTER_DO:
-				_undo_redo.add_do_method(self, "_perform_prop_action", new_prop_action)
+				_undo_redo.add_do_method(self, "_perform_prop_action", (new_prop_action))
 			elif lifecycle_stage == PropActionLifecycle.AFTER_UNDO:
-				_undo_redo.add_undo_method(self, "_perform_prop_action", _get_opposite_prop_action(new_prop_action))
+				_undo_redo.add_undo_method(self, "_perform_prop_action", ( _get_opposite_prop_action(new_prop_action) ))
 		else:
 			if lifecycle_stage == PropActionLifecycle.AFTER_DO:
 				_perform_prop_action(new_prop_action)
@@ -459,12 +433,12 @@ func _handle_dependency_prop_action_lifecycle(prop_action:PropAction, lifecycle_
 
 
 # Register a property array with resources that can be individually shown for property editing
-# Since new ones are added as 'null' and initialized in _modify_prop(), so they WILL NOT be equal to cached ones in UndoRedo actions
+# Since new ones are added as 'null' and initialized in _modify_prop(), so they WILL NOT be equal to cached ones in EditorUndoRedoManager actions
 func _add_res_edit_source_array(array_prop:String, res_prop:String):
 	res_edit_data.append({"array_prop": array_prop, "res_prop": res_prop})
 
 
-# React to lifecycle stages for actions executed on res_edit_data members
+# React to lifecycle stages for actions executed checked res_edit_data members
 func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_stage:int):
 	var prop_action_class = prop_action.get_meta("class")
 	
@@ -571,9 +545,9 @@ func res_edit_update_interaction_features(res_prop:String):
 		var res_val_at_index = array_val[i]
 		
 		if res_val_at_index == res_val:
-			emit_signal("req_change_interaction_feature", res_edit.array_prop, UI_ActionThumbnail_GD.InteractionFlags.PRESS, true, {"index": i})
+			emit_signal("req_change_interaction_feature", res_edit.array_prop, UI_Action_Thumbnail.InteractionFlags.PRESS, true, {"index": i})
 		else:
-			emit_signal("req_change_interaction_feature", res_edit.array_prop, UI_ActionThumbnail_GD.InteractionFlags.PRESS, false, {"index": i})
+			emit_signal("req_change_interaction_feature", res_edit.array_prop, UI_Action_Thumbnail.InteractionFlags.PRESS, false, {"index": i})
 
 
 

@@ -1,19 +1,14 @@
-tool
+@tool
 extends Node
+class_name TestBase
 
-
-const GenericUtils = preload("../utility/generic_utils.gd")
-const Logger = preload("../../utility/logger.gd")
-const FunLib = preload("../../utility/fun_lib.gd")
-
-
-export var do_execute:bool = false setget set_do_execute
+@export var do_execute:bool = false : set = set_do_execute
 var logger = null
-var undo_redo:UndoRedo = null setget set_undo_redo
+var undo_redo:EditorUndoRedoManager = null : set = set_undo_redo
 var is_executing:bool = false
 
-signal finished_execution(result)
-signal finished_undo_redo_action(current_action_index)
+signal on_finished_execution(result)
+signal on_finished_undo_redo_action(current_action_index)
 
 
 
@@ -30,13 +25,13 @@ func set_do_execute(val):
 
 
 func execute():
-	assert(!is_executing, "Trying to execute an already running test!")
+	assert(!is_executing) #,"Trying to execute an already running test!")
 	is_executing = true
 
 
 func finish_execution(results:Array = []):
 	is_executing = false
-	emit_signal("finished_execution", results)
+	emit_signal("on_finished_execution", results)
 
 
 func set_undo_redo(val):
@@ -80,6 +75,7 @@ func execute_undo_redo_sequence(intervals:Array, undoable_action_count:int, call
 				current_action_index += 1
 				action_name = "Redo: %s" % [undo_redo.get_current_action_name()]
 				undo_redo.redo()
+			push_warning("TODO TEST: Godot blamed the `finished_undo_redo_action` function named same as signal, so I've renamed signal to `on_finished_undo_redo_action` but now the signal isnt used anymore??? check this  ")
 			callback_return_value = finished_undo_redo_action(current_action_index, action_name, callback_return_value, callback_binds)
 	
 	return callback_return_value

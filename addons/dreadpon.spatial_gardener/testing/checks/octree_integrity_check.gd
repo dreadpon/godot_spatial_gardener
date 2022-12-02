@@ -1,17 +1,5 @@
-tool
-
-
-const GenericUtils = preload("../utility/generic_utils.gd")
-const GardenerUtils = preload("../utility/gardener_utils.gd")
-const GardenerScript = preload("../utility/gardener_script.gd")
-const OctreeManager = preload("../../arborist/mmi_octree/mmi_octree_manager.gd")
-const OctreeNode = preload("../../arborist/mmi_octree/mmi_octree_node.gd")
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
-const Toolshed = preload("../../toolshed/toolshed.gd")
-const Gardener = preload("../../gardener/gardener.gd")
-
-
+@tool
+class_name OctreeIntegrityCheck
 
 
 static func check_all_integrity(gardener:Gardener, painting_data:Array, coverage_modes_list:Array) -> Dictionary:
@@ -38,12 +26,12 @@ static func check_all_integrity(gardener:Gardener, painting_data:Array, coverage
 
 static func check_integrity(gardener:Gardener, octree_index:int, painting_data:Array, coverage_modes:Array) -> Dictionary:
 	var plant = gardener.greenhouse.greenhouse_plant_states[octree_index].plant
-	var root_octree_node:OctreeNode = gardener.arborist.octree_managers[octree_index].root_octree_node
+	var root_octree_node:MMIOctreeNode = gardener.arborist.octree_managers[octree_index].root_octree_node
 	var spawns_spatial:bool = plant.mesh_LOD_variants[0].spawned_spatial != null
 	
 	var plant_density:float = gardener.greenhouse.greenhouse_plant_states[octree_index].plant.density_per_units
 	var brush_strength:float = gardener.toolshed.brushes[0].behavior_strength
-	var target_members := GardenerScript.get_member_count_for_painting_data(painting_data, plant_density, brush_strength, coverage_modes)
+	var target_members := Check_Gardener.get_member_count_for_painting_data(painting_data, plant_density, brush_strength, coverage_modes)
 	
 	var structure_results := analyze_octree_node_structure(root_octree_node)
 	var scene_tree_results := analyze_octree_scene_tree(root_octree_node, gardener.arborist.MMI_container, spawns_spatial)
@@ -53,7 +41,7 @@ static func check_integrity(gardener:Gardener, octree_index:int, painting_data:A
 	return total_results
 
 
-static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
+static func analyze_octree_node_structure(octree_node:MMIOctreeNode) -> Dictionary:
 	var occupied_child_nodes := 0
 	var node_results := {}
 	node_results.can_fit_children_members = []
@@ -91,7 +79,7 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 	return node_results
 
 
-static func analyze_octree_scene_tree(octree_node:OctreeNode, MMI_container:Spatial, spawns_spatial:bool) -> Dictionary:
+static func analyze_octree_scene_tree(octree_node:MMIOctreeNode, MMI_container:Node3D, spawns_spatial:bool) -> Dictionary:
 	var node_results := {}
 	node_results.missing_MMIs = []
 	node_results.extra_MMIs = []

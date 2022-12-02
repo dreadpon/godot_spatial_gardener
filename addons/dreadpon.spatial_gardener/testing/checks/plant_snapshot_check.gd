@@ -1,10 +1,5 @@
-tool
-
-
-const GenericUtils = preload("../utility/generic_utils.gd")
-const PlantUtils = preload("../utility/plant_utils.gd")
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-
+@tool
+class_name PlantSnapshotCheck
 
 
 

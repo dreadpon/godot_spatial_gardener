@@ -1,5 +1,6 @@
-tool
-extends "prop_action.gd"
+@tool
+extends PropAction
+class_name PA_PropSet
 
 
 #-------------------------------------------------------------------------------
@@ -9,7 +10,7 @@ extends "prop_action.gd"
 
 
 
-func _init(__prop:String, __val).(__prop, __val):
+func _init(__prop:String,__val):
 	set_meta("class", "PA_PropSet")
 	can_create_history = true
 

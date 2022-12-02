@@ -1,10 +1,6 @@
-tool
+@tool
 extends Node
-
-
-const FunLib = preload("../../utility/fun_lib.gd")
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-
+class_name GreenhouseSaveLoadNode
 
 var greenhouse:Greenhouse = null
 

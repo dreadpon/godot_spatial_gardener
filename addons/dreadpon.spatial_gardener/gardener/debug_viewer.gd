@@ -1,17 +1,10 @@
-tool
-extends Spatial
-
+@tool
+extends Node3D
+class_name DebugViewer
 
 #-------------------------------------------------------------------------------
 # A previewer for octree structure
 #-------------------------------------------------------------------------------
-
-
-const FunLib = preload("../utility/fun_lib.gd")
-const DebugDraw = preload("../utility/debug_draw.gd")
-const MMIOctreeManager = preload("../arborist/mmi_octree/mmi_octree_manager.gd")
-const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
-
 
 # How many/which plants we want to preview
 enum PlantViewModeFlags {
@@ -61,7 +54,7 @@ static func make_debug_view_menu():
 	return debug_view_menu
 
 
-# Callback when flag is checked on a menu
+# Callback when flag is checked checked a menu
 func flag_checked(debug_view_menu:MenuButton, flag:int):
 	var flag_group = flag <= PlantViewModeFlags.VIEW_MAX
 	if flag_group:
@@ -181,7 +174,7 @@ func debug_redraw(octree_managers:Array):
 				used_octree_managers.append(octree_managers[plant_index])
 	
 	for i in range(0, used_octree_managers.size()):
-		var MMI:MultiMeshInstance = octree_MMIs[i]
+		var MMI:MultiMeshInstance3D = octree_MMIs[i]
 		var octree_mamager:MMIOctreeManager = used_octree_managers[i]
 		debug_draw_node(octree_mamager.root_octree_node, MMI)
 
@@ -195,13 +188,13 @@ func erase_all():
 func ensure_MMIs(amount:int):
 	if octree_MMIs.size() < amount:
 		for i in range(octree_MMIs.size(), amount):
-			var MMI = MultiMeshInstance.new()
+			var MMI = MultiMeshInstance3D.new()
 			add_child(MMI)
 			MMI.cast_shadow = false
 			MMI.multimesh = MultiMesh.new()
 			MMI.multimesh.transform_format = 1
 			MMI.multimesh.color_format = MultiMesh.COLOR_8BIT
-			MMI.multimesh.mesh = DebugDraw.generate_cube(Vector3.ONE * 0.5, Color.white)
+			MMI.multimesh.mesh = DebugDraw.generate_cube(Vector3.ONE * 0.5, Color.WHITE)
 			octree_MMIs.append(MMI)
 	elif octree_MMIs.size() > amount:
 		while octree_MMIs.size() > amount:
@@ -209,7 +202,7 @@ func ensure_MMIs(amount:int):
 
 
 # Recursively draw an octree node
-func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance):
+func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance3D):
 	var draw_node := active_render_modes.has(RenderModeFlags.DRAW_OCTREE_NODES)
 	var draw_members := active_render_modes.has(RenderModeFlags.DRAW_OCTREE_MEMBERS)
 	
@@ -220,12 +213,12 @@ func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance):
 		set_debug_redraw_instance_count(octree_node, MMI, draw_node, draw_members)
 	
 	var extents:Vector3
-	var render_transform:Transform
+	var render_transform:Transform3D
 	var index:int
 	
 	if draw_node:
 		extents = Vector3(octree_node.extent, octree_node.extent, octree_node.extent) * 0.999 * 2.0
-		render_transform = Transform(Basis.IDENTITY.scaled(extents), octree_node.center_pos)
+		render_transform = Transform3D(Basis.IDENTITY.scaled(extents), octree_node.center_pos)
 		index = MMI.multimesh.visible_instance_count
 		MMI.multimesh.visible_instance_count += 1
 		MMI.multimesh.set_instance_transform(index, render_transform)
@@ -236,18 +229,18 @@ func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance):
 		extents = Vector3(member_extent, member_extent, member_extent)
 		var basis = Basis.IDENTITY.scaled(extents)
 		for member in octree_node.members:
-			render_transform = Transform(basis, member.placement)
+			render_transform = Transform3D(basis, member.placement)
 			index = MMI.multimesh.visible_instance_count
 			MMI.multimesh.visible_instance_count += 1
 			MMI.multimesh.set_instance_transform(index, render_transform)
-			MMI.multimesh.set_instance_color(index, Color.white)
+			MMI.multimesh.set_instance_color(index, Color.WHITE)
 	
 	for child in octree_node.child_nodes:
 		debug_draw_node(child, MMI)
 
 
 # Recursively set the appropriate instance count for an MMI
-func set_debug_redraw_instance_count(octree_node:MMIOctreeNode, MMI:MultiMeshInstance, draw_node:bool, draw_members:bool):
+func set_debug_redraw_instance_count(octree_node:MMIOctreeNode, MMI:MultiMeshInstance3D, draw_node:bool, draw_members:bool):
 	if draw_node:
 		MMI.multimesh.instance_count += 1
 	

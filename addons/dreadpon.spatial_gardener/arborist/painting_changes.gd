@@ -1,10 +1,10 @@
-tool
-extends Reference
-
+@tool
+extends RefCounted
+class_name PaintingChanges
 
 #-------------------------------------------------------------------------------
 # A storage object for changes to the octree members
-# To be passed to UnroRedo or executed on the spot
+# To be passed to UnroRedo or executed checked the spot
 # Can also generate opposite actions (provided it's set up correctly)
 #-------------------------------------------------------------------------------
 
@@ -13,9 +13,6 @@ enum ChangeType {APPEND, ERASE, SET}
 
 var changes:Array = []
 var _opposite_changes:Array = []
-
-
-
 
 func _init(__changes:Array = []):
 	changes = __changes
@@ -50,7 +47,7 @@ func get_opposite_change(change):
 	return opposite_change
 
 
-# Get all opposite changes as a new PaintingChanges object and remove them from the current one
+# Get all opposite changes as a new PaintingChanges object and remove_at them from the current one
 func pop_opposite():
 	var opposite = get_script().new(_opposite_changes)
 	_opposite_changes = []
@@ -75,7 +72,7 @@ func _to_string():
 #-------------------------------------------------------------------------------
 
 
-class Change extends Reference:
+class Change extends RefCounted:
 
 	var change_type:int = -1
 	var at_index:int = -1
@@ -83,7 +80,7 @@ class Change extends Reference:
 	var old_val = null
 	
 	
-	func _init(_change_type:int = -1, _at_index:int = -1, _new_val = null, _old_val = null):
+	func _init(_change_type:int = -1,_at_index:int = -1,_new_val = null,_old_val = null):
 		change_type = _change_type
 		at_index = _at_index
 		new_val = _new_val

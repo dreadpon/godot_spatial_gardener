@@ -1,26 +1,10 @@
-tool
-extends "../test_base.gd"
+@tool
+extends TestBase
+class_name TestGardenerBase
 
-
-const GardenerUtils = preload("../../utility/gardener_utils.gd")
-const GardenerScript = preload("../../utility/gardener_script.gd")
-const OctreeIntegrityCheck = preload("../../checks/octree_integrity_check.gd")
-const OctreeSnapshotCheck = preload("../../checks/octree_snapshot_check.gd")
-const Greenhouse = preload("../../../greenhouse/greenhouse.gd")
-const Gardener = preload("../../../gardener/gardener.gd")
-const PainterAction = preload("../../utility/painter_action.gd")
-
-const PropAction = preload("../../../utility/input_field_resource/prop_action.gd")
-const PA_PropSet = preload("../../../utility/input_field_resource/pa_prop_set.gd")
-const PA_PropEdit = preload("../../../utility/input_field_resource/pa_prop_edit.gd")
-const PA_ArrayInsert = preload("../../../utility/input_field_resource/pa_array_insert.gd")
-const PA_ArrayRemove = preload("../../../utility/input_field_resource/pa_array_remove.gd")
-const PA_ArraySet = preload("../../../utility/input_field_resource/pa_array_set.gd")
-
-
-export(String, DIR) var greenhouse_path:String = ""
+@export var greenhouse_path:String = "" # (String, DIR)
 var gardener:Gardener = null
-var editor_selection:EditorSelection = null setget set_editor_selection
+var editor_selection:EditorSelection = null : set = set_editor_selection
 
 var painting_data:Array = []
 var painter_script:Array = []
@@ -30,15 +14,15 @@ var stage:int = 0
 # The density algorithm is an approximation after all
 const max_member_count_difference:float = 0.333
 const PRESET_COVERAGE_MODES_1COVER_4CENTER100 = [
-	GardenerScript.CoverageMode.COVER, GardenerScript.CoverageMode.CENTER_100_PCT,
-	GardenerScript.CoverageMode.CENTER_100_PCT, GardenerScript.CoverageMode.CENTER_100_PCT, GardenerScript.CoverageMode.CENTER_100_PCT]
+	Check_Gardener.CoverageMode.COVER, Check_Gardener.CoverageMode.CENTER_100_PCT,
+	Check_Gardener.CoverageMode.CENTER_100_PCT, Check_Gardener.CoverageMode.CENTER_100_PCT, Check_Gardener.CoverageMode.CENTER_100_PCT]
 const PRESET_COVERAGE_MODES_1COVER = [
-	GardenerScript.CoverageMode.COVER]
+	Check_Gardener.CoverageMode.COVER]
 const PRESET_COVERAGE_MODES_1_CLEAR = [
-	GardenerScript.CoverageMode.CLEAR]
+	Check_Gardener.CoverageMode.CLEAR]
 const PRESET_COVERAGE_MODES_5_CLEAR = [
-	GardenerScript.CoverageMode.CLEAR, GardenerScript.CoverageMode.CLEAR, GardenerScript.CoverageMode.CLEAR,
-	GardenerScript.CoverageMode.CLEAR, GardenerScript.CoverageMode.CLEAR]
+	Check_Gardener.CoverageMode.CLEAR, Check_Gardener.CoverageMode.CLEAR, Check_Gardener.CoverageMode.CLEAR,
+	Check_Gardener.CoverageMode.CLEAR, Check_Gardener.CoverageMode.CLEAR]
 
 
 
@@ -81,7 +65,7 @@ func select_brush(index:int):
 
 
 func execute():
-	.execute()
+	super.execute()
 	create_and_start_gardener_editing()
 	gardener.forward_input_events = false
 	stage = 0
@@ -91,7 +75,7 @@ func finish_execution(results:Array = []):
 	if gardener:
 		gardener.visible = false
 		gardener.forward_input_events = true
-	.finish_execution(results)
+	super.finish_execution(results)
 
 
 func execute_next_stage():
@@ -101,9 +85,9 @@ func execute_next_stage():
 func _process(delta):
 	if !is_executing: return
 	
-	if !painter_script.empty():
+	if !painter_script.is_empty():
 		var painter_action = painter_script.pop_front()
-		GardenerScript.execute_painter_action(gardener.painter, painter_action)
+		Check_Gardener.execute_painter_action(gardener.painter, painter_action)
 		finished_painter_action(painter_action)
 	else:
 		execute_next_stage()

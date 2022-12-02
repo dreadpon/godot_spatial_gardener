@@ -1,5 +1,6 @@
-tool
-extends "test_gardener_base.gd"
+@tool
+extends TestGardenerBase
+class_name TestGardenerUndoRedoPainting
 
 
 var octree_snapshot_check:OctreeSnapshotCheck = null
@@ -8,7 +9,7 @@ var undoable_action_count:int = 0
 var action_intervals:Array
 
 # Tree comparison doesn't make sense because of Godot autonaming nodes
-# When we undo and then redo, we do not enforce previous names, so Godot decides the name on it's own
+# When we undo and then redo, we do not enforce previous names, so Godot decides the name checked it's own
 # Which is expected behavior and thus perfectly fine
 
 # Neither does octree comparison
@@ -21,15 +22,15 @@ var member_count_snapshots_list:Array = []
 
 
 func execute():
-	.execute()
+	super.execute()
 	logger.info("Executing test")
 	octree_snapshot_check = OctreeSnapshotCheck.new()
 	painting_data = GardenerUtils.populate_node_with_surfaces(self, true, false)
 	
 	painter_scripts = [
-		GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(20,20), GardenerScript.PRESET_STROKE_LENGTH_JITTER),
-		GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.SPOTTY_75_PCT, Vector2(10,10), GardenerScript.PRESET_STROKE_LENGTH_JITTER),
-		GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(20,20), GardenerScript.PRESET_STROKE_LENGTH_JITTER)
+		Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.COVER, Vector2(20,20), Check_Gardener.PRESET_STROKE_LENGTH_JITTER),
+		Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.SPOTTY_75_PCT, Vector2(10,10), Check_Gardener.PRESET_STROKE_LENGTH_JITTER),
+		Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.COVER, Vector2(20,20), Check_Gardener.PRESET_STROKE_LENGTH_JITTER)
 	]
 	
 	undoable_action_count = 0

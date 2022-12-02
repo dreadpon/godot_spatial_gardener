@@ -1,5 +1,6 @@
-tool
-extends "stroke_handler.gd"
+@tool
+extends StrokeHandler
+class_name SH_Single
 
 
 #-------------------------------------------------------------------------------
@@ -10,8 +11,7 @@ extends "stroke_handler.gd"
 # Dragging while pressing will place as many instances as the framerate allows
 
 
-func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int).(
-	_brush, _plant_states, _octree_managers, _space_state, _camera, _collision_mask):
+func _init(_brush:Toolshed_Brush,_plant_states:Array,_octree_managers:Array,_space_state:PhysicsDirectSpaceState3D,_camera: Camera3D,_collision_mask:int):
 	
 	set_meta("class", "SH_Single")
 
@@ -22,11 +22,11 @@ func should_abort_early(brush_data:Dictionary):
 
 
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
-	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
+	brush_placement_area:BrushPlacementArea, container_transform:Transform3D, painting_changes:PaintingChanges):
 	
 	var member_pos = brush_data.brush_pos
 	
-	var plant_transform:Transform = TransformGenerator.generate_plant_transform(member_pos, brush_data.brush_normal, plant, randomizer)
+	var plant_transform:Transform3D = TransformGenerator.generate_plant_transform(member_pos, brush_data.brush_normal, plant, randomizer)
 	var placement_transform:PlacementTransform = PlacementTransform.new(member_pos, brush_data.brush_normal, plant_transform)
 	painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placement_transform, placement_transform)
 

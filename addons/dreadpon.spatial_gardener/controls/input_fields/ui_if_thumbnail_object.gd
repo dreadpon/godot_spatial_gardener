@@ -1,5 +1,6 @@
-tool
-extends "ui_if_thumbnail_base.gd"
+@tool
+extends UI_IF_ThumbnailBase
+class_name UI_IF_ThumbnailObject
 
 
 #-------------------------------------------------------------------------------
@@ -19,7 +20,7 @@ var _thumb = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settings:Dictionary = {}):
 	set_meta("class", "UI_IF_ThumbnailObject")
 
 

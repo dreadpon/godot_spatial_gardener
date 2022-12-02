@@ -1,5 +1,6 @@
-tool
-extends "stroke_handler.gd"
+@tool
+extends StrokeHandler
+class_name SH_Erase
 
 
 #-------------------------------------------------------------------------------
@@ -9,13 +10,12 @@ extends "stroke_handler.gd"
 # Remove members from an octree according to the target density
 
 
-func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int).(
-	_brush, _plant_states, _octree_managers, _space_state, _camera, _collision_mask):
+func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState3D, _camera: Camera3D, _collision_mask:int):
 		set_meta("class", "SH_Erase")
 
 
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
-	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
+	brush_placement_area:BrushPlacementArea, container_transform:Transform3D, painting_changes:PaintingChanges):
 	
 	# We create a grid and detect overlaps
 	brush_placement_area.init_grid_data(plant.density_per_units, 1.0 - brush.behavior_strength)

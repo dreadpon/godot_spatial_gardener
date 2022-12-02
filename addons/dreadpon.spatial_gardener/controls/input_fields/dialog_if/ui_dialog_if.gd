@@ -1,5 +1,5 @@
-tool
-extends WindowDialog
+@tool
+extends Window
 
 
 #-------------------------------------------------------------------------------
@@ -7,11 +7,8 @@ extends WindowDialog
 # Has confirmation and cancellation buttons
 #-------------------------------------------------------------------------------
 
-
-const ThemeAdapter = preload("../../theme_adapter.gd")
-
-onready var panel_container_fields_nd: Control = $VBoxContainer_Main/PanelContainer_Fields
-onready var fields = $VBoxContainer_Main/PanelContainer_Fields/VBoxContainer_Fields
+@onready var panel_container_fields_nd: Control = $VBoxContainer_Main/PanelContainer_Fields
+@onready var fields = $VBoxContainer_Main/PanelContainer_Fields/VBoxContainer_Fields
 
 
 signal confirmed

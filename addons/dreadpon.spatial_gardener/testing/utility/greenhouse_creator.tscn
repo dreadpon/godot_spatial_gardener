@@ -147,5 +147,5 @@ brush/brushes = [ SubResource( 14 ), SubResource( 15 ), SubResource( 16 ), SubRe
 [node name="GreenhouseCreator" type="Node"]
 script = ExtResource( 1 )
 greenhouses = [ SubResource( 4 ) ]
-toolsheds = [ SubResource( 9 ) ]
+@toolsheds = [ SubResource( 9 ) ]
 save_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"

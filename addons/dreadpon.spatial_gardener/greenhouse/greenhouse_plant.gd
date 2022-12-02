@@ -1,16 +1,12 @@
-tool
-extends "../utility/input_field_resource/input_field_resource.gd"
+@tool
+extends InputFieldResource
+class_name Greenhouse_Plant
 
 
 #-------------------------------------------------------------------------------
 # All the data needed to generate a plant, it's transform
 # And a containing octree
 #-------------------------------------------------------------------------------
-
-
-var Globals = preload("../utility/globals.gd")
-const Greenhouse_LODVariant = preload("greenhouse_LOD_variant.gd")
-
 
 enum ScalingType {UNIFORM, FREE, LOCK_XY, LOCK_ZY, LOCK_XZ}
 enum DirectionVectorType {UNUSED, WORLD_X, WORLD_Y, WORLD_Z, NORMAL, CUSTOM}
@@ -105,7 +101,7 @@ signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 #-------------------------------------------------------------------------------
 
 
-func _init().():
+func _init():
 	set_meta("class", "Greenhouse_Plant")
 	resource_name = "Greenhouse_Plant"
 	
@@ -156,12 +152,12 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				_base_control, _resource_previewer, ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"])
 			var settings := {"button_text": "Configure Octree", "_base_control": _base_control, "bound_input_fields": bound_input_fields}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
-			input_field.connect("applied_changes", self, "on_dialog_if_applied_changes", [input_field])
-			input_field.connect("cancelled_changes", self, "on_dialog_if_cancelled_changes", [input_field])
+			input_field.connect("applied_changes",Callable(self,"on_dialog_if_applied_changes").bind(input_field))
+			input_field.connect("cancelled_changes",Callable(self,"on_dialog_if_cancelled_changes").bind(input_field))
 		"octree/octree_recenter_button":
 			var settings := {"button_text": "Recenter Octree"}
 			input_field = UI_IF_Button.new(octree_recenter_button, "Octree Centring", prop, settings)
-			input_field.connect("pressed", self, "on_if_button", [input_field])
+			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
 		#======================================================
 		"density/density_per_units":
 			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value", 2000.0)
@@ -292,7 +288,7 @@ func reconfigure_octree():
 #-------------------------------------------------------------------------------
 
 
-# A prop action was executed on one of the LOD variants
+# A prop action was executed checked one of the LOD variants
 # If a mesh was changed - update thumbnail
 # If a spawned spatial was changed - spawn or deelte them
 func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant):
@@ -315,10 +311,10 @@ func on_dialog_if_applied_changes(initial_values:Array, final_values:Array, inpu
 	match input_field.prop_name:
 		"octree/octree_reconfigure_button":
 			_undo_redo.create_action("Reconfigure Octree")
-			_undo_redo.add_do_method(input_field, "set_values", final_values)
-			_undo_redo.add_do_method(self, "reconfigure_octree")
-			_undo_redo.add_undo_method(input_field, "set_values", initial_values)
-			_undo_redo.add_undo_method(self, "reconfigure_octree")
+			_undo_redo.add_do_method( input_field, "set_values",final_values )
+			_undo_redo.add_do_method( self, "reconfigure_octree" )
+			_undo_redo.add_undo_method( input_field, "set_values", (initial_values) )
+			_undo_redo.add_undo_method(self, "reconfigure_octree" )
 			_undo_redo.commit_action()
 
 
@@ -417,8 +413,8 @@ func request_prop_action(prop_action:PropAction):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:UndoRedo):
-	.set_undo_redo(val)
+func set_undo_redo(val:EditorUndoRedoManager):
+	super.set_undo_redo(val)
 	for LOD_variant in mesh_LOD_variants:
 		LOD_variant.set_undo_redo(_undo_redo)
 
@@ -587,7 +583,7 @@ func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
 		props_to_hide.append("fwd_vector/fwd_vector_blending")
 	
 	for prop in props_to_hide:
-		prop_dict[prop].usage = PROPERTY_USAGE_NOEDITOR
+		prop_dict[prop].usage = PROPERTY_USAGE_NO_EDITOR
 	
 	return prop_dict
 
@@ -611,14 +607,14 @@ func _get_prop_dictionary():
 		"mesh/mesh_LOD_max_distance":
 		{
 			"name": "mesh/mesh_LOD_max_distance",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
 		"mesh/mesh_LOD_kill_distance":
 		{
 			"name": "mesh/mesh_LOD_kill_distance",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -632,21 +628,21 @@ func _get_prop_dictionary():
 		"mesh/mesh_LOD_min_size":
 		{
 			"name": "mesh/mesh_LOD_min_size",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
 		"octree/octree_reconfigure_button":
 		{
 			"name": "octree/octree_reconfigure_button",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
 		"octree/octree_recenter_button":
 		{
 			"name": "octree/octree_recenter_button",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -654,7 +650,7 @@ func _get_prop_dictionary():
 		"density/density_per_units":
 		{
 			"name": "density/density_per_units",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -681,7 +677,7 @@ func _get_prop_dictionary():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "Unused,World X,World Y,World Z,Normal,Custom"
+			"hint_string": "Unused,World3D X,World3D Y,World3D Z,Normal,Custom"
 		},
 		"up_vector/up_vector_primary":
 		{
@@ -696,7 +692,7 @@ func _get_prop_dictionary():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "Unused,World X,World Y,World Z,Normal,Custom"
+			"hint_string": "Unused,World3D X,World3D Y,World3D Z,Normal,Custom"
 		},
 		"up_vector/up_vector_secondary":
 		{
@@ -708,7 +704,7 @@ func _get_prop_dictionary():
 		"up_vector/up_vector_blending":
 		{
 			"name": "up_vector/up_vector_blending",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,1.0"
@@ -720,7 +716,7 @@ func _get_prop_dictionary():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "Unused,World X,World Y,World Z,Normal,Custom"
+			"hint_string": "Unused,World3D X,World3D Y,World3D Z,Normal,Custom"
 		},
 		"fwd_vector/fwd_vector_primary":
 		{
@@ -735,7 +731,7 @@ func _get_prop_dictionary():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "Unused,World X,World Y,World Z,Normal,Custom"
+			"hint_string": "Unused,World3D X,World3D Y,World3D Z,Normal,Custom"
 		},
 		"fwd_vector/fwd_vector_secondary":
 		{
@@ -747,7 +743,7 @@ func _get_prop_dictionary():
 		"fwd_vector/fwd_vector_blending":
 		{
 			"name": "fwd_vector/fwd_vector_blending",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,1.0"
@@ -763,7 +759,7 @@ func _get_prop_dictionary():
 		"offset/offset_jitter_fraction":
 		{
 			"name": "offset/offset_jitter_fraction",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -771,7 +767,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_y":
 		{
 			"name": "rotation/rotation_random_y",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -779,7 +775,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_x":
 		{
 			"name": "rotation/rotation_random_x",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -787,7 +783,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_z":
 		{
 			"name": "rotation/rotation_random_z",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -811,7 +807,7 @@ func _fix_duplicate_signals(copy):
 func get_prop_tooltip(prop:String) -> String:
 	match prop:
 		"mesh/mesh_LOD_variants":
-			return "The array of Level Of Detail resources that's used to swap meshes depending on distance to the camera\n" \
+			return "The array of Level Of Detail resources that's used to swap meshes depending checked distance to the camera\n" \
 				+ "This allows to have high-detailed meshes when the player is close, but low-detailed when they're far way\n" \
 				+ "This technique is used to optimize performance\n" \
 				+ "\n" \
@@ -823,7 +819,7 @@ func get_prop_tooltip(prop:String) -> String:
 			return "The distance after which the lowest-detailed LOD (last one in the array) is chosen\n" \
 				+ "LODs in-between are spread evenly across this distance\n"
 		"mesh/mesh_LOD_kill_distance":
-			return "The distance after which the mesh and it's Spawned Spatial are removed entirely\n" \
+			return "The distance after which the mesh and it's Spawned Node3D are removed entirely\n" \
 				+ "Used to save perfomance by rejecting small objects like grass or rocks at big distances\n" \
 				+ "A default value of '-1' disables this behavior (the object will be active forever)"
 		"mesh/mesh_LOD_max_capacity":
@@ -847,7 +843,7 @@ func get_prop_tooltip(prop:String) -> String:
 		"scale/scale_scaling_type":
 			return "Defines the rules for scaling randomization\n" \
 				+ "By default it scales uniformly, meaning all axes will have the same value\n" \
-				+ "You can remove the lock entirely and allow each axis to have it's own randomized value (typically results in wonky-looking meshes)\n" \
+				+ "You can remove_at the lock entirely and allow each axis to have it's own randomized value (typically results in wonky-looking meshes)\n" \
 				+ "Or you can lock one of the planes\n" \
 				+ "e.g. XZ-lock with make horizontal scaling uniform (plants won't appear twisted), but allow varying vertical scaling"
 		"scale/scale_range":
@@ -866,7 +862,7 @@ func get_prop_tooltip(prop:String) -> String:
 			return "The custom value to be used as secondary up vector"
 		"up_vector/up_vector_blending":
 			return "How much we blend between our vectors\n" \
-				+ "0.0 - use primary, 0.5 - use in-between the two, 1.0 - use secondary and so on\n" \
+				+ "0.0 - use primary, 0.5 - use in-between the two, 1.0 - use secondary and so checked\n" \
 				+ "Is used to specify the main orientation for our plant and then a small inclination towards something\n" \
 				+ "E.g. a tree that grows upward, but is slightly tilted with it's surface"
 		
@@ -882,7 +878,7 @@ func get_prop_tooltip(prop:String) -> String:
 			return "The custom value to be used as secondary forward vector"
 		"fwd_vector/fwd_vector_blending":
 			return "How much we blend between our vectors\n" \
-				+ "0.0 - use primary, 0.5 - use in-between the two, 1.0 - use secondary and so on\n" \
+				+ "0.0 - use primary, 0.5 - use in-between the two, 1.0 - use secondary and so checked\n" \
 				+ "Is used to specify the main orientation for our plant and then a small inclination towards something\n" \
 				+ "E.g. a signpost that points forward in world space, but is slightly tilted to it's target"
 		
@@ -891,27 +887,27 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "Used to hide things like roots below the surface"
 		"offset/offset_jitter_fraction":
 			return "The random 'cell offset' for each instance\n" \
-				+ "All instances are placed on a virtual grid, and with a jitter of 0.0 will appear placed using a ruler\n" \
+				+ "All instances are placed checked a virtual grid, and with a jitter of 0.0 will appear placed using a ruler\n" \
 				+ "Jitter specifies how far in local space of each cell can an instance be offset\n" \
-				+ "E.g. 0.0 - instance in the center, 0.5 - instance can be halfway to the cell's border, 1.0 - instance can appear on the border\n" \
+				+ "E.g. 0.0 - instance in the center, 0.5 - instance can be halfway to the cell's border, 1.0 - instance can appear checked the border\n" \
 				+ "The values of 0.0 and 1.0 should generally be avoided"
 		
 		"rotation/rotation_random_y":
-			return "The range of random rotation on Y axis (Yaw)\n" \
+			return "The range of random rotation checked Y axis (Yaw)\n" \
 				+ "E.g. 45 means it can be rotated to a random angle between 45 degress clokwise and counter clockwise"
 		"rotation/rotation_random_x":
-			return "The range of random rotation on X axis (Pitch)\n" \
+			return "The range of random rotation checked X axis (Pitch)\n" \
 				+ "E.g. 45 means it can be rotated to a random angle between 45 degress clokwise and counter clockwise"
 		"rotation/rotation_random_z":
-			return "The range of random rotation on Z axis (Roll)\n" \
+			return "The range of random rotation checked Z axis (Roll)\n" \
 				+ "E.g. 45 means it can be rotated to a random angle between 45 degress clokwise and counter clockwise"
 		
 		"slope/slope_allowed_range":
 			return "The range of slopes (in degrees) where our plant can be placed\n" \
-				+ "Can be used to avoid placing plants on steep slopes or vertical walls\n" \
+				+ "Can be used to avoid placing plants checked steep slopes or vertical walls\n" \
 				+ "\n" \
 				+ "NOTE: slope is calculated in relation to the Primary Up Vector\n" \
 				+ "If you wish to align your plant to Surface Normal and use the slope\n" \
-				+ "Set Primary Up Vector to World Y, secondary to Normal and just blend all the way to the secondary vector (blend = 1.0)" \
+				+ "Set Primary Up Vector to World3D Y, secondary to Normal and just blend all the way to the secondary vector (blend = 1.0)" 
 	
 	return ""

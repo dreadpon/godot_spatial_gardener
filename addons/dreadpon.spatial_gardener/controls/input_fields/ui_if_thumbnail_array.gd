@@ -1,15 +1,12 @@
-tool
-extends "ui_if_thumbnail_base.gd"
+@tool
+extends UI_IF_ThumbnailBase
+class_name UI_IF_ThumbnailArray
 
 
 #-------------------------------------------------------------------------------
 # Stores an array of thumbnailable resources
 # Allows to assign existing project files through a browsing popup or drag'n'drop
 #-------------------------------------------------------------------------------
-
-
-const UI_FlexGridContainer = preload("../extensions/ui_flex_grid_container.gd")
-
 
 var add_create_inst_button:bool = true
 
@@ -26,7 +23,7 @@ var flex_grid:UI_FlexGridContainer = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settings:Dictionary = {}):
 	set_meta("class", "UI_IF_ThumbnailArray")
 	
 	add_create_inst_button = settings.add_create_inst_button
@@ -34,7 +31,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	scroll_intermediary = ScrollContainer.new()
 	scroll_intermediary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll_intermediary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll_intermediary.scroll_vertical_enabled = false
+	scroll_intermediary.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_ALWAYS
 	
 	flex_grid = UI_FlexGridContainer.new()
 	
@@ -80,7 +77,7 @@ func _update_ui_to_val(val):
 		else:
 			flex_grid.get_child(i).set_thumbnail(null)
 	
-	._update_ui_to_val(val.duplicate())
+	super._update_ui_to_val(val.duplicate())
 
 
 # Set possible interaction features for an action thumbnail

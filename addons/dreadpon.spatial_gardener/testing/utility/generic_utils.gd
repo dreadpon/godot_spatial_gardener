@@ -1,10 +1,5 @@
-tool
-
-
-const FunLib = preload("../../utility/fun_lib.gd")
-
-
-
+@tool
+class_name GenericUtils
 
 static func get_idx_msg(prefix = "", list_index:int = 0, suffix = ""):
 	var string = ""
@@ -58,7 +53,7 @@ static func find_discrepancies(list_index:int, given:Dictionary, reference:Dicti
 	
 	logger.info(get_idx_msg("", list_index, "found '%d' discrepancies %s" % [discrepancies.size(), text]))
 	
-	if !discrepancies.empty():
+	if !discrepancies.is_empty():
 		for discrepancy in discrepancies:
 			logger.info(get_idx_msg("", list_index, discrepancy))
 		logger.info(get_idx_msg("", list_index, given))
@@ -155,12 +150,12 @@ static func get_action_intervals(action_count:int) -> Array:
 
 
 
-class Discrepancy extends Reference:
+class Discrepancy extends RefCounted:
 	var error:String = ""
 	var path:String = ""
 	
 	
-	func _init(_error:String = "", _path:String = ""):
+	func _init(_error:String = "",_path:String = ""):
 		error = _error
 		path = _path
 	

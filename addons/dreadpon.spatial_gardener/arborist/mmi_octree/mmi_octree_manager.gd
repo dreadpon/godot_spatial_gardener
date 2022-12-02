@@ -1,6 +1,6 @@
-tool
+@tool
 extends Resource
-
+class_name MMIOctreeManager
 
 #-------------------------------------------------------------------------------
 # Handles higher-level management of OctreeNode objects
@@ -9,16 +9,15 @@ extends Resource
 # And passes changes made to members/plants to its OctreeNodes
 #-------------------------------------------------------------------------------
 
-
-const MMIOctreeNode = preload("mmi_octree_node.gd")
-const FunLib = preload("../../utility/fun_lib.gd")
-const DebugDraw = preload("../../utility/debug_draw.gd")
-
-
-export(Resource) var root_octree_node = null
-export(Array, Resource) var LOD_variants setget set_LOD_variants
-export var LOD_max_distance:float
-export var LOD_kill_distance:float
+@export var root_octree_node:MMIOctreeNode
+@export var LOD_variants: Array[Resource]:
+	set(value):
+		LOD_variants.resize(0)
+		for LOD_variant in value:
+			LOD_variants.append(LOD_variant)
+			
+@export var LOD_max_distance:float
+@export var LOD_kill_distance:float
 
 var add_members_queue:Array
 var remove_members_queue:Array
@@ -38,7 +37,7 @@ signal req_debug_redraw
 func _init():
 	set_meta("class", "MMIOctreeManager")
 	resource_name = "MMIOctreeManager"
-	if LOD_variants == null || LOD_variants.empty():
+	if LOD_variants == null || LOD_variants.is_empty():
 		LOD_variants = []
 	add_members_queue = []
 	remove_members_queue = []
@@ -46,14 +45,14 @@ func _init():
 
 
 # Restore any states that might be broken after loading OctreeNode objects
-func restore_after_load(__MMI_container:Spatial):
+func restore_after_load(__MMI_container:Node3D):
 	if is_instance_valid(root_octree_node):
 		root_octree_node.restore_after_load(__MMI_container, LOD_variants)
 		connect_node(root_octree_node)
 		request_debug_redraw()
 
 
-func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, MMI_container:Spatial = null, min_leaf_extent:float = 0.0):
+func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, MMI_container:Node3D = null, min_leaf_extent:float = 0.0):
 	root_octree_node = MMIOctreeNode.new(null, members_per_node, root_extent, center, -1, min_leaf_extent, MMI_container, LOD_variants)
 	connect_node(root_octree_node)
 	request_debug_redraw()
@@ -64,7 +63,7 @@ func prepare_for_removal():
 		root_octree_node.prepare_for_removal()
 
 
-func connect_node(octree_node:MMIOctreeNode):
+func connect_node(octree_node:MMIOctreeNode) -> void:
 	assert(octree_node)
 	FunLib.ensure_signal(octree_node, "members_rejected", self, "grow_to_members")
 	FunLib.ensure_signal(octree_node, "collapse_self_possible", self, "collapse_root")
@@ -73,9 +72,9 @@ func connect_node(octree_node:MMIOctreeNode):
 
 func disconnect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
-	octree_node.disconnect("members_rejected", self, "grow_to_members")
-	octree_node.disconnect("collapse_self_possible", self, "collapse_root")
-	octree_node.disconnect("req_debug_redraw", self, "schedule_debug_redraw")
+	octree_node.disconnect("members_rejected",Callable(self,"grow_to_members"))
+	octree_node.disconnect("collapse_self_possible",Callable(self,"collapse_root"))
+	octree_node.disconnect("req_debug_redraw",Callable(self,"schedule_debug_redraw"))
 
 
 func destroy():
@@ -92,7 +91,7 @@ func destroy():
 
 
 # Rebuild the tree with new extent and member limitations
-# The resulting octree node layout depends on the order of members in which they are added
+# The resulting octree node layout depends checked the order of members in which they are added
 # Hence the layout may difer if the members are the same, but belong to different nodes each time
 # I.e. it can't be predicted with members_per_node and min_leaf_extent alone, for now it is (as far as it matters) non-deterministic
 func rebuild_octree(members_per_node:int, min_leaf_extent:float):
@@ -103,7 +102,7 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 	init_octree(members_per_node, min_leaf_extent, Vector3.ZERO,#root_octree_node.center_pos,
 		root_octree_node.MMI_container, min_leaf_extent)
 
-	if !all_members.empty():
+	if !all_members.is_empty():
 		add_members(all_members)
 	request_debug_redraw()
 	
@@ -133,17 +132,17 @@ func recenter_octree():
 	init_octree(last_root.max_members, new_extent, new_center,
 		root_octree_node.MMI_container, last_root.min_leaf_extent)
 
-	if !all_members.empty():
+	if !all_members.is_empty():
 		add_members(all_members)
 	request_debug_redraw()
 	
 	debug_manual_root_logger("recentered root")
 
 
-# Grow the tree to fit any members outside it's current bounds (by creating a whole new layer on top)
+# Grow the tree to fit any members outside it's current bounds (by creating a whole new layer checked top)
 func grow_to_members(members:Array):
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
-	assert(members.size() > 0, "'members' is empty!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(members.size() > 0) #,"'members' is empty!")
 	
 	var target_point = members[0].placement
 	
@@ -162,7 +161,7 @@ func grow_to_members(members:Array):
 
 # Make one of the root's children the new root
 func collapse_root(new_root_octant):
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
 	
 	var last_root:MMIOctreeNode = root_octree_node
 	disconnect_node(last_root)
@@ -177,7 +176,7 @@ func collapse_root(new_root_octant):
 
 # Reset tree size when it runs out of members
 #func reset_root_size():
-#	assert(root_octree_node, "'root_octree_node' is not initialized!")
+#	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
 #	debug_manual_root_logger("reset root size")
 #
 #	FunLib.clear_children(root_octree_node.MMI_container)
@@ -211,13 +210,13 @@ func queue_members_set(change):
 
 # Bulk process the queues
 func process_queues():
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
 	
-	if !add_members_queue.empty():
+	if !add_members_queue.is_empty():
 		add_members(add_members_queue)
-	if !remove_members_queue.empty():
+	if !remove_members_queue.is_empty():
 		remove_members(remove_members_queue)
-	if !set_members_queue.empty():
+	if !set_members_queue.is_empty():
 		set_members(set_members_queue)
 	
 	add_members_queue = []
@@ -230,8 +229,8 @@ func process_queues():
 
 
 func add_members(members:Array):
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
-	assert(members.size() > 0, "'members' is empty!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(members.size() > 0) #,"'members' is empty!")
 	
 	root_octree_node.add_members(members)
 	root_octree_node.MMI_refresh_instance_placements_recursive()
@@ -239,8 +238,8 @@ func add_members(members:Array):
 
 
 func remove_members(members:Array):
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
-	assert(members.size() > 0, "'members' is empty!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(members.size() > 0) #,"'members' is empty!")
 	
 	root_octree_node.remove_members(members)
 	root_octree_node.process_collapse_children()
@@ -253,8 +252,8 @@ func remove_members(members:Array):
 
 
 func set_members(changes:Array):
-	assert(root_octree_node, "'root_octree_node' is not initialized!")
-	assert(changes.size() > 0, "'changes' is empty!")
+	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(changes.size() > 0) #,"'changes' is empty!")
 	
 	root_octree_node.set_members(changes)
 
@@ -266,12 +265,6 @@ func set_members(changes:Array):
 #-------------------------------------------------------------------------------
 
 
-func set_LOD_variants(val):
-	LOD_variants.resize(0)
-	for LOD_variant in val:
-		LOD_variants.append(LOD_variant)
-
-
 # Up-to-date LOD variants of an OctreeNode
 func insert_LOD_variant(variant, index:int):
 	LOD_variants.insert(index, variant)
@@ -279,7 +272,7 @@ func insert_LOD_variant(variant, index:int):
 
 # Up-to-date LOD variants of an OctreeNode
 func remove_LOD_variant(index:int):
-	LOD_variants.remove(index)
+	LOD_variants.remove_at(index)
 
 
 # Up-to-date LOD variants of an OctreeNode
@@ -308,9 +301,9 @@ func set_LODs_to_active_index():
 	root_octree_node.set_LODs_to_active_index()
 
 
-# Update LODs in OctreeNodes depending on their distance to camera
-func update_LODs(camera_pos:Vector3, container_transform:Transform):
-	camera_pos = container_transform.affine_inverse().xform(camera_pos)
+# Update LODs in OctreeNodes depending checked their distance to camera
+func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
+	camera_pos = container_transform.affine_inverse() * camera_pos
 	root_octree_node.update_LODs(camera_pos, LOD_max_distance, LOD_kill_distance)
 
 

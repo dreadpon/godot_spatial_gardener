@@ -1,6 +1,6 @@
-tool
-extends Reference
-
+@tool
+extends RefCounted
+class_name PropAction
 
 #-------------------------------------------------------------------------------
 # A base storage object for actions that affect properties in some way
@@ -14,7 +14,7 @@ var can_create_history:bool
 
 
 
-func _init(__prop:String, __val):
+func _init(__prop:String,__val):
 	set_meta("class", "PropAction")
 	
 	prop = __prop

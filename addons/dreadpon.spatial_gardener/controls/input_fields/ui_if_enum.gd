@@ -1,6 +1,6 @@
-tool
-extends "ui_input_field.gd"
-
+@tool
+extends UI_InputField
+class_name UI_IF_Enum
 
 #-------------------------------------------------------------------------------
 # Stores an enum value
@@ -18,7 +18,7 @@ var enum_selector:OptionButton = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settings:Dictionary = {}):
 	set_meta("class", "UI_IF_Enum")
 	
 	enum_selector = OptionButton.new()
@@ -28,7 +28,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	for i in range(0, settings.enum_list.size()):
 		enum_selector.add_item(settings.enum_list[i], i)
 	
-	enum_selector.connect("item_selected", self, "_request_prop_action", ["PA_PropSet"])
+	enum_selector.connect("item_selected",Callable(self,"_request_prop_action").bind("PA_PropSet"))
 	ThemeAdapter.assign_node_type(enum_selector, 'InspectorButton')
 
 
@@ -51,4 +51,4 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 func _update_ui_to_val(val):
 	enum_selector.selected = val
-	._update_ui_to_val(val)
+	super._update_ui_to_val(val)

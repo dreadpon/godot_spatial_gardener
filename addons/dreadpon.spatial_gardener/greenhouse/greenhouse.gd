@@ -1,15 +1,12 @@
-tool
-extends "../utility/input_field_resource/input_field_resource.gd"
-
+@tool
+extends InputFieldResource
+class_name Greenhouse
 
 #-------------------------------------------------------------------------------
 # The manager of all plant types for a given Gardener
 # Handles interfacing between Greenhouse_PlantState, UI and plant placement
 #-------------------------------------------------------------------------------
 
-
-const Greenhouse_PlantState = preload("greenhouse_plant_state.gd")
-const ThemeAdapter = preload("../controls/theme_adapter.gd")
 const ui_category_greenhouse_SCN = preload("../controls/side_panel/ui_category_greenhouse.tscn")
 
 # All the plants (plant states) we have
@@ -43,7 +40,7 @@ signal req_octree_recenter(plant, plant_state)
 #-------------------------------------------------------------------------------
 
 
-func _init().():
+func _init():
 	set_meta("class", "Greenhouse")
 	resource_name = "Greenhouse"
 	
@@ -56,11 +53,11 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
-	ui_category_greenhouse = ui_category_greenhouse_SCN.instance()
-	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_node('ScrollContainer_PlantThumbnails')
-	scroll_container_properties_nd = ui_category_greenhouse.find_node('ScrollContainer_Properties')
-	panel_container_properties_nd = ui_category_greenhouse.find_node('PanelContainer_PlantThumbnails')
-	panel_container_category_nd = ui_category_greenhouse.find_node('PanelContainer_Category')
+	ui_category_greenhouse = ui_category_greenhouse_SCN.instantiate()
+	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_child('ScrollContainer_PlantThumbnails')
+	scroll_container_properties_nd = ui_category_greenhouse.find_child('ScrollContainer_Properties')
+	panel_container_properties_nd = ui_category_greenhouse.find_child('PanelContainer_PlantThumbnails')
+	panel_container_category_nd = ui_category_greenhouse.find_child('PanelContainer_Category')
 	
 	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
 	ThemeAdapter.assign_node_type(panel_container_properties_nd, 'InspectorInnerPanelContainer')
@@ -72,8 +69,8 @@ func create_ui(__base_control:Control, __resource_previewer):
 	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
 	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_container_plant_thumbnails_nd.connect("requested_check", self, "on_plant_state_check")
-	grid_container_plant_thumbnails_nd.connect("requested_label_edit", self, "on_plant_label_edit")
+	grid_container_plant_thumbnails_nd.connect("requested_check",Callable(self,"on_plant_state_check"))
+	grid_container_plant_thumbnails_nd.connect("requested_label_edit",Callable(self,"on_plant_label_edit"))
 	
 	vbox_container_properties_nd = input_fields[1]
 	
@@ -126,16 +123,16 @@ func on_plant_label_edit(index:int, label_text:String):
 
 func select_plant_state_for_brush(index:int, state:bool):
 	if is_instance_valid(grid_container_plant_thumbnails_nd):
-		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.CHECK, state, {"index": index})
+		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_Action_Thumbnail.InteractionFlags.CHECK, state, {"index": index})
 
 
 func set_plant_state_label(index:int, label_text:String):
 	if is_instance_valid(grid_container_plant_thumbnails_nd):
-		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.EDIT_LABEL, label_text, {"index": index})
+		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_Action_Thumbnail.InteractionFlags.EDIT_LABEL, label_text, {"index": index})
 
 
 func on_if_ready(input_field:UI_InputField):
-	.on_if_ready(input_field)
+	super.on_if_ready(input_field)
 	
 	if input_field.prop_name == "plant_types/greenhouse_plant_states":
 		for i in range(0, greenhouse_plant_states.size()):
@@ -202,7 +199,7 @@ func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
 func on_prop_action_executed_on_plant_state_plant(prop_action, final_val, plant, plant_state):
 	var plant_index = greenhouse_plant_states.find(plant_state)
 	
-	# Any prop action on LOD variants - update thumbnail
+	# Any prop action checked LOD variants - update thumbnail
 	var update_thumbnail = prop_action.prop == "mesh/mesh_LOD_variants"
 	if update_thumbnail && grid_container_plant_thumbnails_nd:
 		grid_container_plant_thumbnails_nd._update_thumbnail(plant_state, plant_index)
@@ -221,8 +218,8 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant,
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:UndoRedo):
-	.set_undo_redo(val)
+func set_undo_redo(val:EditorUndoRedoManager):
+	super.set_undo_redo(val)
 	for plant_state in greenhouse_plant_states:
 		plant_state.set_undo_redo(_undo_redo)
 

@@ -1,5 +1,5 @@
-tool
-extends "test_gardener_base.gd"
+@tool
+extends TestGardenerBase
 
 
 var octree_snapshot_check:OctreeSnapshotCheck = null
@@ -8,7 +8,7 @@ var octree_snapshot_check:OctreeSnapshotCheck = null
 
 
 func execute():
-	.execute()
+	super.execute()
 	logger.info("Executing test")
 	octree_snapshot_check = OctreeSnapshotCheck.new()
 	painting_data = GardenerUtils.populate_node_with_surfaces(self, true, true)
@@ -19,20 +19,20 @@ func execute_next_stage():
 		0:
 			select_brush(0)
 			painter_script = (
-				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(40,40)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_100_PCT))
+				Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.COVER, Vector2(40,40)) +
+				Check_Gardener.mk_script(painting_data[1], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[2], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[3], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[4], Check_Gardener.CoverageMode.CENTER_100_PCT))
 		
 		1:
 			select_brush(1)
 			painter_script = (
-				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.SPOTTY_50_PCT, Vector2(5,20)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_50_PCT) +
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_50_PCT) +
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_50_PCT) +
-				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_50_PCT))
+				Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.SPOTTY_50_PCT, Vector2(5,20)) +
+				Check_Gardener.mk_script(painting_data[1], Check_Gardener.CoverageMode.CENTER_50_PCT) +
+				Check_Gardener.mk_script(painting_data[2], Check_Gardener.CoverageMode.CENTER_50_PCT) +
+				Check_Gardener.mk_script(painting_data[3], Check_Gardener.CoverageMode.CENTER_50_PCT) +
+				Check_Gardener.mk_script(painting_data[4], Check_Gardener.CoverageMode.CENTER_50_PCT))
 		
 		2:
 			octree_snapshot_check.snapshot_tree(gardener.arborist.MMI_container)
@@ -47,11 +47,11 @@ func execute_next_stage():
 		4:
 			select_brush(0)
 			painter_script = (
-				GardenerScript.mk_script(painting_data[0], GardenerScript.CoverageMode.COVER, Vector2(40,40)) +
-				GardenerScript.mk_script(painting_data[1], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[2], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[3], GardenerScript.CoverageMode.CENTER_100_PCT) +
-				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_100_PCT))
+				Check_Gardener.mk_script(painting_data[0], Check_Gardener.CoverageMode.COVER, Vector2(40,40)) +
+				Check_Gardener.mk_script(painting_data[1], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[2], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[3], Check_Gardener.CoverageMode.CENTER_100_PCT) +
+				Check_Gardener.mk_script(painting_data[4], Check_Gardener.CoverageMode.CENTER_100_PCT))
 		
 		5:
 			var tree_discrepancies = octree_snapshot_check.check_tree_snapshots(logger)
@@ -80,7 +80,7 @@ func save_gardener():
 
 func load_gardener():
 	var packed_scene = FunLib.load_res(greenhouse_path, "gardener.tscn")
-	gardener = packed_scene.instance()
+	gardener = packed_scene.instantiate()
 	add_child(gardener)
 	gardener.owner = get_tree().get_edited_scene_root()
 	editor_selection.clear()

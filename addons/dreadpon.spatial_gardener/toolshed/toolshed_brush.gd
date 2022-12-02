@@ -1,15 +1,11 @@
-tool
-extends "../utility/input_field_resource/input_field_resource.gd"
+@tool
+extends InputFieldResource
+class_name Toolshed_Brush
 
 
 #-------------------------------------------------------------------------------
 # All the data that reflects a brush behavior
 #-------------------------------------------------------------------------------
-
-
-
-
-const Globals = preload("../utility/globals.gd")
 
 enum BrushType {PAINT, ERASE, SINGLE, REAPPLY}
 enum OverlapMode {VOLUME, PROJECTION}
@@ -31,7 +27,7 @@ var behavior_no_settings_text: String = 'This brush has no additional settings'
 #-------------------------------------------------------------------------------
 
 
-func _init(__behavior_brush_type:int = BrushType.PAINT, __behavior_strength:float = 1.0, __shape_volume_size:float = 1.0, __shape_projection_size:float = 1.0, __behavior_passthrough: bool = false, __behavior_overlap_mode: int = OverlapMode.VOLUME).():
+func _init(__behavior_brush_type:int = BrushType.PAINT,__behavior_strength:float = 1.0,__shape_volume_size:float = 1.0,__shape_projection_size:float = 1.0,__behavior_passthrough: bool = false,__behavior_overlap_mode: int = OverlapMode.VOLUME):
 	set_meta("class", "Toolshed_Brush")
 	resource_name = "Toolshed_Brush"
 	
@@ -198,7 +194,7 @@ func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
 					])
 	
 	for prop in props_to_hide:
-		prop_dict[prop].usage = PROPERTY_USAGE_NOEDITOR
+		prop_dict[prop].usage = PROPERTY_USAGE_NO_EDITOR
 	
 	return prop_dict
 
@@ -214,21 +210,21 @@ func _get_prop_dictionary():
 		},
 		"shape/shape_volume_size" : {
 			"name": "shape/shape_volume_size",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,100.0,0.01,or_greater"
 		},
 		"shape/shape_projection_size" : {
 			"name": "shape/shape_projection_size",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "1.0,1000.0,1.0,or_greater"
 		},
 		"behavior/behavior_strength" : {
 			"name": "behavior/behavior_strength",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,1.0,0.01"
@@ -291,7 +287,7 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "\n" \
 				+ "For normal painting use a Volumetric brush\n" \
 				+ "If you have plants stuck in mid-air (say, you moved the ground beneath them),\n" \
-				+ "Use a Projection brush to remove them (Volumetric brush simply won't reach them)\n" \
+				+ "Use a Projection brush to remove_at them (Volumetric brush simply won't reach them)\n" \
 				+ "\n" \
 				+ "Can be edited by pressing\n" \
 				+ "[brush_overlap_mode_button]\n" \

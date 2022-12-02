@@ -1,6 +1,6 @@
-tool
+@tool
 extends Control
-
+class_name UI_Action_Thumbnail
 
 #-------------------------------------------------------------------------------
 # A button with multiple children buttons corresponding to various possible interactions
@@ -8,7 +8,7 @@ extends Control
 #-------------------------------------------------------------------------------
 
 
-const ThemeAdapter = preload("../../theme_adapter.gd")
+var theme_adapter := ThemeAdapter.new()
 
 
 # These flags define what sort of signals and broadcast
@@ -17,9 +17,9 @@ const PRESET_ALL:Array = [	InteractionFlags.DELETE, InteractionFlags.SET_DIALOG,
 							InteractionFlags.CHECK, InteractionFlags.CLEAR, InteractionFlags.SHOW_COUNT, InteractionFlags.EDIT_LABEL]
 
 
-var active_interaction_flags:Array = [] setget set_active_interaction_flags
-export var thumb_size:int = 100 setget set_thumb_size
-export var button_size:int = 32 setget set_button_size
+var active_interaction_flags:Array = [] : set = set_active_interaction_flags
+@export var thumb_size:int = 100 : set = set_thumb_size
+@export var button_size:int = 32 : set = set_button_size
 
 var root_button_nd:Control = null
 var texture_rect_nd:Control = null
@@ -32,8 +32,8 @@ var menu_button_nd:Control = null
 var alt_text_margin_nd:Control = null
 var alt_text_label_nd:Control = null
 
-export var clear_texture: Texture = null
-export var delete_texture: Texture = null
+@export var clear_texture: Texture2D = null
+@export var delete_texture: Texture2D = null
 
 var def_rect_size:Vector2 = Vector2(100.0, 100.0)
 var def_button_size:Vector2 = Vector2(24.0, 24.0)
@@ -69,10 +69,10 @@ func _ready():
 	if has_node("RootButton"):
 		root_button_nd = $RootButton
 		if root_button_nd.has_signal("dropped"):
-			root_button_nd.connect("dropped", self, "on_set_drag")
-		root_button_nd.connect("pressed", self, "on_set_dialog")
-		root_button_nd.connect("pressed", self, "on_press")
-		ThemeAdapter.assign_node_type(root_button_nd, 'InspectorButton')
+			root_button_nd.connect("dropped",Callable(self,"on_set_drag"))
+		root_button_nd.connect("pressed",Callable(self,"on_set_dialog"))
+		root_button_nd.connect("pressed",Callable(self,"on_press"))
+		theme_adapter.assign_node_type(root_button_nd, 'InspectorButton')
 	if has_node("TextureRect"):
 		texture_rect_nd = $TextureRect
 	if has_node("SelectionPanel"):
@@ -80,30 +80,30 @@ func _ready():
 		selection_panel_nd.visible = false
 	if has_node("CheckBox"):
 		check_box_nd = $CheckBox
-		check_box_nd.connect("pressed", self, "on_check")
+		check_box_nd.connect("pressed",Callable(self,"on_check"))
 		check_box_nd.visible = false
 	if has_node("CounterContainer"):
 		counter_container_nd = $CounterContainer
 		counter_label_nd = $CounterContainer/CounterLabel
-		counter_label_nd.connect('resized', self, 'counter_resized')
-		counter_label_nd.add_font_override('font', get_font("font", "Label").duplicate())
+		counter_label_nd.connect('resized',Callable(self,'counter_resized'))
+		counter_label_nd.add_theme_font_override('font', get_theme().get_font("font", "Label").duplicate())
 		counter_container_nd.visible = false
 	if has_node("AltTextMargin"):
 		alt_text_margin_nd = $AltTextMargin
 		alt_text_label_nd = $AltTextMargin/AltTextLabel
-		alt_text_label_nd.add_font_override('font', get_font("font", "Label").duplicate())
-		ThemeAdapter.assign_node_type(alt_text_margin_nd, "ExternalMargin")
+		alt_text_label_nd.add_theme_font_override('font', get_theme().get_font("font", "Label").duplicate())
+		theme_adapter.assign_node_type(alt_text_margin_nd, "ExternalMargin")
 		alt_text_label_nd.visible = false
 	if has_node('LabelLineEdit'):
 		label_line_edit_nd = $LabelLineEdit
-		label_line_edit_nd.add_font_override('font', get_font("font", "Label").duplicate())
-		ThemeAdapter.assign_node_type(label_line_edit_nd, "PlantTitleLineEdit")
-		label_line_edit_nd.connect("text_changed", self, "on_label_edit")
+		label_line_edit_nd.add_theme_font_override('font', get_theme().get_font("font", "Label").duplicate())
+		theme_adapter.assign_node_type(label_line_edit_nd, "PlantTitleLineEdit")
+		label_line_edit_nd.connect("text_changed",Callable(self,"on_label_edit"))
 		label_line_edit_nd.visible = false
 	if has_node('MenuButton'):
 		menu_button_nd = $MenuButton
-		ThemeAdapter.assign_node_type(menu_button_nd, "Button")
-		menu_button_nd.get_popup().connect('id_pressed', self, 'on_popup_menu_press')
+		theme_adapter.assign_node_type(menu_button_nd, "Button")
+		menu_button_nd.get_popup().connect('id_pressed',Callable(self,'on_popup_menu_press'))
 	
 	update_size()
 	set_active_interaction_flags(active_interaction_flags)
@@ -135,9 +135,10 @@ func update_size():
 	# As well as why I need to set min_rect to 1 beforehand
 	# But it seems to break otherwise
 	# Control size updating seems a bit broken in general, or just way too convoluted to define a clear set of rules :/
-	rect_min_size = Vector2.ONE
-	rect_size = thumb_rect
-	rect_min_size = thumb_rect
+	
+	custom_minimum_size = Vector2.ONE
+	size = thumb_rect
+	custom_minimum_size = thumb_rect
 	
 	call_deferred("update_size_step2")
 
@@ -169,13 +170,13 @@ func update_size_step2():
 	if is_instance_valid(counter_container_nd):
 		counter_container_nd.set_size(button_rect)
 		counter_container_nd.set_position(Vector2(long_button_margin, long_button_margin))
-		counter_label_nd.set_anchors_and_margins_preset(Control.PRESET_CENTER_RIGHT)
-		counter_label_nd.rect_min_size = Vector2.ZERO
+		counter_label_nd.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
+		counter_label_nd.custom_minimum_size = Vector2.ZERO
 		scale_font(counter_label_nd, font_scale)
 	
 	if is_instance_valid(alt_text_margin_nd):
-		alt_text_margin_nd.set_size(texture_rect_nd.rect_size)
-		alt_text_margin_nd.set_position(texture_rect_nd.rect_position)
+		alt_text_margin_nd.set_size(texture_rect_nd.size)
+		alt_text_margin_nd.set_position(texture_rect_nd.position)
 		scale_font(alt_text_label_nd, font_scale)
 	
 	if is_instance_valid(label_line_edit_nd):
@@ -193,8 +194,8 @@ func update_size_step2():
 		else:
 			menu_button_nd.set_position(Vector2(thumb_size - menu_button_rect.x, 0.0))
 	
-	rect_size = thumb_rect
-	rect_min_size = thumb_rect
+	size = thumb_rect
+	custom_minimum_size = thumb_rect
 	visible = true
 
 
@@ -207,7 +208,7 @@ func clamp_rect_to_stylebox_margins(rect, content_size, stylebox):
 
 func scale_font(node: Control, font_scale: float):
 	var font = node.get_font('font')
-	if font is DynamicFont:
+	if font is FontFile:
 		font.size *= font_scale
 
 
@@ -217,7 +218,7 @@ func set_counter_val(val:int):
 
 
 func counter_resized():
-	counter_label_nd.set_anchors_and_margins_preset(Control.PRESET_CENTER_RIGHT)
+	counter_label_nd.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
 
 
 
@@ -271,7 +272,7 @@ func set_features_val_to_flag(flag:int, val):
 			InteractionFlags.PRESS:
 				selection_panel_nd.visible = val
 			InteractionFlags.CHECK:
-				check_box_nd.pressed = val
+				check_box_nd.button_pressed = val
 			InteractionFlags.EDIT_LABEL:
 				if label_line_edit_nd.text != val:
 					label_line_edit_nd.text = val
@@ -320,7 +321,7 @@ func on_delete():
 #-------------------------------------------------------------------------------
 
 
-func set_thumbnail(texture:Texture):
+func set_thumbnail(texture:Texture2D):
 	texture_rect_nd.visible = true
 	alt_text_label_nd.visible = false
 	

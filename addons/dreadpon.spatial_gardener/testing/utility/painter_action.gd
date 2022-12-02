@@ -1,5 +1,6 @@
-tool
-extends Reference
+@tool
+extends RefCounted
+class_name PainterAction
 
 enum PainterActionType {START_STROKE, MOVE_STROKE, END_STROKE, SET_SIZE}
 
@@ -11,7 +12,7 @@ var action_value = null
 
 
 
-func _init(_action_type:int = PainterActionType.MOVE_STROKE, _paint_body_data = null, _action_value = null):
+func _init(_action_type:int = PainterActionType.MOVE_STROKE,_paint_body_data = null,_action_value = null):
 	action_type = _action_type
 	paint_body_data = _paint_body_data
 	action_value = _action_value

@@ -1,9 +1,9 @@
-tool
+@tool
 extends GridContainer
-
+class_name UI_FlexGridContainer
 
 #-------------------------------------------------------------------------------
-# A grid that automatically changes number of columns based on it's max width
+# A grid that automatically changes number of columns based checked it's max width
 # For now works only when inside a ScrollContainer with both size flags set to SIZE_EXPAND_FILL
 # lol
 #-------------------------------------------------------------------------------
@@ -23,8 +23,8 @@ func _init():
 
 
 func _ready():
-	connect("resized", self, "on_resized")
-	get_parent().connect("resized", self, "on_resized")
+	connect("resized",Callable(self,"on_resized"))
+	get_parent().connect("resized",Callable(self,"on_resized"))
 
 
 func _enter_tree():
@@ -44,17 +44,17 @@ func on_resized():
 
 func recalc_columns():
 	var target_size := get_parent_area_size()
-	var factual_size := rect_size
+	var factual_size := size
 	
 	if columns > 1 && factual_size.x > target_size.x:
 		columns -= 1
 	
 	var biggest_child_size := Vector2.ZERO
 	for child in get_children():
-		if child.rect_size.x > biggest_child_size.x:
-			biggest_child_size.x = child.rect_size.x
-		if child.rect_size.y > biggest_child_size.y:
-			biggest_child_size.y = child.rect_size.y
+		if child.size.x > biggest_child_size.x:
+			biggest_child_size.x = child.size.x
+		if child.size.y > biggest_child_size.y:
+			biggest_child_size.y = child.size.y
 	
-	if biggest_child_size.x * (columns + 1) + get_constant("hseparation") * columns < target_size.x:
+	if biggest_child_size.x * (columns + 1) + get_theme().get_constant("h_separation",&"") * columns < target_size.x:
 		columns += 1

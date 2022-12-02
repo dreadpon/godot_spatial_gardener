@@ -1,28 +1,14 @@
-tool
+@tool
 extends TabContainer
-
+class_name UI_SidePanel
 
 #-------------------------------------------------------------------------------
-# Displays the UI for Greenhouse + its plants and Toolshed + its brushes
+# Displays the UI for Greenhouse + its plants and ToolShed + its brushes
 #-------------------------------------------------------------------------------
 
-
-const FunLib = preload("../../utility/fun_lib.gd")
-const ThemeAdapter = preload("../theme_adapter.gd")
-const FoldableSection = preload("ui_foldable_section.gd")
-
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-const PropAction = preload('../../utility/input_field_resource/prop_action.gd')
-const PA_PropSet = preload("../../utility/input_field_resource/pa_prop_set.gd")
-const PA_ArrayInsert = preload("../../utility/input_field_resource/pa_array_insert.gd")
-const PA_ArrayRemove = preload("../../utility/input_field_resource/pa_array_remove.gd")
-const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd")
-
-onready var panel_container_tools_nd = $PanelContainer_Tools
-onready var panel_container_tools_split_nd = $PanelContainer_Tools/PanelContainer_Tools_Split
-onready var label_error_nd = $Label_Error
-
-
+@onready var panel_container_tools_nd = $PanelContainer_Tools
+@onready var panel_container_tools_split_nd = $PanelContainer_Tools/PanelContainer_Tools_Split
+@onready var label_error_nd = $Label_Error
 
 
 #-------------------------------------------------------------------------------
@@ -43,7 +29,7 @@ func _ready():
 #-------------------------------------------------------------------------------
 
 
-# Set Greenhouse/Toolshed UI as a child
+# Set Greenhouse/ToolShed UI as a child
 # Can pass an index to specify child order
 func set_tool_ui(control:Control, index:int):
 	if panel_container_tools_split_nd.get_child_count() > index:
@@ -111,8 +97,8 @@ func set_folding_states(states: Dictionary):
 
 # Bind foldable ui elements to update the relevant folding states
 func bind_foldables(node:Node, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
-	if node is FoldableSection:
-		node.connect('folding_state_changed', self, 'on_foldable_folding_state_changed', [node, folding_states, greenhouse_id, plant_id])
+	if node is UI_FoldableSection:
+		node.connect('folding_state_changed',Callable(self,'on_foldable_folding_state_changed').bind(node, folding_states, greenhouse_id, plant_id))
 		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
 	for child in node.get_children():
 		bind_foldables(child, folding_states, greenhouse_id, plant_id)

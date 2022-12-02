@@ -1,6 +1,6 @@
-tool
-extends Spatial
-
+@tool
+extends Node3D
+class_name Arborist
 
 #-------------------------------------------------------------------------------
 # Handles managing OctreeManager objects and changes applied when painting
@@ -15,28 +15,13 @@ extends Spatial
 # However, these functions are very closely related, so maybe I'm overthinking this
 
 
-const Logger = preload("../utility/logger.gd")
-const Globals = preload("../utility/globals.gd")
-const FunLib = preload("../utility/fun_lib.gd")
-const Greenhouse_Plant = preload("../greenhouse/greenhouse_plant.gd")
-const Toolshed_Brush = preload("../toolshed/toolshed_brush.gd")
-const PaintingChanges = preload("painting_changes.gd")
-const MMIOctreeManager = preload("mmi_octree/mmi_octree_manager.gd")
-
-const StrokeHandler = preload("stroke_handler/stroke_handler.gd")
-const SH_Paint = preload("stroke_handler/sh_paint.gd")
-const SH_Erase = preload("stroke_handler/sh_erase.gd")
-const SH_Single = preload("stroke_handler/sh_single.gd")
-const SH_Reapply = preload("stroke_handler/sh_reapply.gd")
-
-
-var MMI_container:Spatial = null
+var MMI_container:Node3D = null
 var octree_managers:Array
 
 var gardening_collision_mask:int = 0
 
 # A manual override fot the camera (mainly used in Editor)
-var active_camera_override:Camera = null
+var active_camera_override:Camera3D = null
 
 var active_stroke_handler:StrokeHandler = null
 var active_painting_changes:PaintingChanges = null
@@ -50,7 +35,7 @@ var active_painting_changes:PaintingChanges = null
 #var exit_instance_placement:bool
 #var done_instance_placement:bool
 
-var _undo_redo:UndoRedo = null
+var _undo_redo:EditorUndoRedoManager = null
 var apply_undo_redo:bool = true
 
 var debug_redraw_requested_managers:Array = []
@@ -81,12 +66,12 @@ func _ready():
 	owner = get_tree().get_edited_scene_root()
 	
 	MMI_container = get_node_or_null("MMI_container")
-	if MMI_container && !(MMI_container is Spatial):
+	if MMI_container && !(MMI_container is Node3D):
 		remove_child(MMI_container)
 		MMI_container = null
 	if !MMI_container:
 		FunLib.clear_children(self)
-		MMI_container = Spatial.new()
+		MMI_container = Node3D.new()
 		MMI_container.name = "MMI_container"
 		add_child(MMI_container)
 	
@@ -105,7 +90,7 @@ func _enter_tree():
 #	exit_instance_placement = false
 #	done_instance_placement = true
 #
-#	thread_instance_placement.start(self, "thread_update_LODs")
+#	thread_instance_placement.start(Callable(self,"thread_update_LODs"))
 
 
 func _exit_tree():
@@ -113,7 +98,7 @@ func _exit_tree():
 	# Apparently I need to free any Resources that are left after closing a scene
 	# I'm not exactly sure why
 	# And it *might* be destructive to do so in editor
-	if Engine.editor_hint: return
+	if Engine.is_editor_hint(): return
 #	for octree_manager in octree_managers:
 #		octree_manager.destroy()
 #	octree_managers = []
@@ -230,7 +215,7 @@ func remove_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	disconnect_octree_manager(octree_manager)
 	octree_manager.prepare_for_removal()
-	octree_managers.remove(plant_index)
+	octree_managers.remove_at(plant_index)
 
 
 # A request to reconfigure an octree
@@ -247,14 +232,14 @@ func recenter_octree(plant_state, plant_index:int):
 
 # Connect all OctreeManager signals
 func connect_octree_manager(octree_manager:MMIOctreeManager):
-	if !octree_manager.is_connected("req_debug_redraw", self, "on_req_debug_redraw"):
-		octree_manager.connect("req_debug_redraw", self, "on_req_debug_redraw", [octree_manager])
+	if !octree_manager.is_connected("req_debug_redraw",Callable(self,"on_req_debug_redraw")):
+		octree_manager.connect("req_debug_redraw",Callable(self,"on_req_debug_redraw").bind(octree_manager))
 
 
 # Disconnect all OctreeManager signals
 func disconnect_octree_manager(octree_manager:MMIOctreeManager):
-	if octree_manager.is_connected("req_debug_redraw", self, "on_req_debug_redraw"):
-		octree_manager.disconnect("req_debug_redraw", self, "on_req_debug_redraw")
+	if octree_manager.is_connected("req_debug_redraw",Callable(self,"on_req_debug_redraw")):
+		octree_manager.disconnect("req_debug_redraw",Callable(self,"on_req_debug_redraw"))
 
 
 
@@ -290,8 +275,8 @@ func set_gardening_collision_mask(_gardening_collision_mask):
 
 # Create PaintingChanges and a StrokeHandler for this specific brush stroke
 func on_stroke_started(brush:Toolshed_Brush, plant_states:Array):
-	var space_state := get_world().direct_space_state
-	var camera = get_camera()
+	var space_state := get_world_3d().direct_space_state
+	var camera = get_camera_3d()
 	active_painting_changes = PaintingChanges.new()
 	match brush.behavior_brush_type:
 		brush.BrushType.PAINT:
@@ -327,14 +312,14 @@ func on_stroke_updated(brush_data:Dictionary):
 	debug_print_lifecycle("Total stroke %s update took: %s" % [active_stroke_handler.get_meta("class"), FunLib.msec_to_time(msec_end - msec_start)])
 
 
-# Use collected PaintingChanges to add UndoRedo actions
+# Use collected PaintingChanges to add EditorUndoRedoManager actions
 func on_stroke_finished():
 	assert(active_stroke_handler)
 	assert(active_painting_changes)
 	
 	_undo_redo.create_action("Apply Arborist MMI changes")
-	_undo_redo.add_do_method(self, "_action_apply_changes", active_painting_changes)
-	_undo_redo.add_undo_method(self, "_action_apply_changes", active_painting_changes.pop_opposite())
+	_undo_redo.add_do_method(self, "_action_apply_changes", (active_painting_changes) )
+	_undo_redo.add_undo_method(self, "_action_apply_changes", ( active_painting_changes.pop_opposite() ) )
 	
 	# We toggle this flag to avoid reapplying already commited changes all over again
 	apply_undo_redo = false
@@ -347,7 +332,7 @@ func on_stroke_finished():
 	active_painting_changes = null
 
 
-# A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
+# A wrapper for applying changes to avoid reaplying EditorUndoRedoManager actions checked commit_action()
 func _action_apply_changes(changes):
 	if !apply_undo_redo: return
 	
@@ -445,7 +430,7 @@ func _process(delta):
 
 # Instigate LOD updates in OctreeManager objects
 func update_LODs():
-	var camera_to_use:Camera = get_camera()
+	var camera_to_use:Camera3D = get_camera_3d()
 	if camera_to_use:
 		var camera_pos := camera_to_use.global_transform.origin
 		for octree_manager in octree_managers:
@@ -480,12 +465,12 @@ func _unhandled_input(event):
 # A hack to get editor camera
 # active_camera_override should be set by a Gardener
 # In-game just gets an active viewport's camera
-func get_camera():
+func get_camera_3d():
 	if is_instance_valid(active_camera_override):
 		return active_camera_override
 	else:
 		active_camera_override = null
-		return get_viewport().get_camera()
+		return get_viewport().get_camera_3d()
 
 
 
@@ -526,17 +511,17 @@ func _get_property_list():
 	return props
 
 
-func _get_configuration_warning():
+func _get_configuration_warnings():
 	var MMI_container_check = get_node("MMI_container")
-	if MMI_container_check && MMI_container_check is Spatial:
+	if MMI_container_check && MMI_container_check is Node3D:
 		return ""
 	else:
 		return "Arborist is missing a valid MMI_container child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"
 
 
-func add_child(node:Node, legible_unique_name:bool = false):
-	.add_child(node, legible_unique_name)
-	update_configuration_warning()
+func add_child(node:Node, legible_unique_name:bool = false, internal:int=0):
+	super.add_child(node, legible_unique_name)
+	update_configuration_warnings()
 
 
 
@@ -563,19 +548,19 @@ func on_req_debug_redraw(octree_manager:MMIOctreeManager):
 # Because we expect the order of managers might change and indexes will become inaccurate
 # Typically called from _process()
 func request_debug_redraw():
-	if debug_redraw_requested_managers.empty(): return
+	if debug_redraw_requested_managers.is_empty(): return
 	
 	var requested_indexes := []
 	for octree_manager in debug_redraw_requested_managers:
 		requested_indexes.append(octree_managers.find(octree_manager))
 	
-	if !requested_indexes.empty():
+	if !requested_indexes.is_empty():
 		emit_signal("req_debug_redraw", octree_managers)
 	debug_redraw_requested_managers = []
 
 
 func debug_get_dump_tree_key():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_all_octrees_key", 0)
+	var key:int = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_all_octrees_key", 0)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 

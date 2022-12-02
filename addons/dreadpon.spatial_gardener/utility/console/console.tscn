@@ -1,11 +1,11 @@
 [gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://addons/dreadpon.spatial_gardener/utility/console/console.gd" type="Script" id=1]
-[ext_resource path="res://addons/dreadpon.spatial_gardener/utility/console/fonts/ttf/AnonymousPro-Regular.ttf" type="DynamicFontData" id=3]
+[ext_resource path="res://addons/dreadpon.spatial_gardener/utility/console/fonts/ttf/AnonymousPro-Regular.ttf" type="FontFile" id=3]
 [ext_resource path="res://addons/dreadpon.spatial_gardener/utility/console/console_input_field.gd" type="Script" id=4]
 [ext_resource path="res://addons/dreadpon.spatial_gardener/utility/console/console_output.gd" type="Script" id=5]
 
-[sub_resource type="DynamicFont" id=3]
+[sub_resource type="FontFile" id=3]
 size = 32
 use_filter = true
 extra_spacing_char = 4
@@ -18,7 +18,7 @@ content_margin_top = 30.0
 content_margin_bottom = 30.0
 bg_color = Color( 0, 0, 0, 0.627451 )
 
-[sub_resource type="DynamicFont" id=4]
+[sub_resource type="FontFile" id=4]
 size = 48
 use_filter = true
 extra_spacing_char = 4
@@ -57,8 +57,8 @@ __meta__ = {
 }
 
 [node name="OutputField" type="RichTextLabel" parent="VBoxContainer"]
-margin_right = 2560.0
-margin_bottom = 1360.0
+offset_right = 2560.0
+offset_bottom = 1360.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 custom_fonts/normal_font = SubResource( 3 )
@@ -67,10 +67,10 @@ custom_styles/normal = SubResource( 1 )
 script = ExtResource( 5 )
 
 [node name="InputField" type="TextEdit" parent="VBoxContainer"]
-margin_top = 1360.0
-margin_right = 2560.0
-margin_bottom = 1440.0
-rect_min_size = Vector2( 0, 80 )
+offset_top = 1360.0
+offset_right = 2560.0
+offset_bottom = 1440.0
+minimum_size = Vector2( 0, 80 )
 size_flags_horizontal = 3
 size_flags_vertical = 0
 custom_fonts/font = SubResource( 4 )

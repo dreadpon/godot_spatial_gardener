@@ -1,19 +1,17 @@
-tool
-extends "../utility/input_field_resource/input_field_resource.gd"
+@tool
+extends InputFieldResource
+class_name Greenhouse_LODVariant
 
 
 #-------------------------------------------------------------------------------
 # A storage object for meshes to be shown as plants
-# And spatials to be spawned at their position (typically a StaticBody)
+# And spatials to be spawned at their position (typically a StaticBody3D)
 #-------------------------------------------------------------------------------
-
-
-var Globals = preload("../utility/globals.gd")
 
 var mesh:Mesh = null
 var spawned_spatial:PackedScene = null
-# Toggle for shadow casting mode on multimeshes
-var cast_shadow:int = GeometryInstance.SHADOW_CASTING_SETTING_ON
+# Toggle for shadow casting mode checked multimeshes
+var cast_shadow:int = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 
 
 
@@ -22,7 +20,7 @@ var cast_shadow:int = GeometryInstance.SHADOW_CASTING_SETTING_ON
 #-------------------------------------------------------------------------------
 
 
-func _init(__mesh:Mesh = null, __spawned_spatial:PackedScene = null):
+func _init(__mesh:Mesh = null,__spawned_spatial:PackedScene = null):
 	set_meta("class", "Greenhouse_LODVariant")
 	resource_name = "Greenhouse_LODVariant"
 	
@@ -52,7 +50,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_RESOURCE,
 				"_resource_previewer": _resource_previewer,
 				}
-			input_field = UI_IF_ThumbnailObject.new(spawned_spatial, "Spawned Spatial", prop, settings)
+			input_field = UI_IF_ThumbnailObject.new(spawned_spatial, "Spawned Node3D", prop, settings)
 		"cast_shadow":
 			var settings := {"enum_list": ["Off", "On", "Double-Sided", "Shadows Only"]}
 			input_field = UI_IF_Enum.new(cast_shadow, "Shadow Casting Mode", prop, settings)
@@ -129,7 +127,7 @@ func get_prop_tooltip(prop:String) -> String:
 		"mesh":
 			return "The mesh (.mesh) resource used to display the plant"
 		"spawned_spatial":
-			return "The PackedScene (assumed to be Spatial) that spawns alongside the mesh\n" \
+			return "The PackedScene (assumed to be Node3D) that spawns alongside the mesh\n" \
 				+ "They are separate because mesh rendering is optimized using Godot's MultiMesh\n" \
 				+ "Spawned Spatials are used to define custom behavior (excluding rendering) for each instance, mainly collision\n" \
 				+ "This should be used sparingly, as thousands of physics bodies will surely approach a limit of what Godot can handle\n" \

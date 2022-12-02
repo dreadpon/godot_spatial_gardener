@@ -1,49 +1,31 @@
-tool
+@tool
 extends Node
 
-
-const InputFieldResource = preload("../../utility/input_field_resource/input_field_resource.gd")
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-const Toolshed = preload("../../toolshed/toolshed.gd")
-const PlantUtils = preload("plant_utils.gd")
-const GenericUtils = preload("generic_utils.gd")
-const Logger = preload("../../utility/logger.gd")
-const Globals = preload("../../utility/globals.gd")
-const FunLib = preload("../../utility/fun_lib.gd")
-
-
-export(Array, Resource) var greenhouses:Array setget set_greenhouses
-export(Array, Resource) var toolsheds:Array setget set_toolsheds
-export(String, DIR) var save_path:String = ""
-export var do_load_resources_for_edit:bool = false setget set_do_load_resources_for_edit
-export var do_save_resources:bool = false setget set_do_save_resources
-export var do_save_backups:bool = false setget set_do_save_backups
+@export var greenhouses:Array[Resource]:
+	set(value):
+		for i in range(0, value.size()):
+			if value[i] == null:
+				value[i] = Greenhouse.new()
+		greenhouses = value
+@export var toolsheds:Array[Resource]:
+	set(value):
+		for i in range(0, value.size()):
+			if value[i] == null:
+				value[i] = ToolShed.new()
+		toolsheds = value
+	
+@export var save_path:String = "" # (String, DIR)
+@export var do_load_resources_for_edit:bool = false : set = set_do_load_resources_for_edit
+@export var do_save_resources:bool = false : set = set_do_save_resources
+@export var do_save_backups:bool = false : set = set_do_save_backups
 
 var logger = null
-
-
 
 
 func _init():
 	greenhouses = []
 	toolsheds = []
 	logger = Logger.get_for(self)
-
-
-func set_greenhouses(val):
-	for i in range(0, val.size()):
-		if val[i] == null:
-			val[i] = Greenhouse.new()
-	
-	greenhouses = val
-
-
-func set_toolsheds(val):
-	for i in range(0, val.size()):
-		if val[i] == null:
-			val[i] = Toolshed.new()
-	
-	toolsheds = val
 
 
 func set_do_load_resources_for_edit(val):
@@ -98,15 +80,15 @@ func save_backups():
 
 
 func _save_resource(res:InputFieldResource, res_name:String, index:int = -1):
-	res = res.duplicate_ifr(false, true)
+	var new_res := res.duplicate_ifr(false, true)
 	if index >= 0:
-		FunLib.save_res(res, save_path, "%s_%d.tres" % [res_name, index])
+		FunLib.save_res(new_res, save_path, "%s_%d.tres" % [res_name, index])
 	else:
-		FunLib.save_res(res, save_path, "%s.tres" % [res_name])
+		FunLib.save_res(new_res, save_path, "%s.tres" % [res_name])
 
 
 func _save_backup(res:InputFieldResource, res_name:String, index:int = -1):
-	res = res.duplicate_ifr(false, true)
+	var new_res := res.duplicate_ifr(false, true)
 	var full_path = ""
 	var backup_path = ""
 	var res_filename = ""
@@ -120,9 +102,14 @@ func _save_backup(res:InputFieldResource, res_name:String, index:int = -1):
 		full_path = save_path + "/%s.backup.tres" % [res_name]
 		backup_path = save_path + "/%s.backup" % [res_name]
 	
-	FunLib.save_res(res, save_path, res_filename)
+	FunLib.save_res(new_res, save_path, res_filename)
 	
-	var err = Directory.new().rename(full_path, backup_path)
+	var dir:= DirAccess.open(full_path)
+	if dir == null:
+		push_error("failed to open: ", full_path)
+		return
+		
+	var err = dir.rename(full_path, backup_path)
 	if err != OK:
 		logger.error("Could not rename '%s' to '%s', error %s!" % [full_path, backup_path, Globals.get_err_message(err)])
 	res.take_over_path(backup_path)

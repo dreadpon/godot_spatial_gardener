@@ -1,11 +1,11 @@
-tool
+@tool
 extends "test_plant_base.gd"
 
 
 
 
 func execute():
-	.execute()
+	super.execute()
 	
 	var greenhouses := load_greenhouses()
 	for greenhouse in greenhouses:
@@ -31,7 +31,7 @@ func execute():
 			morph_intervals, undoable_action_count,
 			[greenhouses, i, curr_greenhouse, morph_actions])
 	
-	var results = print_and_get_result(-1, {"morph discrepancies": morphs_gone_wrong, "UndoRedo discrepancies": undo_redo_gone_wrong})
+	var results = print_and_get_result(-1, {"morph discrepancies": morphs_gone_wrong, "EditorUndoRedoManager discrepancies": undo_redo_gone_wrong})
 	finish_execution(results)
 
 

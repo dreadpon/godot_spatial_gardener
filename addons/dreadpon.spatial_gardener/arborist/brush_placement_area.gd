@@ -1,6 +1,6 @@
-tool
-extends Reference
-
+@tool
+extends RefCounted
+class_name BrushPlacementArea
 
 #-------------------------------------------------------------------------------
 # A helper class that creates a placement area (grid)
@@ -12,11 +12,11 @@ extends Reference
 	# an even instance distribution
 # This article was used as a main reference (grid uses a simple logic and gives good-enough results)
 	# https://www.gamedeveloper.com/disciplines/random-scattering-creating-realistic-landscapes
-# However, I was not able to derive a solution that creates a grid that evenly projects on a surface of any angle
+# However, I was not able to derive a solution that creates a grid that evenly projects checked a surface of any angle
 	# When you approach 45 degrees you start seeing bigger spacing, which becomes unusable by 90 degrees
-	# So I thought of trying to project a 3D grid, but that raised a lot of questions on it's own
+	# So I thought of trying to project a 3D grid, but that raised a lot of questions checked it's own
 	# This is still an open question really
-# So I dug through some code online and decided on a system I discuss in BrushPlacementArea section
+# So I dug through some code online and decided checked a system I discuss in BrushPlacementArea section
 
 # Algorithm:
 	# Use the brush radius, position and the surface normal under it's center to describe a flat circle in 3D space
@@ -26,12 +26,12 @@ extends Reference
 		# We only check if the placements (origin positions) of plants are within the sphere. No actual boundary tests
 	# Add a max instance check (how many instances total can fit in a circle) and pad the max distance from center slightly OUTSIDE the circle
 		# Last one is needed to prevent spawning at half-distance near the circle's edge
-	# Project the overlaps to our plane and snap them to the closest point on the grid
+	# Project the overlaps to our plane and snap them to the closest point checked the grid
 		# These grid points become occupied and cannot spawn a new instance
 	# All the points that remain will spawn an instance
 	# Add a random jitter to each placement (it should be smaller than 0.5 to prevent occasional overlap)
 	# Get the raycast start and end positions
-		# They are aligned to the plane's normal and clamped at the sphere's bounds
+		# They are aligned to the plane's normal and clamp at the sphere's bounds
 			# Last one prevents out raycast from going outside the sphere
 	# Back in the StrokeHandler, use these positions to raycast to surface and determine actual placement positions
 
@@ -47,17 +47,10 @@ extends Reference
 # While not ideal, this is somewhat mitigated with max instances check
 # And snapping brush to the virtual grid
 # Ideally I would like the grid to be independent from the brush position
-	# But I don't know how to accurately project 3D grid points on an angled surface while keeping them EVENLY SPACED no matter the angle
+	# But I don't know how to accurately project 3D grid points checked an angled surface while keeping them EVENLY SPACED no matter the angle
 	# 2D grids give me a close enough result
 
 # TODO Write an article discussing this method that is actually readable by a normal human being
-
-
-const Globals = preload("../utility/globals.gd")
-const FunLib = preload("../utility/fun_lib.gd")
-const Logger = preload("../utility/logger.gd")
-const MMIOctreeManager = preload("mmi_octree/mmi_octree_manager.gd")
-const MMIOctreeNode = preload("mmi_octree/mmi_octree_node.gd")
 
 
 var sphere_pos:Vector3 = Vector3.ZERO
@@ -90,7 +83,7 @@ var logger = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__sphere_pos:Vector3, __sphere_radius:float, __plane_normal:Vector3, __jitter_fraction:float = 0.6):
+func _init(__sphere_pos:Vector3,__sphere_radius:float,__plane_normal:Vector3,__jitter_fraction:float = 0.6):
 	logger = Logger.get_for(self)
 	sphere_pos = __sphere_pos
 	sphere_radius = __sphere_radius
@@ -101,9 +94,9 @@ func _init(__sphere_pos:Vector3, __sphere_radius:float, __plane_normal:Vector3, 
 
 # Find two perpedicular vectors, so all 3 describe a plane/flat circle
 func init_axis_vectors(source:Vector3):
-	var nx := abs(source.x)
-	var ny := abs(source.y)
-	var nz := abs(source.z)
+	var nx : float = abs(source.x)
+	var ny : float = abs(source.y)
+	var nz : float = abs(source.z)
 	var axis1:Vector3
 	var axis2:Vector3
 	
@@ -139,7 +132,7 @@ func init_grid_data(plant_density:float, brush_strength:float):
 			grid_linear_size += 1
 			point_distance *= (sphere_diameter / point_distance * 1) / (sphere_diameter / point_distance)
 		
-		# Subtract 1 because number of segments on a line is always 1 less than the number of points
+		# Subtract 1 because number of segments checked a line is always 1 less than the number of points
 		# Get max length all points occupy and take half of it
 		grid_offset = (grid_linear_size - 1) * point_distance * -0.5
 	else:
@@ -193,7 +186,7 @@ func init_placement_overlaps(octree_manager:MMIOctreeManager, edge_extension:int
 # Recursively calculate placement overlaps in an octree
 func get_overlap_members(octree_node:MMIOctreeNode, max_dist:float):
 	var max_bounds_to_center_dist = octree_node.max_bounds_to_center_dist
-	var dist_node := clamp((octree_node.center_pos - sphere_pos).length() - max_bounds_to_center_dist - sphere_radius, 0.0, INF)
+	var dist_node : float = clamp((octree_node.center_pos - sphere_pos).length() - max_bounds_to_center_dist - sphere_radius, 0.0, INF)
 	if dist_node >= max_dist: return
 	
 	if !octree_node.is_leaf:
@@ -217,7 +210,7 @@ func get_members_for_deletion():
 	
 	var members_for_deletion := []
 	# Don't delete more than is exessive or actually overdense
-	var deletion_count := min(overlapped_octree_members.size() - max_placements_allowed, overdense_octree_members.size())
+	var deletion_count : int = min(overlapped_octree_members.size() - max_placements_allowed, overdense_octree_members.size())
 	var deletion_increment := float(deletion_count) / float(overdense_octree_members.size())
 	var deletion_progress := 0.0
 	
@@ -256,7 +249,7 @@ func invalidate_self_or_neighbor(grid_coord:Vector2):
 	if placement_grid[grid_coord.x][grid_coord.y]:
 		placement_grid[grid_coord.x][grid_coord.y] = false
 	
-	# Because our grid depends on brush position, sometimes we have cells that appear unoccupied
+	# Because our grid depends checked brush position, sometimes we have cells that appear unoccupied
 	# (Due to placements being *slightly* outside the cell)
 	# So we nudge our overlaps one cell in whatever direction
 	
@@ -295,7 +288,7 @@ func get_valid_raycast_positions() -> Array:
 	return raycast_positions
 
 
-# Generate a randomized placement for each point on the grid
+# Generate a randomized placement for each point checked the grid
 # And deproject it onto our brush sphere using the surface normal
 func generate_raycast_positions():
 	raycast_positions = []
@@ -303,13 +296,13 @@ func generate_raycast_positions():
 		for y in range(0, grid_linear_size):
 			if !placement_grid[x][y]: continue
 			var grid_coord := Vector2(x, y)
-			var UV_jitter := Vector2(rand_range(-jitter_fraction, jitter_fraction), rand_range(-jitter_fraction, jitter_fraction))
+			var UV_jitter := Vector2(randf_range(-jitter_fraction, jitter_fraction), randf_range(-jitter_fraction, jitter_fraction))
 			grid_coord += UV_jitter
 			var centered_UV := grid_coord_to_centered_UV(grid_coord)
 			
 			# Compensating a floating point error by padding the value a bit
 			if centered_UV.length_squared() > 0.999:
-				centered_UV = centered_UV.clamped(0.999)
+				centered_UV = centered_UV.limit_length(0.999)
 			
 			var UV_distance_to_surface:Vector3 = sqrt(1.0 - (pow(centered_UV.x, 2) + pow(centered_UV.y, 2))) * plane_axis_vectors[0]
 			var UV_point_on_plane:Vector3 = centered_UV.x * plane_axis_vectors[1] + centered_UV.y * plane_axis_vectors[2]
@@ -319,11 +312,11 @@ func generate_raycast_positions():
 	
 	# This was made to make sure we don't go over a max instance limit
 	# I refactored placement logic to snap brush_pos to a density grid
-	# Yet it doesn't 100% work on angled surfaces
+	# Yet it doesn't 100% work checked angled surfaces
 	# We still might go over max placements, hence the limit check below
 	# The percieved visual density should be unaffected though, especially at high (>= 0.5) jitter
-	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.empty():
-		raycast_positions.remove(randi() % raycast_positions.size())
+	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.is_empty():
+		raycast_positions.remove_at(randi() % raycast_positions.size())
 
 
 
@@ -355,7 +348,7 @@ func grid_coord_to_local_pos(grid_coord:Vector2) -> Vector2:
 
 # Convert local position to grid coordinates
 # Resulting vector will try to fit in range (0, grid_linear_size)
-# (indexes might be outside the grid if positions lie outside, so the result usually should be clamped or rejected manually)
+# (indexes might be outside the grid if positions lie outside, so the result usually should be clamp or rejected manually)
 func local_pos_to_grid_coord(local_pos:Vector2) -> Vector2:
 	if point_distance <= 0.0:
 		return Vector2.ZERO

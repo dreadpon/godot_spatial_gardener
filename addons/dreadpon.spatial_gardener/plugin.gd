@@ -1,4 +1,4 @@
-tool
+@tool
 extends EditorPlugin
 
 
@@ -9,28 +9,10 @@ extends EditorPlugin
 #-------------------------------------------------------------------------------
 
 
-const Logger = preload("utility/logger.gd")
-const Globals = preload("utility/globals.gd")
-const FunLib = preload("utility/fun_lib.gd")
-const ProjectSettingsManager = preload("utility/project_settings_manager.gd")
-const Gardener = preload("gardener/gardener.gd")
-const DebugViewer = preload("gardener/debug_viewer.gd")
+
 const UI_SidePanel_SCN = preload("controls/side_panel/ui_side_panel.tscn")
-const UI_SidePanel = preload("controls/side_panel/ui_side_panel.gd")
-const ThemeAdapter = preload("controls/theme_adapter.gd")
-
-const Greenhouse = preload("greenhouse/greenhouse.gd")
-const Greenhouse_Plant = preload("greenhouse/greenhouse_plant.gd")
-const Greenhouse_PlantState = preload("greenhouse/greenhouse_plant_state.gd")
-const Greenhouse_LODVariant = preload("greenhouse/greenhouse_LOD_variant.gd")
-const Toolshed = preload("toolshed/toolshed.gd")
-const Toolshed_Brush = preload("toolshed/toolshed_brush.gd")
-const PlacementTransform = preload("arborist/placement_transform.gd")
-
 const Console_SCN = preload("utility/console/console.tscn")
-const Console = preload("utility/console/console.gd")
-
-const gardener_icon:Texture = preload("icons/gardener_icon.svg")
+const gardener_icon:Texture2D = preload("icons/gardener_icon.svg")
 
 
 var _side_panel:UI_SidePanel = null
@@ -55,7 +37,7 @@ var logger = null
 #-------------------------------------------------------------------------------
 
 
-# Most lifecycle functions here and later on are restricted as editor-only
+# Most lifecycle functions here and later checked are restricted as editor-only
 # Editing plants without an editor is not currently supported
 func _ready():
 	# Is calling it from _ready() the correct way to use it?
@@ -63,7 +45,7 @@ func _ready():
 	# And https://github.com/godotengine/godot/issues/6869
 	set_input_event_forwarding_always_enabled()
 	
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	logger = Logger.get_for(self)
 	
@@ -71,9 +53,9 @@ func _ready():
 	_resource_previewer = get_editor_interface().get_resource_previewer()
 	
 	# Using selection to start/stop editing of chosen Gardener
-	get_editor_interface().get_selection().connect("selection_changed", self, "selection_changed")
-	get_tree().connect("node_added", self, "on_tree_node_added")
-	get_tree().connect("node_removed", self, "on_tree_node_removed")
+	get_editor_interface().get_selection().connect("selection_changed",Callable(self,"selection_changed"))
+	get_tree().connect("node_added",Callable(self,"on_tree_node_added"))
+	get_tree().connect("node_removed",Callable(self,"on_tree_node_removed"))
 	
 	make_debug_view_menu()
 	
@@ -85,11 +67,11 @@ func _enter_tree():
 	# We need settings without editor too
 	ProjectSettingsManager.add_plugin_project_settings()
 	
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	adapt_editor_theme()
 	
-	_side_panel = UI_SidePanel_SCN.instance()
+	_side_panel = UI_SidePanel_SCN.instantiate()
 	_side_panel.theme = control_theme
 	toolbar.visible = false
 	
@@ -100,7 +82,7 @@ func _enter_tree():
 
 
 func _exit_tree():
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	set_gardener_edit_state(null)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
@@ -108,21 +90,21 @@ func _exit_tree():
 	remove_custom_types()
 
 
-# Previously here was 'apply_changes', but it fired even when scene was closed without saving
-# 'save_external_data' respects saving/not saving choice
-func save_external_data():
-	if !Engine.editor_hint: return
+# Previously here was '_apply_changes', but it fired even when scene was closed without saving
+# '_save_external_data' respects saving/not saving choice
+func _save_external_data():
+	if !Engine.is_editor_hint(): return
 	
 	apply_changes_to_gardeners()
 
 
 func add_custom_types():
-	add_custom_type("Gardener", "Spatial", Gardener, gardener_icon)
+	add_custom_type("Gardener", "Node3D", Gardener, gardener_icon)
 	add_custom_type("Greenhouse", "Resource", Greenhouse, null)
 	add_custom_type("Greenhouse_Plant", "Resource", Greenhouse_Plant, null)
 	add_custom_type("Greenhouse_PlantState", "Resource", Greenhouse_PlantState, null)
 	add_custom_type("Greenhouse_LODVariant", "Resource", Greenhouse_LODVariant, null)
-	add_custom_type("Toolshed", "Resource", Toolshed, null)
+	add_custom_type("ToolShed", "Resource", ToolShed, null)
 	add_custom_type("Toolshed_Brush", "Resource", Toolshed_Brush, null)
 	add_custom_type("PlacementTransform", "Resource", PlacementTransform, null)
 
@@ -133,7 +115,7 @@ func remove_custom_types():
 	remove_custom_type("Greenhouse_Plant")
 	remove_custom_type("Greenhouse_PlantState")
 	remove_custom_type("Greenhouse_LODVariant")
-	remove_custom_type("Toolshed")
+	remove_custom_type("ToolShed")
 	remove_custom_type("Toolshed_Brush")
 	remove_custom_type("PlacementTransform")
 
@@ -153,14 +135,14 @@ func on_tree_node_removed(node:Node):
 		gardeners_in_tree.erase(node)
 
 
-# Call apply_changes on all Gardeners in the scene
+# Call _apply_changes checked all Gardeners in the scene
 func apply_changes_to_gardeners():
 	for gardener in gardeners_in_tree:
 		if gardener is Gardener && is_instance_valid(gardener):
-			gardener.apply_changes()
+			gardener._apply_changes()
 
 
-func get_plugin_name() -> String:
+func _get_plugin_name() -> String:
 	return 'SpatialGardener'
 
 
@@ -179,7 +161,7 @@ func handles(object):
 # Handle events
 # Propagate editor camera
 # Forward input to Gardener if selected
-func forward_spatial_gui_input(camera, event):
+func _forward_3d_gui_input(camera, event):
 	propagate_camera(camera)
 	
 	var handled = false
@@ -198,12 +180,12 @@ func plugin_input(event):
 		if event.scancode == debug_get_dump_editor_tree_key():
 			debug_dump_editor_tree()
 		elif (event.scancode == get_focus_painter_key()
-			&& !Input.is_key_pressed(KEY_SHIFT) && !Input.is_key_pressed(KEY_CONTROL) && !Input.is_key_pressed(KEY_ALT) && !Input.is_key_pressed(KEY_SYSREQ)):
+			&& !Input.is_key_pressed(KEY_SHIFT) && !Input.is_key_pressed(KEY_CTRL) && !Input.is_key_pressed(KEY_ALT) && !Input.is_key_pressed(KEY_SYSREQ)):
 			focus_painter()
 
 
-# A hack to propagate editor camera using forward_spatial_gui_input
-func propagate_camera(camera:Camera):
+# A hack to propagate editor camera using _forward_3d_gui_input
+func propagate_camera(camera:Camera3D):
 	for gardener in gardeners_in_tree:
 		if is_instance_valid(gardener):
 			gardener.propagate_camera(camera)
@@ -214,14 +196,14 @@ func on_debug_view_menu_id_pressed(id):
 		active_gardener.debug_view_flag_checked(debug_view_menu, id)
 
 
-# A somewhat hacky way to focus editor camera on the painter
+# A somewhat hacky way to focus editor camera checked the painter
 func focus_painter():
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	if !active_gardener: return
 	
 	var editor_selection:EditorSelection = get_editor_interface().get_selection()
-	if get_editor_interface().get_selection().is_connected("selection_changed", self, "selection_changed"):
-		get_editor_interface().get_selection().disconnect("selection_changed", self, "selection_changed")
+	if get_editor_interface().get_selection().is_connected("selection_changed",Callable(self,"selection_changed")):
+		get_editor_interface().get_selection().disconnect("selection_changed",Callable(self,"selection_changed"))
 	
 	editor_selection.clear()
 	editor_selection.add_node(active_gardener.painter.paint_brush_node)
@@ -234,25 +216,25 @@ func focus_painter():
 func simulate_key(scancode):
 	var event = InputEventKey.new()
 	event.scancode = scancode
-	event.pressed = true
+	event.button_pressed = true
 	Input.parse_input_event(event)
 
 
 # Restore selection to seamlessly continue gardener editing
 func restore_gardener_selection():
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	if !active_gardener: return
 	
 	var editor_selection:EditorSelection = get_editor_interface().get_selection()
 	editor_selection.clear()
 	editor_selection.add_node(active_gardener)
 	
-	if !get_editor_interface().get_selection().is_connected("selection_changed", self, "selection_changed"):
-		get_editor_interface().get_selection().connect("selection_changed", self, "selection_changed")
+	if !get_editor_interface().get_selection().is_connected("selection_changed",Callable(self,"selection_changed")):
+		get_editor_interface().get_selection().connect("selection_changed",Callable(self,"selection_changed"))
 
 
 func get_focus_painter_key():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/focus_painter_key", KEY_Q)
+	var key:int = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/focus_painter_key", KEY_Q)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
@@ -265,16 +247,19 @@ func get_focus_painter_key():
 
 func make_debug_view_menu():
 	debug_view_menu = DebugViewer.make_debug_view_menu()
-	debug_view_menu.get_popup().connect("id_pressed", self, "on_debug_view_menu_id_pressed")
+	debug_view_menu.get_popup().connect("id_pressed",Callable(self,"on_debug_view_menu_id_pressed"))
 
 
 # Modify editor theme to use proper colors, margins, etc.
 func adapt_editor_theme():
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	var editorTheme = ThemeAdapter.get_theme(get_editor_interface().get_inspector())
-	control_theme = Theme.new()
-	control_theme.copy_theme(editorTheme)
+#	control_theme = Theme.new()
+#	push_warning("TODO TEST:  copy_theme doesnt exists in godot 4 anymore")
+#	control_theme.copy_theme(editorTheme)
+	control_theme = editorTheme.duplicate()
+	
 	ThemeAdapter.adapt_theme(control_theme)
 
 
@@ -356,8 +341,8 @@ func start_gardener_edit(gardener):
 	#			Doesn't seem so, but still weird
 	active_gardener._ready()
 	
-	active_gardener.connect("tree_exited", self, "set_gardener_edit_state", [null])
-	active_gardener.connect("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed")
+	active_gardener.connect("tree_exited",Callable(self,"set_gardener_edit_state").bind(null))
+	active_gardener.connect("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
 	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), _side_panel)
 	_side_panel.visible = true
 	toolbar.visible = true
@@ -373,10 +358,10 @@ func stop_gardener_edit():
 
 	if active_gardener:
 		active_gardener.stop_editing()
-		if active_gardener.is_connected("tree_exited", self, "set_gardener_edit_state"):
-			active_gardener.disconnect("tree_exited", self, "set_gardener_edit_state")
-		if active_gardener.is_connected("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed"):
-			active_gardener.disconnect("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed")
+		if active_gardener.is_connected("tree_exited",Callable(self,"set_gardener_edit_state")):
+			active_gardener.disconnect("tree_exited",Callable(self,"set_gardener_edit_state"))
+		if active_gardener.is_connected("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed")):
+			active_gardener.disconnect("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
 		
 	active_gardener = null
 
@@ -390,7 +375,7 @@ func stop_gardener_edit():
 
 # Dump the whole editor tree to console
 func debug_dump_editor_tree():
-	debug_dump_node_descendants(get_editor_interface().get_editor_viewport())
+	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
 
 
 func debug_dump_node_descendants(node:Node, intendation:int = 0):
@@ -406,7 +391,7 @@ func debug_dump_node_descendants(node:Node, intendation:int = 0):
 
 
 func debug_get_dump_editor_tree_key():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_editor_tree_key", 0)
+	var key:int = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_editor_tree_key", 0)
 	return Globals.index_to_enum(key, Globals.KeyList)
 
 
@@ -415,5 +400,5 @@ func debug_toggle_console():
 	if current_scene.has_node("Console") && current_scene.get_node("Console") is Console:
 		current_scene.remove_child(current_scene.get_node("Console"))
 	else:
-		var console = Console_SCN.instance()
+		var console = Console_SCN.instantiate()
 		current_scene.add_child(console)

@@ -1,11 +1,5 @@
 extends Node
-
-
-const PainterAction = preload("painter_action.gd")
-const PaintBodyData = preload("paint_body_data.gd")
-const Painter = preload("../../gardener/painter.gd")
-const BrushPlacementArea = preload("../../arborist/brush_placement_area.gd")
-
+class_name Check_Gardener
 
 enum CoverageMode {CENTER_50_PCT, CENTER_100_PCT, CENTER_MAX, SPOTTY_25_PCT, SPOTTY_50_PCT, SPOTTY_75_PCT, COVER, COVER_MAX, CLEAR}
 const PRESET_STROKE_LENGTH_JITTER = [1, 3, 1, 5, 2, 10]
@@ -74,7 +68,7 @@ static func mk_script_actions_cover(script:Array, paint_body_data:PaintBodyData,
 			var brush_size_alpha := float(y) /float(move_count + 1)
 			var brush_size:float = lerp(brush_size_range.x, brush_size_range.y, brush_size_alpha)
 			
-			if !stroke_length_list.empty() && current_stroke_action >= stroke_length_list[stroke_length_index]:
+			if !stroke_length_list.is_empty() && current_stroke_action >= stroke_length_list[stroke_length_index]:
 				current_stroke_action = 0
 				stroke_length_index += 1
 				if stroke_length_list.size() <= stroke_length_index:
@@ -103,15 +97,21 @@ static func execute_painter_script(painter:Painter, script:Array):
 
 
 static func execute_painter_action(painter:Painter, action:PainterAction):
+	var value := Vector2()
+	if action.action_value != null:
+		value = action.action_value
+		
 	match action.action_type:
 		PainterAction.PainterActionType.START_STROKE:
 			painter.start_brush_stroke()
 		PainterAction.PainterActionType.MOVE_STROKE:
-			simulate_painter_move(painter, action.paint_body_data, action.action_value)
+			simulate_painter_move(painter, action.paint_body_data, value )
 		PainterAction.PainterActionType.END_STROKE:
 			painter.stop_brush_stroke()
 		PainterAction.PainterActionType.SET_SIZE:
-			painter.emit_signal('changed_active_brush_prop', 'shape/shape_volume_size', action.action_value, false)
+			painter.emit_signal('changed_active_brush_prop', 'shape/shape_volume_size', value, false)
+	
+	push_error("")
 
 
 static func simulate_painter_move(painter:Painter, paint_body_data:PaintBodyData, fractional_coords:Vector2):

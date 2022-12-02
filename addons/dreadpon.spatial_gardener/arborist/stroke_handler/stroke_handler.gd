@@ -1,24 +1,10 @@
-tool
+@tool
 extends Node
-
+class_name StrokeHandler
 #-------------------------------------------------------------------------------
 # A base object that gathers plant positions/overlaps
-# And generates neccessary PaintingChange depending on the stroke type it handles
+# And generates neccessary PaintingChange depending checked the stroke type it handles
 #-------------------------------------------------------------------------------
-
-
-const Logger = preload("../../utility/logger.gd")
-const FunLib = preload("../../utility/fun_lib.gd")
-const DebugDraw = preload("../../utility/debug_draw.gd")
-const Greenhouse_Plant = preload("../../greenhouse/greenhouse_plant.gd")
-const PlacementTransform = preload("../placement_transform.gd")
-const Toolshed_Brush = preload("../../toolshed/toolshed_brush.gd")
-const BrushPlacementArea = preload("../brush_placement_area.gd")
-const TransformGenerator = preload("../transform_generator.gd")
-const PaintingChanges = preload("../painting_changes.gd")
-const MMIOctreeManager = preload("../mmi_octree/mmi_octree_manager.gd")
-const MMIOctreeNode = preload("../mmi_octree/mmi_octree_node.gd")
-
 
 var randomizer:RandomNumberGenerator
 var transform_generator:TransformGenerator
@@ -26,8 +12,8 @@ var transform_generator:TransformGenerator
 var brush:Toolshed_Brush
 var plant_states:Array
 var octree_managers:Array
-var space_state:PhysicsDirectSpaceState
-var camera: Camera
+var space_state:PhysicsDirectSpaceState3D
+var camera: Camera3D
 var collision_mask:int
 
 var debug_draw_enabled: bool = false
@@ -46,7 +32,7 @@ var logger = null
 #-------------------------------------------------------------------------------
 
 
-func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int):
+func _init(_brush:Toolshed_Brush,_plant_states:Array,_octree_managers:Array,_space_state:PhysicsDirectSpaceState3D,_camera: Camera3D,_collision_mask:int):
 	set_meta("class", "StrokeHandler")
 	
 	brush = _brush
@@ -57,7 +43,7 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 	collision_mask = _collision_mask
 	
 	randomizer = RandomNumberGenerator.new()
-	randomizer.seed = OS.get_ticks_msec()
+	randomizer.seed = Time.get_ticks_msec()
 	logger = Logger.get_for(self)
 	
 	debug_draw_enabled 			= FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/stroke_handler_debug_draw", true)
@@ -78,7 +64,7 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 # If we have 'brush' in _init(), we do we need 'brush_data' you might ask
 # That's because 'brush' gives us brush settings (size, strength, etc.)
 # While 'brush_data' gives up-to-date transformations and surface normal of a brush in world-space 
-func get_stroke_update_changes(brush_data:Dictionary, container_transform:Transform) -> PaintingChanges:
+func get_stroke_update_changes(brush_data:Dictionary, container_transform:Transform3D) -> PaintingChanges:
 	var painting_changes = PaintingChanges.new()
 	if should_abort_early(brush_data): return painting_changes
 	
@@ -102,14 +88,14 @@ func should_abort_early(brush_data:Dictionary):
 	return false
 
 
-func modify_brush_data_to_container(brush_data:Dictionary, container_transform:Transform) -> Dictionary:
+func modify_brush_data_to_container(brush_data:Dictionary, container_transform:Transform3D) -> Dictionary:
 	match brush.behavior_overlap_mode:
 		Toolshed_Brush.OverlapMode.VOLUME:
 			return volume_modify_brush_data_to_container(brush_data, container_transform)
 	return brush_data
 
 
-func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, plant:Greenhouse_Plant, plant_index:int, painting_changes:PaintingChanges):
+func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform3D, plant:Greenhouse_Plant, plant_index:int, painting_changes:PaintingChanges):
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	
 	match brush.behavior_overlap_mode:
@@ -143,9 +129,9 @@ func handle_plant_stroke(brush_data:Dictionary, container_transform:Transform, p
 #-------------------------------------------------------------------------------
 
 
-func volume_modify_brush_data_to_container(brush_data:Dictionary, container_transform:Transform):
+func volume_modify_brush_data_to_container(brush_data:Dictionary, container_transform:Transform3D):
 	brush_data = brush_data.duplicate()
-	brush_data.brush_pos = container_transform.affine_inverse().xform(brush_data.brush_pos)
+	brush_data.brush_pos = container_transform.affine_inverse() * brush_data.brush_pos
 	return brush_data
 
 
@@ -158,7 +144,7 @@ func volume_modify_brush_data_to_plant(brush_data:Dictionary, plant) -> Dictiona
 # Called when the Painter brush stroke is updated (moved)
 # To be overridden
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
-	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
+	brush_placement_area:BrushPlacementArea, container_transform:Transform3D, painting_changes:PaintingChanges):
 	return null
 
 
@@ -169,22 +155,22 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 #-------------------------------------------------------------------------------
 
 
-func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_transform:Transform):
+func proj_filter_members_to_brush_circle(members_in_frustum: Array, container_transform:Transform3D):
 	var brush_radius_squared: float = pow(brush.shape_projection_size * 0.5, 2.0)
-	var viewport_size := camera.get_viewport().size
+	var viewport_size :Vector2 = camera.get_viewport().size
 	
 	for i in range(members_in_frustum.size() -1, -1, -1):
 		var member_data = members_in_frustum[i]
-		var placement = container_transform.xform(member_data.member.placement)
+		var placement = container_transform * member_data.member.placement
 		var screen_space_pos := camera.unproject_position(placement)
 		var dist_squared = (screen_space_pos - _cached_mouse_pos).length_squared()
 		
 		# Remove those outside brush radius
 		if dist_squared > brush_radius_squared:
-			members_in_frustum.remove(i)
+			members_in_frustum.remove_at(i)
 		# Remove those outside viewport
 		elif screen_space_pos.x < 0 || screen_space_pos.y < 0 || screen_space_pos.x > viewport_size.x || screen_space_pos.y > viewport_size.y:
-			members_in_frustum.remove(i)
+			members_in_frustum.remove_at(i)
 
 
 func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
@@ -203,20 +189,24 @@ func proj_define_frustum(brush_data:Dictionary, frustum_planes: Array) -> Array:
 	return frustum_planes
 
 
-func proj_filter_obstructed_members(members_in_frustum: Array, container_transform:Transform):
+func proj_filter_obstructed_members(members_in_frustum: Array, container_transform:Transform3D):
 	# This is a margin to offset our cast due to miniscule errors in placement
 	# And built-in collision shape margin
-	# Not off-setting an endpoint will mark some visible instances as obstructed
+	# Not unchecked-setting an endpoint will mark some visible instances as obstructed
 	var raycast_margin = FunLib.get_setting_safe("dreadpons_spatial_gardener/painting/projection_raycast_margin", 0.1)
 	for i in range(members_in_frustum.size() -1, -1, -1):
 		var member_data = members_in_frustum[i]
 		var ray_start: Vector3 = camera.global_transform.origin
-		var ray_vector = container_transform.xform(member_data.member.placement) - ray_start
+		var ray_vector = container_transform * member_data.member.placement - ray_start
 		var ray_end: Vector3 = ray_start + ray_vector.normalized() * (ray_vector.length() - raycast_margin)
-		var ray_result = space_state.intersect_ray(ray_start, ray_end)
+		var phys_params := PhysicsRayQueryParameters3D.new()
+		phys_params.from = ray_start
+		phys_params.to = ray_end
+		var ray_result := space_state.intersect_ray(phys_params)
 		
-		if !ray_result.empty() && ray_result.collider.collision_layer & collision_mask:
-			members_in_frustum.remove(i)
+		
+		if !ray_result.is_empty() && ray_result.collider.collision_layer & collision_mask:
+			members_in_frustum.remove_at(i)
 
 
 # Called when the Painter brush stroke is updated (moved)
@@ -233,10 +223,10 @@ func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Pl
 
 
 # Recursively iterate over octree nodes to find nodes and members within brush frustum
-func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Array, octree_node: MMIOctreeNode, container_transform:Transform):
-	var octree_node_transform := Transform(container_transform.basis, container_transform.xform(octree_node.center_pos))
+func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Array, octree_node: MMIOctreeNode, container_transform:Transform3D):
+	var octree_node_transform := Transform3D(container_transform.basis, container_transform * octree_node.center_pos)
 	var octree_node_extents := Vector3(octree_node.extent, octree_node.extent, octree_node.extent)
-	debug_draw_cube(octree_node_transform.origin, octree_node_extents, octree_node_transform.basis.get_rotation_quat(), octree_node_transform.basis)
+	debug_draw_cube(octree_node_transform.origin, octree_node_extents, octree_node_transform.basis.get_rotation_quaternion(), octree_node_transform.basis)
 	
 	if is_box_intersecting_frustum(frustum_planes, octree_node_transform, octree_node_extents):
 		if octree_node.is_leaf:
@@ -250,10 +240,10 @@ func proj_get_members_in_frustum(frustum_planes: Array, members_in_frustum: Arra
 
 
 # This is an approximation (but THIS frustum check IS MEANT to be an approximation, so it's fine)
-# This WILL fail on cube's screen-projected 'corners'
+# This WILL fail checked cube's screen-projected 'corners'
 # Since technically it will intersect some planes of our frustum
-# Which is fine because we perform distance checks to individual members later on
-func is_box_intersecting_frustum(frustum_planes: Array, box_transform: Transform, box_extents: Vector3):
+# Which is fine because we perform distance checks to individual members later checked
+func is_box_intersecting_frustum(frustum_planes: Array, box_transform: Transform3D, box_extents: Vector3):
 	# Extents == half-size
 	var oriented_box_extents = [box_extents.x * box_transform.basis.x, box_extents.y * box_transform.basis.y, box_extents.z * box_transform.basis.z]
 	var box_points := [
@@ -266,7 +256,7 @@ func is_box_intersecting_frustum(frustum_planes: Array, box_transform: Transform
 		box_transform.origin - oriented_box_extents[0] + oriented_box_extents[1] - oriented_box_extents[2],
 		box_transform.origin - oriented_box_extents[0] - oriented_box_extents[1] - oriented_box_extents[2],
 	]
-	debug_draw_point_array(box_points, Color.yellow)
+	debug_draw_point_array(box_points, Color.YELLOW)
 	
 	for plane in frustum_planes:
 		var points_inside := 0
@@ -334,9 +324,9 @@ func define_frustum_plane_array(frustum_planes: Array, frustum_points: Array):
 
 # Plane equation is
 # 		ax + by + xz + d = 0
-# Or this with a common point on a plane
+# Or this with a common point checked a plane
 # 		a(x - x0) + b(y - y0) + c(z - z0) = 0
-# Where (x0, y0, z0) is any point on the plane (lets use common_point)
+# Where (x0, y0, z0) is any point checked the plane (lets use common_point)
 #
 # So plane equation becomes		
 #		normal.x * ux - normal.x * common_point.x +
@@ -377,39 +367,39 @@ func debug_print_lifecycle(string:String):
 
 
 func debug_mk_debug_draw():
-	var context = camera.get_tree().edited_scene_root.find_node('Gardener').get_parent()
+	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
 	if !context.has_node('DebugDraw'):
 		var debug_draw := DebugDraw.new()
 		debug_draw.name = 'DebugDraw'
 		context.add_child(debug_draw)
 
 
-func debug_draw_plane_array(planes: Array, origin_points: Array, color: Color = Color.red):
+func debug_draw_plane_array(planes: Array, origin_points: Array, color: Color = Color.RED):
 	if !debug_draw_enabled: return
 	for idx in range(0, planes.size()):
 		debug_draw_plane(origin_points[idx], planes[idx], color)
 
 
-func debug_draw_point_array(points: Array, color: Color = Color.green):
+func debug_draw_point_array(points: Array, color: Color = Color.GREEN):
 	if !debug_draw_enabled: return
 	for point in points:
 		debug_draw_point(point, color)
 
 
-func debug_draw_plane(draw_origin: Vector3, plane: Plane, color: Color = Color.red):
+func debug_draw_plane(draw_origin: Vector3, plane: Plane, color: Color = Color.RED):
 	if !debug_draw_enabled: return
-	var context = camera.get_tree().edited_scene_root.find_node('Gardener').get_parent()
+	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
 	context.get_node('DebugDraw').draw_plane(draw_origin, camera.far * 0.25, plane.normal, color, context, 2.0, camera.global_transform.basis.y, 10.0)
 
 
-func debug_draw_point(draw_origin: Vector3, color: Color = Color.green):
+func debug_draw_point(draw_origin: Vector3, color: Color = Color.GREEN):
 	if !debug_draw_enabled: return
-	var context = camera.get_tree().edited_scene_root.find_node('Gardener').get_parent()
-	context.get_node('DebugDraw').draw_cube(draw_origin, Vector3.ONE, Quat(), color, context, 10.0)
+	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
+	context.get_node('DebugDraw').draw_cube(draw_origin, Vector3.ONE, Quaternion(), color, context, 10.0)
 
 
-func debug_draw_cube(draw_origin: Vector3, extents: Vector3, rotation: Quat, basis: Basis = Basis(), color: Color = Color.blue):
+func debug_draw_cube(draw_origin: Vector3, extents: Vector3, rotation: Quaternion, basis: Basis = Basis(), color: Color = Color.BLUE):
 	if !debug_draw_enabled: return
-	var context = camera.get_tree().edited_scene_root.find_node('Gardener').get_parent()
+	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
 	extents = Vector3(extents.x * basis.x.length(), extents.y * basis.y.length(), extents.z * basis.z.length())
 	context.get_node('DebugDraw').draw_cube(draw_origin, extents, rotation, color, context, 10.0)

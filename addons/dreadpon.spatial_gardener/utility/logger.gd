@@ -1,5 +1,5 @@
-tool
-
+@tool
+class_name Logger
 
 #-------------------------------------------------------------------------------
 # A modifed version of Zylann's "logger.gd" from "zylann.hterrain" plugin
@@ -35,7 +35,7 @@ class Base:
 # A Verbose Logger type
 # Meant to display verbose debug messages
 #class Verbose extends Base:
-#	func _init(__context:String).(__context):
+#	func _init(__context:String,__context):
 #		pass
 #
 #	func debug(msg:String):
@@ -47,7 +47,7 @@ class Base:
 # As opposed to original, for now we don't have separate "Verbose" logging
 # Instead we use ProjectSettings to toggle frequently used logging domains
 static func get_for(owner:Object, name:String = "") -> Base:
-	# Note: don't store the owner. If it's a Reference, it could create a cycle
+	# Note: don't store the owner. If it's a RefCounted, it could create a cycle
 	var context = owner.get_script().resource_path.get_file()
 	if name != "":
 		context += " (%s)" % [name]

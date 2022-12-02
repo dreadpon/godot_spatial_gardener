@@ -1,5 +1,6 @@
-tool
-extends "prop_action.gd"
+@tool
+extends PropAction
+class_name PA_ArrayInsert
 
 
 #-------------------------------------------------------------------------------
@@ -14,7 +15,7 @@ var index:int = -1
 
 
 
-func _init(__prop:String, __val, __index:int).(__prop, __val):
+func _init(__prop:String,__val,__index:int):
 	set_meta("class", "PA_ArrayInsert")
 	
 	index = __index

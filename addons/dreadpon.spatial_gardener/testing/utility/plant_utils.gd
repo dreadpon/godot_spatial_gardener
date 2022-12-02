@@ -1,22 +1,5 @@
-tool
-
-
-const GenericUtils = preload("generic_utils.gd")
-
-const Greenhouse = preload("../../greenhouse/greenhouse.gd")
-const Greenhouse_PlantState = preload("../../greenhouse/greenhouse_plant_state.gd")
-const Greenhouse_Plant = preload("../../greenhouse/greenhouse_plant.gd")
-const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
-
-const PropAction = preload("../../utility/input_field_resource/prop_action.gd")
-const PA_PropSet = preload("../../utility/input_field_resource/pa_prop_set.gd")
-const PA_PropEdit = preload("../../utility/input_field_resource/pa_prop_edit.gd")
-const PA_ArrayInsert = preload("../../utility/input_field_resource/pa_array_insert.gd")
-const PA_ArrayRemove = preload("../../utility/input_field_resource/pa_array_remove.gd")
-const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd")
-
-
-
+@tool
+class_name PlantUtils
 
 static func snapshot_greenhouse(greenhouse:Greenhouse) -> Dictionary:
 	var nested_classes = ["Greenhouse", "Greenhouse_PlantState", "Greenhouse_Plant", "Greenhouse_LODVariant"]
@@ -75,7 +58,7 @@ static func get_morph_actions_recursive(initial, target, address:Array, prop_nam
 	
 	else:
 		var do_edit_actions = false
-		if typeof(target) == typeof(initial) && typeof(target) == TYPE_REAL:
+		if typeof(target) == typeof(initial) && typeof(target) == TYPE_FLOAT:
 			do_edit_actions = enable_prop_edit_actions
 		
 		morph_actions.append_array(get_prop_morph_actions(
@@ -177,10 +160,10 @@ static func perform_morph_actions(initial:Greenhouse, morph_actions:Array):
 
 class MorphAction:
 	var prop_address:Array = []
-	var prop_action:Reference = null
+	var prop_action:RefCounted = null
 	
 	
-	func _init(_prop_address:Array = [], _prop_action:Reference = null):
+	func _init(_prop_address:Array = [],_prop_action:RefCounted = null):
 		prop_address = _prop_address
 		prop_action = _prop_action
 	

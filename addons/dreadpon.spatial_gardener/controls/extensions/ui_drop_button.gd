@@ -1,6 +1,6 @@
-tool
+@tool
 extends Button
-
+class_name UI_DropButton
 
 #-------------------------------------------------------------------------------
 # A button that accepts drop events
