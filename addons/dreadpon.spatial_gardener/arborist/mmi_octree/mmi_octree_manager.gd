@@ -36,13 +36,23 @@ signal req_debug_redraw
 
 
 func _init():
+	resource_local_to_scene = true
 	set_meta("class", "MMIOctreeManager")
 	resource_name = "MMIOctreeManager"
+	
 	if LOD_variants == null || LOD_variants.empty():
 		LOD_variants = []
 	add_members_queue = []
 	remove_members_queue = []
 	set_members_queue = []
+
+
+func deep_copy():
+	var copy = duplicate(false)
+	copy.root_octree_node = copy.root_octree_node.deep_copy()
+	copy.connect_node(copy.root_octree_node)
+	LOD_variants = LOD_variants.duplicate()
+	return copy
 
 
 # Restore any states that might be broken after loading OctreeNode objects
@@ -173,6 +183,12 @@ func collapse_root(new_root_octant):
 	connect_node(root_octree_node)
 	root_octree_node.safe_init_root()
 	root_octree_node.try_collapse_self(0)
+
+
+func get_all_members() -> Array:
+	if root_octree_node:
+		return root_octree_node.get_all_members()
+	return []
 
 
 # Reset tree size when it runs out of members

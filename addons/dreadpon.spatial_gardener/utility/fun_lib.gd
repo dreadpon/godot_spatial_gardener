@@ -33,6 +33,11 @@ static func ensure_signal(source:Object, _signal:String, target:Object, method:S
 		source.connect(_signal, target, method, binds, flags)
 
 
+static func disconnect_all(obj: Object, signal_name: String):
+	for connection_data in obj.get_signal_connection_list(signal_name):
+		obj.disconnect(signal_name, connection_data.target, connection_data.method)
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -58,6 +63,17 @@ static func make_hint_string(array:Array):
 		if i < array.size() - 1:
 			string += ","
 	return string
+
+
+static func str_to_vec3(string: String) -> Vector3:
+	var split = string.trim_prefix('(').trim_suffix(')').split(', ')
+	return Vector3(split[0], split[1], split[2])
+
+
+static func str_to_transform(string: String) -> Transform:
+	string = string.replace(' - ', ', ')
+	var split = string.split(', ')
+	return Transform(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
 
 
 

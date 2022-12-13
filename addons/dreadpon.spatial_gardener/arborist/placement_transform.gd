@@ -32,3 +32,18 @@ func _init(_placement:Vector3 = Vector3(), _surface_normal:Vector3 = Vector3(), 
 	surface_normal = _surface_normal
 	transform = _transform
 	octree_octant = _octree_octant
+
+
+func _to_string():
+	return '[%s, %s, %s, %s, %d]' % [str(placement), str(surface_normal), str(transform.origin), str(transform.basis), octree_octant]
+
+
+func get_origin_offset() -> float:
+	var difference = transform.origin - placement
+	var offset = surface_normal.dot(difference.normalized()) * difference.length()
+	return offset
+
+
+func set_placement_from_origin_offset(offset: float) -> Resource:
+	placement = transform.origin - surface_normal * offset
+	return self

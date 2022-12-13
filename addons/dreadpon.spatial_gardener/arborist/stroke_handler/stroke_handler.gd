@@ -345,11 +345,11 @@ func define_frustum_plane_array(frustum_planes: Array, frustum_points: Array):
 #		= 0
 # Where ux, uy, uz are unkown variables that are substituted when solving a plane equations
 # 
-# Now we combine or scalar values and move them to the right side
+# Now we combine our scalar values and move them to the right side
 #		normal.x * ux + normal.y * uy + normal.z * uz 
 #		= normal.x * common_point.x + normal.y * common_point.y + normal.z * common_point.z
 #
-#That should be it, distance to origin is 
+# That should be it, distance to origin is 
 #		d = normal.x * common_point.x + normal.y * common_point.y + normal.z * common_point.z
 # Which is esentially a dot product :)
 func define_frustum_plane(common_point: Vector3, point_0: Vector3, point_1: Vector3):

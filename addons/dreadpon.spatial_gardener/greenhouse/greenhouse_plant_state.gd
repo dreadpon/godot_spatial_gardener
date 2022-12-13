@@ -19,6 +19,8 @@ signal prop_action_executed_on_plant(prop_action, final_val, plant)
 signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant)
 signal req_octree_reconfigure(plant)
 signal req_octree_recenter(plant)
+signal req_import_transforms(plant)
+signal req_export_transforms(plant)
 
 
 
@@ -45,18 +47,20 @@ func _init().():
 func on_changed_plant():
 	emit_changed()
 
-
 func on_prop_action_executed_on_plant(prop_action, final_val, plant):
 	emit_signal("prop_action_executed_on_plant", prop_action, final_val, plant)
-
 
 func on_req_octree_reconfigure(plant):
 	emit_signal("req_octree_reconfigure", plant)
 
-
 func on_req_octree_recenter(plant):
 	emit_signal("req_octree_recenter", plant)
 
+func on_req_import_transforms(plant):
+	emit_signal("req_import_transforms", plant)
+
+func on_req_export_transforms(plant):
+	emit_signal("req_export_transforms", plant)
 
 func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant):
 	emit_signal("prop_action_executed_on_LOD_variant", prop_action, final_val, LOD_variant, plant)
@@ -79,6 +83,8 @@ func _modify_prop(prop:String, val):
 			FunLib.ensure_signal(val, "prop_action_executed_on_LOD_variant", self, "on_prop_action_executed_on_LOD_variant", [val])
 			FunLib.ensure_signal(val, "req_octree_reconfigure", self, "on_req_octree_reconfigure", [val])
 			FunLib.ensure_signal(val, "req_octree_recenter", self, "on_req_octree_recenter", [val])
+			FunLib.ensure_signal(val, "req_import_transforms", self, "on_req_import_transforms", [val])
+			FunLib.ensure_signal(val, "req_export_transforms", self, "on_req_export_transforms", [val])
 			
 			if val._undo_redo != _undo_redo:
 				val.set_undo_redo(_undo_redo)

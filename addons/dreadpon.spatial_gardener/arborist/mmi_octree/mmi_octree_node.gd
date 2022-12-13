@@ -58,7 +58,9 @@ signal req_debug_redraw()
 # Last two variables will be used only if there was no parent passed
 func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0, __center_pos:Vector3 = Vector3.ZERO,
 	__octant:int = -1, __min_leaf_extent:float = 0.0, __MMI_container:Spatial = null, __LOD_variants:Array = []):
-	
+
+	#print(self)
+	resource_local_to_scene = true
 	set_meta("class", "MMIOctreeNode")
 	resource_name = "MMIOctreeNode"
 	
@@ -93,6 +95,16 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	print_address("", "initialized")
 
 
+func deep_copy():
+	var copy = self.duplicate()
+	# members_copy should be new anyways after restore_placement_transforms()
+	var child_nodes_copy = copy.child_nodes.duplicate()
+	copy.child_nodes = []
+	for child_node in child_nodes_copy:
+		copy.child_nodes.append(child_node.deep_copy())
+	return copy
+
+
 # Inherit inheritable properties of a parent
 func safe_inherit(__parent):
 	parent = __parent
@@ -109,9 +121,8 @@ func safe_init_root():
 
 
 # Cleanup this this node before deletion
-# TODO find out if I ccan lear the member array here as well
+# TODO find out if I can clear the member array here as well
 func prepare_for_removal():
-	# I like this name. I will keep it
 	print_address("", "prepare for removal")
 	
 	for child in child_nodes:
@@ -146,6 +157,7 @@ func set_is_leaf(val):
 		MMI.owner = MMI_container.owner
 		MMI_name = MMI.name
 		MMI.multimesh = MultiMesh.new()
+		MMI.multimesh.resource_local_to_scene = true
 		MMI.multimesh.transform_format = 1
 	elif !is_leaf:
 		if is_instance_valid(MMI) && is_instance_valid(MMI_container):
@@ -256,6 +268,7 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	# We need to set active_LOD_index on both leaves/non-leaves
 	# But non-leaves do not have an MMI and can't spawn spatials
 	if is_leaf:
+		#print(MMI.multimesh)
 		MMI.multimesh.mesh = shared_LOD_variants[LOD_index].mesh
 		MMI.cast_shadow = shared_LOD_variants[LOD_index].cast_shadow
 		clear_and_spawn_all_member_spatials(last_LOD_index)

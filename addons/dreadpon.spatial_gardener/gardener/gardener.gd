@@ -42,6 +42,7 @@ var garden_work_directory:String setget set_garden_work_directory
 var gardening_collision_mask := pow(2, 0) setget set_gardening_collision_mask
 
 var initialized_for_edit:bool = false setget set_initialized_for_edit
+var is_edited: bool = false
 
 var toolshed:Toolshed = null
 var greenhouse:Greenhouse = null
@@ -166,6 +167,7 @@ func propagate_camera(camera:Camera):
 
 
 
+
 #-------------------------------------------------------------------------------
 # Initialization
 #-------------------------------------------------------------------------------
@@ -236,12 +238,16 @@ func reload_resources():
 		last_greenhouse.disconnect("prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
 		last_greenhouse.disconnect("req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
 		last_greenhouse.disconnect("req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
+		last_greenhouse.disconnect("req_import_transforms", self, "on_greenhouse_req_import_transforms")
+		last_greenhouse.disconnect("req_export_transforms", self, "on_greenhouse_req_export_transforms")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed", self, "on_greenhouse_prop_action_executed")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state", self, "on_greenhouse_prop_action_executed_on_plant_state")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state_plant", self, "on_greenhouse_prop_action_executed_on_plant_state_plant")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
 	FunLib.ensure_signal(greenhouse, "req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
 	FunLib.ensure_signal(greenhouse, "req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
+	FunLib.ensure_signal(greenhouse, "req_import_transforms", self, "on_greenhouse_req_import_transforms")
+	FunLib.ensure_signal(greenhouse, "req_export_transforms", self, "on_greenhouse_req_export_transforms")
 	
 	if arborist:
 		pair_arborist_greenhouse()
@@ -327,6 +333,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 		arborist.emit_member_count(i)
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
+	is_edited = true
 
 
 # Stop editing (painting) a scene
@@ -337,6 +344,7 @@ func stop_editing():
 	
 	if is_instance_valid(painter):
 		painter.stop_editing()
+	is_edited = false
 
 
 # We can properly start editing only when a workDirectory is set
@@ -473,14 +481,28 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 
 # A request to reconfigure an octree
 func on_greenhouse_req_octree_reconfigure(plant, plant_state):
+	if !is_edited: return
 	var plant_index = greenhouse.greenhouse_plant_states.find(plant_state)
 	arborist.reconfigure_octree(plant_state, plant_index)
 
 
 # A request to recenter an octree
 func on_greenhouse_req_octree_recenter(plant, plant_state):
+	if !is_edited: return
 	var plant_index = greenhouse.greenhouse_plant_states.find(plant_state)
 	arborist.recenter_octree(plant_state, plant_index)
+
+
+# A request to import plant transforms
+func on_greenhouse_req_import_transforms(file_path: String, plant_idx: int):
+	if !is_edited: return
+	arborist.import_instance_transforms(file_path, plant_idx)
+
+
+# A request to export plant transforms
+func on_greenhouse_req_export_transforms(file_path: String, plant_idx: int):
+	if !is_edited: return
+	arborist.export_instance_transforms(file_path, plant_idx)
 
 
 # Update brush active indexes for DebugViewer

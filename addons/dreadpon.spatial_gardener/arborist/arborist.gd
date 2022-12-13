@@ -28,6 +28,7 @@ const SH_Paint = preload("stroke_handler/sh_paint.gd")
 const SH_Erase = preload("stroke_handler/sh_erase.gd")
 const SH_Single = preload("stroke_handler/sh_single.gd")
 const SH_Reapply = preload("stroke_handler/sh_reapply.gd")
+const SH_Manual = preload("stroke_handler/sh_manual.gd")
 
 
 var MMI_container:Spatial = null
@@ -71,11 +72,22 @@ signal member_count_updated(octree_index, new_count)
 
 func _init():
 	set_meta("class", "Arborist")
-	
-	octree_managers = []
+
 
 
 func _ready():
+	#print(self)
+	
+	# see https://github.com/godotengine/godot/issues/16478
+	if octree_managers == null:
+		octree_managers = []
+	else:
+		var octree_managers_copy = octree_managers.duplicate()
+		octree_managers = []
+		for octree_manager in octree_managers_copy:
+			octree_managers.append(octree_manager.deep_copy())
+	
+	
 	logger = Logger.get_for(self, name)
 	
 	owner = get_tree().get_edited_scene_root()
@@ -454,6 +466,54 @@ func update_LODs():
 	else:
 		for octree_manager in octree_managers:
 			octree_manager.update_LODs_no_camera()
+
+
+func import_instance_transforms(file_path: String, plant_idx: int):
+	var file := File.new()
+	var err = file.open(file_path, File.READ)
+	if err != OK:
+		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(err)])
+	
+	var json_result = JSON.parse(file.get_as_text())
+	if json_result.error != OK:
+		logger.error("Could not parse json at '%s', error %s!" % [file_path, Globals.get_err_message(json_result.error)])
+	var placement_transform_dicts = json_result.result
+	file.close()
+	
+	active_painting_changes = PaintingChanges.new()
+	active_stroke_handler = SH_Manual.new()
+	
+	for placement_transform_dict in placement_transform_dicts:
+		active_stroke_handler.add_instance(
+			FunLib.str_to_vec3(placement_transform_dict.placement), FunLib.str_to_vec3(placement_transform_dict.surface_normal), 
+			FunLib.str_to_transform(placement_transform_dict.transform), plant_idx, active_painting_changes)
+	
+	apply_stroke_update_changes(active_painting_changes)
+	on_stroke_finished()
+	logger.info("Successfully imported %d PlacementTransforms from '%s' to index %d" % [placement_transform_dicts.size(), file_path, plant_idx])
+
+
+func export_instance_transforms(file_path: String, plant_idx: int):
+	Directory.new().make_dir_recursive(file_path.get_base_dir())
+	var file := File.new()
+	var err = file.open(file_path, File.WRITE)
+	if err != OK:
+		logger.error("Could not export '%s', error %s!" % [file_path, Globals.get_err_message(err)])
+	
+	var members: Array = octree_managers[plant_idx].get_all_members()
+	var placement_transform_dicts := []
+	for member in members:
+		placement_transform_dicts.append({
+			'placement': member.placement,
+			'surface_normal': member.surface_normal,
+			'transform': member.transform,
+			'octree_octant': member.octree_octant,
+		})
+	
+	var json_string = JSON.print(placement_transform_dicts)
+	file.store_string(json_string)
+	file.close()
+	logger.info("Successfully exported %d PlacementTransforms to '%s' at index %d" % [placement_transform_dicts.size(), file_path, plant_idx])
 
 
 
