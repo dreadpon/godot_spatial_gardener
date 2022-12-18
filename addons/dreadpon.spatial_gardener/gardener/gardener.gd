@@ -33,6 +33,9 @@ const PA_ArrayRemove = preload("../utility/input_field_resource/pa_array_remove.
 const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 
 
+
+var plugin_version: String = ""
+var storage_version: int = 0
 #export
 var refresh_octree_shared_LOD_variants:bool = false setget set_refresh_octree_shared_LOD_variants
 
@@ -79,7 +82,24 @@ func _init():
 	set_meta("class", "Gardener")
 
 
+# Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
+# In case it was created in an older version of this plugin
+func update_plugin_ver():
+	plugin_version = get_plugin_ver()
+	storage_version = get_storage_ver()
+
+
+static func get_plugin_ver():
+	return '1.2.0'
+
+
+static func get_storage_ver():
+	return 2
+
+
 func _ready():
+	update_plugin_ver()
+	
 	logger = Logger.get_for(self, name)
 	
 	# Without editor we only care about an Arborist
@@ -171,6 +191,28 @@ func propagate_camera(camera:Camera):
 #-------------------------------------------------------------------------------
 # Initialization
 #-------------------------------------------------------------------------------
+
+
+# This is supposed to address a problem decribed in "start_gardener_edit()" of "plugin.gd"
+# Instead of recalculating everything, we hope it's enough to just restore the member references
+func restore_references():
+	logger = Logger.get_for(self, name)
+	if !Engine.editor_hint: return
+	
+	if has_node('painting'):
+		painting_node = get_node('painting')
+	if has_node('debug_viewer'):
+		debug_viewer = get_node('debug_viewer')
+	
+	init_painter()
+	painter.set_brush_collision_mask(gardening_collision_mask)
+	
+	reload_resources()
+	
+	if has_node("Arborist") && get_node("Arborist") is Arborist:
+		arborist = get_node("Arborist")
+	
+	set_gardening_collision_mask(gardening_collision_mask)
 
 
 # Initialize a Painter
@@ -621,10 +663,15 @@ func save_greenhouse():
 # Writing this by hand THRICE for each property is honestly tiring
 # Built-in Godot reflection would go a long way
 func _get(property):
-	if property == "file_management/garden_work_directory":
-		return garden_work_directory
-	elif property == "gardening/gardening_collision_mask":
-		return gardening_collision_mask
+	match property:
+		"file_management/garden_work_directory":
+			return garden_work_directory
+		"gardening/gardening_collision_mask":
+			return gardening_collision_mask
+		"plugin_version":
+			return 
+		"storage_version":
+			return storage_version
 
 
 func _set(property, val):
@@ -654,6 +701,16 @@ func _get_property_list():
 			"type": TYPE_INT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_LAYERS_3D_PHYSICS
+		},
+		{
+			"name": "plugin_version",
+			"type": TYPE_STRING,
+			"usage": PROPERTY_USAGE_NOEDITOR,
+		},
+		{
+			"name": "storage_version",
+			"type": TYPE_STRING,
+			"usage": PROPERTY_USAGE_NOEDITOR,
 		},
 	]
 

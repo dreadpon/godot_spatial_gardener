@@ -25,16 +25,16 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 	# We get overdense members - those that can't fit in a grid since their cells are already occupied
 	# Then erase all of them
 	brush_placement_area.invalidate_occupied_points()
-	var members_for_deletion = brush_placement_area.get_members_for_deletion()
-	for member_for_deletion in members_for_deletion:
-		var octree_node = octree_manager.root_octree_node.find_child_by_address(member_for_deletion.node_address)
-		var placement_transform = octree_node.members[member_for_deletion.member_index]
+	var placeforms_data_for_deletion = brush_placement_area.get_placeforms_for_deletion()
+	for placeform_data_for_deletion in placeforms_data_for_deletion:
+		var octree_node = octree_manager.root_octree_node.find_child_by_address(placeform_data_for_deletion.node_address)
+		var placeform = octree_node.get_placeform(placeform_data_for_deletion.member_idx)
 		
-		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placement_transform, placement_transform)
+		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placeform, placeform)
 
 
 # No brush strength - no member filtering needed
 # Just make changes with ALL overlapped points
-func proj_get_stroke_update_changes(members_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
-	for member_data in members_in_brush:
-		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, member_data.member, member_data.member)
+func proj_get_stroke_update_changes(placeforms_data_in_brush: Array, plant:Greenhouse_Plant, plant_index: int, octree_manager:MMIOctreeManager, painting_changes:PaintingChanges):
+	for placeform_data in placeforms_data_in_brush:
+		painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placeform_data.placeform, placeform_data.placeform)

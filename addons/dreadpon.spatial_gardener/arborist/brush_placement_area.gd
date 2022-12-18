@@ -72,8 +72,8 @@ var placement_grid:Array = []
 var diagonal_dilation:float = 1.0
 
 var placement_overlaps:Array = []
-var overlapped_octree_members:Array = []
-var overdense_octree_members:Array = []
+var overlapped_member_data:Array = []
+var overdense_member_data:Array = []
 
 var raycast_positions:Array = []
 var max_placements_allowed:int = 0
@@ -184,41 +184,41 @@ func init_placement_grid():
 	# And happen to be outside our sphere_radius, but still belong to overlapped grid cells
 func init_placement_overlaps(octree_manager:MMIOctreeManager, edge_extension:int = 0):
 	placement_overlaps = []
-	overlapped_octree_members = []
+	overlapped_member_data = []
 	
 	var max_dist = sphere_radius + point_distance * edge_extension
-	get_overlap_members(octree_manager.root_octree_node, max_dist)
+	get_overlap_member_data(octree_manager.root_octree_node, max_dist)
 
 
 # Recursively calculate placement overlaps in an octree
-func get_overlap_members(octree_node:MMIOctreeNode, max_dist:float):
+func get_overlap_member_data(octree_node:MMIOctreeNode, max_dist:float):
 	var max_bounds_to_center_dist = octree_node.max_bounds_to_center_dist
 	var dist_node := clamp((octree_node.center_pos - sphere_pos).length() - max_bounds_to_center_dist - sphere_radius, 0.0, INF)
 	if dist_node >= max_dist: return
 	
 	if !octree_node.is_leaf:
 		for child_node in octree_node.child_nodes:
-			get_overlap_members(child_node, max_dist)
+			get_overlap_member_data(child_node, max_dist)
 	else:
 		var max_dist_squared = pow(max_dist, 2.0)
 		var node_address = octree_node.get_address()
-		for member_index in range(0, octree_node.members.size()):
-			var member = octree_node.members[member_index]
-			var placement = member.placement - sphere_pos
+		for member_idx in range(0, octree_node.member_count()):
+			var placeform = octree_node.get_placeform(member_idx)
+			var placement = placeform[0] - sphere_pos
 			var dist_squared = placement.length_squared()
 			if dist_squared <= max_dist_squared:
 				placement_overlaps.append(placement)
-				overlapped_octree_members.append({"node_address": node_address, "member_index": member_index})
+				overlapped_member_data.append({"node_address": node_address, "member_idx": member_idx})
 
 
 # Get all overlaps that don't fit into the density grid
-func get_members_for_deletion():
-	if overdense_octree_members.size() <= 0: return []
+func get_placeforms_for_deletion():
+	if overdense_member_data.size() <= 0: return []
 	
-	var members_for_deletion := []
+	var placeforms_for_deletion := []
 	# Don't delete more than is exessive or actually overdense
-	var deletion_count := min(overlapped_octree_members.size() - max_placements_allowed, overdense_octree_members.size())
-	var deletion_increment := float(deletion_count) / float(overdense_octree_members.size())
+	var deletion_count := min(overlapped_member_data.size() - max_placements_allowed, overdense_member_data.size())
+	var deletion_increment := float(deletion_count) / float(overdense_member_data.size())
 	var deletion_progress := 0.0
 	
 	if deletion_increment <= 0: return []
@@ -226,13 +226,13 @@ func get_members_for_deletion():
 #	# This part picks every [N]th member for deletion
 #	# [N] is defined by deletion_increment and can be fractional
 #	# E.g. we can delete an approximation of every 0.3th, 0.75th, etc. element
-	for index in range(0, overdense_octree_members.size()):
+	for index in range(0, overdense_member_data.size()):
 		deletion_progress += deletion_increment
 		if deletion_progress >= 1.0:
 			deletion_progress -= 1.0
-			members_for_deletion.append(overdense_octree_members[index])
+			placeforms_for_deletion.append(overdense_member_data[index])
 	
-	return members_for_deletion
+	return placeforms_for_deletion
 
 
 # Mark grid coordinates as invalid if they are already occupied
@@ -248,7 +248,7 @@ func invalidate_occupied_points():
 		if placement_grid.size() > 0 && placement_grid[grid_coord.x][grid_coord.y]:
 			invalidate_self_or_neighbor(grid_coord)
 		else:
-			overdense_octree_members.append(overlapped_octree_members[placement_index])
+			overdense_member_data.append(overlapped_member_data[placement_index])
 
 
 
@@ -309,7 +309,7 @@ func generate_raycast_positions():
 			
 			# Compensating a floating point error by padding the value a bit
 			if centered_UV.length_squared() > 0.999:
-				centered_UV = centered_UV.clamped(0.999)
+				centered_UV = centered_UV.limit_length(0.999)
 			
 			var UV_distance_to_surface:Vector3 = sqrt(1.0 - (pow(centered_UV.x, 2) + pow(centered_UV.y, 2))) * plane_axis_vectors[0]
 			var UV_point_on_plane:Vector3 = centered_UV.x * plane_axis_vectors[1] + centered_UV.y * plane_axis_vectors[2]

@@ -30,7 +30,6 @@ const SH_Single = preload("stroke_handler/sh_single.gd")
 const SH_Reapply = preload("stroke_handler/sh_reapply.gd")
 const SH_Manual = preload("stroke_handler/sh_manual.gd")
 
-
 var MMI_container:Spatial = null
 var octree_managers:Array
 
@@ -76,16 +75,18 @@ func _init():
 
 
 func _ready():
-	#print(self)
-	
-	# see https://github.com/godotengine/godot/issues/16478
+	# Workaround below fixes the problem of instanced nodes "sharing" exported arrays (and resources inside them)
+	# When instanced in the editor
+	# See https://github.com/godotengine/godot/issues/16478
+	# This fix is needed, so we can have multiple instances of same terrain with same plant placement
+	# But have LOD switch independently for each of these terrains
 	if octree_managers == null:
 		octree_managers = []
 	else:
 		var octree_managers_copy = octree_managers.duplicate()
 		octree_managers = []
 		for octree_manager in octree_managers_copy:
-			octree_managers.append(octree_manager.deep_copy())
+			octree_managers.append(octree_manager.duplicate_tree())
 	
 	
 	logger = Logger.get_for(self, name)
@@ -394,11 +395,11 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 		
 		match change.change_type:
 			0:
-				octree_manager.queue_members_add(change.new_val)
+				octree_manager.queue_placeforms_add(change.new_val)
 			1:
-				octree_manager.queue_members_remove(change.new_val)
+				octree_manager.queue_placeforms_remove(change.new_val)
 			2:
-				octree_manager.queue_members_set(change.new_val)
+				octree_manager.queue_placeforms_set(change.new_val)
 		
 		if !affected_octree_managers.has(change.at_index):
 			affected_octree_managers.append(change.at_index)
@@ -413,7 +414,7 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 
 
 func emit_member_count(octree_index:int):
-	emit_signal("member_count_updated", octree_index, octree_managers[octree_index].root_octree_node.get_member_count())
+	emit_signal("member_count_updated", octree_index, octree_managers[octree_index].root_octree_node.get_nested_member_count())
 
 
 func _process(delta):
@@ -477,20 +478,20 @@ func import_instance_transforms(file_path: String, plant_idx: int):
 	var json_result = JSON.parse(file.get_as_text())
 	if json_result.error != OK:
 		logger.error("Could not parse json at '%s', error %s!" % [file_path, Globals.get_err_message(json_result.error)])
-	var placement_transform_dicts = json_result.result
+	var placeform_dicts = json_result.result
 	file.close()
 	
 	active_painting_changes = PaintingChanges.new()
 	active_stroke_handler = SH_Manual.new()
 	
-	for placement_transform_dict in placement_transform_dicts:
+	for placeform_dict in placeform_dicts:
 		active_stroke_handler.add_instance(
-			FunLib.str_to_vec3(placement_transform_dict.placement), FunLib.str_to_vec3(placement_transform_dict.surface_normal), 
-			FunLib.str_to_transform(placement_transform_dict.transform), plant_idx, active_painting_changes)
+			FunLib.str_to_vec3(placeform_dict.placement), FunLib.str_to_vec3(placeform_dict.surface_normal), 
+			FunLib.str_to_transform(placeform_dict.transform), plant_idx, active_painting_changes)
 	
 	apply_stroke_update_changes(active_painting_changes)
 	on_stroke_finished()
-	logger.info("Successfully imported %d PlacementTransforms from '%s' to index %d" % [placement_transform_dicts.size(), file_path, plant_idx])
+	logger.info("Successfully imported %d Placeform(s) from '%s' to index %d" % [placeform_dicts.size(), file_path, plant_idx])
 
 
 func export_instance_transforms(file_path: String, plant_idx: int):
@@ -500,20 +501,21 @@ func export_instance_transforms(file_path: String, plant_idx: int):
 	if err != OK:
 		logger.error("Could not export '%s', error %s!" % [file_path, Globals.get_err_message(err)])
 	
-	var members: Array = octree_managers[plant_idx].get_all_members()
-	var placement_transform_dicts := []
-	for member in members:
-		placement_transform_dicts.append({
-			'placement': member.placement,
-			'surface_normal': member.surface_normal,
-			'transform': member.transform,
-			'octree_octant': member.octree_octant,
+	var placeforms: Array = []
+	octree_managers[plant_idx].get_all_placeforms(placeforms)
+	var placeform_dicts := []
+	for placeform in placeforms:
+		placeform_dicts.append({
+			'placement': placeform[0],
+			'surface_normal': placeform[1],
+			'transform': placeform[2],
+			'octree_octant': placeform[3],
 		})
 	
-	var json_string = JSON.print(placement_transform_dicts)
+	var json_string = JSON.print(placeform_dicts)
 	file.store_string(json_string)
 	file.close()
-	logger.info("Successfully exported %d PlacementTransforms to '%s' at index %d" % [placement_transform_dicts.size(), file_path, plant_idx])
+	logger.info("Successfully exported %d Placeform(s) to '%s' at index %d" % [placeform_dicts.size(), file_path, plant_idx])
 
 
 

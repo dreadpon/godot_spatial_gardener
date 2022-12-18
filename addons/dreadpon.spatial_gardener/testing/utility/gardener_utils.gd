@@ -81,6 +81,6 @@ static func snapshot_octree_node(octree_node:OctreeNode):
 			var address_string = str(child.get_address_string())
 			snapshot[address_string] = snapshot_octree_node(child)
 	else:
-		return octree_node.members.size()
+		return octree_node.member_count()
 	
 	return snapshot

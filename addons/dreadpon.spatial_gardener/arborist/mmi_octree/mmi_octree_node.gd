@@ -14,11 +14,17 @@ extends Resource
 
 const FunLib = preload("../../utility/fun_lib.gd")
 const Logger = preload("../../utility/logger.gd")
-const PlacementTransform = preload("../placement_transform.gd")
+const Placeform = preload("../placeform.gd")
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 
+# An array for looking up placements conviniently
+# Since a member placement is practically it's ID
+var member_placeforms: Array = []
+# And these are for storage on disk
+export(PoolRealArray) var member_origin_offsets: PoolRealArray = PoolRealArray()
+export(PoolVector3Array) var member_surface_normals: PoolVector3Array = PoolVector3Array()
+export(PoolByteArray) var member_octants: PoolByteArray = PoolByteArray()
 
-export(Array, Resource) var members:Array
 export(Array, Resource) var child_nodes:Array
 export var max_members:int
 export var min_leaf_extent:float
@@ -43,8 +49,8 @@ var shared_LOD_variants:Array = []
 var logger = null
 
 
-signal members_rejected(new_members)
-signal collapse_self_possible(octant)
+signal placeforms_rejected(new_placeforms) 	# (new_placeforms: Array<Array>)
+signal collapse_self_possible(octant)	# (octant: int)
 signal req_debug_redraw()
 
 
@@ -58,8 +64,7 @@ signal req_debug_redraw()
 # Last two variables will be used only if there was no parent passed
 func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0, __center_pos:Vector3 = Vector3.ZERO,
 	__octant:int = -1, __min_leaf_extent:float = 0.0, __MMI_container:Spatial = null, __LOD_variants:Array = []):
-
-	#print(self)
+	
 	resource_local_to_scene = true
 	set_meta("class", "MMIOctreeNode")
 	resource_name = "MMIOctreeNode"
@@ -67,9 +72,8 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	logger = Logger.get_for(self)
 	
 	max_members = __max_members
-	
-	members = []
 	child_nodes = []
+	reset_member_arrays()
 	
 	# This differentiation helps to keep common functionality when reparenting/collapsing nodes
 	if __parent:
@@ -95,13 +99,14 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	print_address("", "initialized")
 
 
-func deep_copy():
+# Duplictes the octree structure
+func duplicate_tree():
 	var copy = self.duplicate()
-	# members_copy should be new anyways after restore_placement_transforms()
+	# members should be new anyways after restore_placeforms()
 	var child_nodes_copy = copy.child_nodes.duplicate()
 	copy.child_nodes = []
 	for child_node in child_nodes_copy:
-		copy.child_nodes.append(child_node.deep_copy())
+		copy.child_nodes.append(child_node.duplicate_tree())
 	return copy
 
 
@@ -138,6 +143,7 @@ func restore_after_load(__MMI_container:Spatial, LOD_variants:Array):
 	shared_LOD_variants = LOD_variants
 	
 	validate_MMI()
+	restore_placeforms()
 	validate_member_spatials()
 	
 	for child in child_nodes:
@@ -174,7 +180,7 @@ func destroy():
 	for child in child_nodes:
 		child.destroy()
 	child_nodes = []
-	members = []
+	reset_member_arrays()
 
 
 
@@ -198,8 +204,8 @@ func set_LODs_to_active_index():
 			# Update cast_shadow as well
 			MMI.cast_shadow = shared_LOD_variants[active_LOD_index].cast_shadow
 		else:
-			# Reset members
-			reset_members()
+			# Reset LODS and spawned spatials
+			clear_LOD_member_state()
 	else:
 		for child in child_nodes:
 			child.set_LODs_to_active_index()
@@ -227,7 +233,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 		if active_LOD_index >= 0:
 			active_LOD_index = -1
 			if is_leaf:
-				reset_members()
+				clear_LOD_member_state()
 		# If up-to-date, skip assignment
 		else:
 			skip_children = true
@@ -275,7 +281,7 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 
 
 # Reset MMIs and spawned spatials
-func reset_members():
+func clear_LOD_member_state():
 	MMI.multimesh.mesh = null
 	clear_all_member_spatials()
 
@@ -287,43 +293,98 @@ func reset_members():
 #-------------------------------------------------------------------------------
 
 
+# Reset all arrays storing the member data
+func reset_member_arrays():
+	member_placeforms = []
+	member_origin_offsets = PoolRealArray()
+	member_surface_normals = PoolVector3Array()
+	member_octants = PoolByteArray()
+
+
+# Add new member data
+func append_to_member_arrays(placeform: Array):
+	member_placeforms.append(placeform)
+	member_origin_offsets.append(Placeform.get_origin_offset(placeform))
+	member_surface_normals.append(placeform[1])
+	member_octants.append(placeform[3])
+
+
+# Remove member data by placeform
+func erase_from_member_arrays(placeform: Array):
+	var member_idx = member_placeforms.find(placeform)
+	remove_at_from_member_arrays(member_idx)
+
+
+# Remove member data by index
+func remove_at_from_member_arrays(member_idx: int):
+	member_placeforms.remove(member_idx)
+	member_origin_offsets.remove(member_idx)
+	member_surface_normals.remove(member_idx)
+	member_octants.remove(member_idx)
+
+
+# Set member data by index
+func set_member_arrays_at_index(idx:int, placeform: Array):
+	member_placeforms[idx] = placeform
+	member_origin_offsets.set(idx, Placeform.get_origin_offset(placeform))
+	member_surface_normals.set(idx, placeform[1])
+	member_octants.set(idx, placeform[3])
+
+
+# Restore temporary placeforms after loading .tscn file
+func restore_placeforms():
+	if !is_leaf: return
+	member_placeforms = []
+	var MMI_inst_transform: Transform
+	for idx in range(0, MMI.multimesh.instance_count):
+		MMI_inst_transform = MMI.multimesh.get_instance_transform(idx)
+		member_placeforms.append(Placeform.set_placement_from_origin_offset(
+			Placeform.mk(
+				Vector3(),
+				member_surface_normals[idx],
+				MMI_inst_transform,
+				member_octants[idx]
+			),
+			member_origin_offsets[idx]
+		))
+
+
 # Add members to self, propagate them to children to request a growth from the OctreeManager
 # This function is destructive to the passed array. Duplicate it if the original needs to stay intact
-func add_members(new_members:Array):
+func add_members(new_placeforms:Array):
 	# If we found any members outside this node - gather them up
 	# And request a growth from OctreeManager to accommodate these members
 	# Rejected members are put at the front since OctreeManager uses [0] to determine growth direction
 	
-	var rejected = reject_outside_members(new_members)
+	var rejected = reject_outside_placeforms(new_placeforms)
 	if rejected.size() > 0:
-		emit_signal("members_rejected", rejected + new_members)
+		emit_signal("placeforms_rejected", rejected + new_placeforms)
 		# Further execution can lead to members being added to a collapsed node
 		# (OctreeManager tries to collapse children when growing to members)
 		# So we abort
 		return
 	
-	if new_members.empty(): return
+	if new_placeforms.empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
-	assign_octants_to_members(new_members)
+	assign_octants_to_placeforms(new_placeforms)
 	
 	var members_changed := false
 	if extent * 0.5 >= min_leaf_extent:
-		if child_nodes.empty() && members.size() + new_members.size() > max_members:
+		if child_nodes.empty() && member_count() + new_placeforms.size() > max_members:
 			_make_children()
-			for member in members:
-				_add_member_to_child(member)
-			members = []
+			iter_placeforms(self, '_add_member_to_child')
+			reset_member_arrays()
 	
 	if !child_nodes.empty():
-		for member in new_members:
-			_add_member_to_child(member)
+		for placeform in new_placeforms:
+			_add_member_to_child(placeform)
 	else:
-		for member in new_members:
-			members.append(member)
-			spawn_spatial_for_member(member)
-			print_address("", "adding member " + str(member))
+		for placeform in new_placeforms:
+			append_to_member_arrays(placeform)
+			spawn_spatial_for_member_idx(member_count() - 1)
+			print_address("", "adding placeform " + Placeform.to_str(placeform))
 			members_changed = true
 	
 	if members_changed && parent:
@@ -332,24 +393,25 @@ func add_members(new_members:Array):
 
 # Remove members from self, or children
 # This function is destructive to the passed array. Duplicate it if the original needs to stay intact
-func remove_members(old_members:Array):
-	if old_members.empty(): return
+func remove_members(old_placeforms:Array):
+	if old_placeforms.empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
 	# Presumably, it's ok to overwrite the members' octants
 	# Since we WILL remove them and won't ever need to reference previous positions inside a node
-	assign_octants_to_members(old_members)
+	assign_octants_to_placeforms(old_placeforms)
 	
 	var members_changed := false
-	for member in old_members:
+	for placeform in old_placeforms:
 		if child_nodes.size() > 0:
-			_remove_member_from_child(member)
+			_remove_member_from_child(placeform)
 		else:
-			if members.has(member):
-				remove_spatial_for_member(members.find(member))
-				members.erase(member)
-				print_address("", "erased member " + str(member))
+			var found_placement_idx = member_placeforms.find(placeform)
+			if found_placement_idx >= 0:
+				remove_spatial_for_member_idx(found_placement_idx)
+				remove_at_from_member_arrays(found_placement_idx)
+				print_address("", "erased placeform " + Placeform.to_str(placeform))
 				members_changed = true
 	
 	if members_changed && parent:
@@ -363,38 +425,38 @@ func set_members(changes:Array):
 	
 	for change in changes:
 		var octree_node = find_child_by_address(change.address)
-		octree_node.members[change.index] = change.member
-		octree_node.set_spatial_for_member(change.member, change.index)
-		octree_node.MMI_refresh_member(change.index)
+		octree_node.set_member_arrays_at_index(change.index, change.placeform)
+		octree_node.MMI_refresh_member(change.index, change.placeform[2])
+		octree_node.set_spatial_for_member_idx(change.index)
 
 
 # Rejects members outside the bounds
-func reject_outside_members(new_members:Array):
-	if parent || new_members.empty(): return []
+func reject_outside_placeforms(new_placeforms:Array):
+	if parent || new_placeforms.empty(): return []
 	
 	var rejected := []
-	for i in range(new_members.size() - 1, -1, -1):
-		var member = new_members[i]
-		if !bounds.has_point(member.placement):
-			rejected.append(member)
-			new_members.remove(i)
+	for i in range(new_placeforms.size() - 1, -1, -1):
+		var placeform = new_placeforms[i]
+		if !bounds.has_point(placeform[0]):
+			rejected.append(placeform)
+			new_placeforms.remove(i)
 	
 	return rejected
 
 
 # Map members to octants within this node (i.e. place inside a 2x2x2 cube)
 # It's mostly used to quick access the child node holding this member
-func assign_octants_to_members(new_members:Array):
-	for member in new_members:
-		member.octree_octant = _map_point_to_octant(member.placement)
+func assign_octants_to_placeforms(new_placeforms: Array):
+	for placeform in new_placeforms:
+		placeform[3] = _map_point_to_octant(placeform[0])
 
 
-func _add_member_to_child(new_member:PlacementTransform):
-	child_nodes[new_member.octree_octant].add_members([new_member])
+func _add_member_to_child(new_placeform: Array):
+	child_nodes[new_placeform[3]].add_members([new_placeform])
 
 
-func _remove_member_from_child(old_member:PlacementTransform):
-	child_nodes[old_member.octree_octant].remove_members([old_member])
+func _remove_member_from_child(old_placeform: Array):
+	child_nodes[old_placeform[3]].remove_members([old_placeform])
 
 
 
@@ -431,39 +493,43 @@ func validate_member_spatials():
 	for index in range(MMI.get_child_count() - 1, -1, -1):
 		var child_spatial = MMI.get_child(index)
 		if !FunLib.are_same_class(child_spatial, spawned_spatial):
-			remove_spatial_for_member(index)
-		elif index < members.size():
-			child_spatial.transform = members[index].transform
+			remove_spatial_for_member_idx(index)
+		elif index < member_count():
+			child_spatial.transform = get_member_transform(index)
 	
 	# Spawn all the missing spatials
-	for index in range(MMI.get_child_count(), members.size()):
-		spawn_spatial_for_member(members[index])
+	for index in range(MMI.get_child_count(), member_count()):
+		spawn_spatial_for_member_idx(index)
 
 
 # Spawn a spatial for member
-func spawn_spatial_for_member(member:PlacementTransform, index:int = -1):
+func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
 	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
 	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
 	if !LODVariant || !LODVariant.spawned_spatial: return
 	
 	var spawned_spatial = LODVariant.spawned_spatial.instance()
-	spawned_spatial.transform = member.transform
+	spawned_spatial.transform = get_member_transform(member_idx)
 	MMI.add_child(spawned_spatial)
 	spawned_spatial.owner = MMI.owner
-	if index >= 0:
-		MMI.move_child(spawned_spatial, index)
+	if mmi_idx >= 0:
+		MMI.move_child(spawned_spatial, mmi_idx)
 
 
 # Remove a spatial for member
-func remove_spatial_for_member(index:int):
-	if MMI.get_child_count() > index:
-		MMI.remove_child(MMI.get_child(index))
+func remove_spatial_for_member_idx(member_idx:int):
+	if MMI.get_child_count() > member_idx:
+		MMI.remove_child(MMI.get_child(member_idx))
 
 
 # Set spatial's Transform for member
-func set_spatial_for_member(member:PlacementTransform, index:int):
-	if index >= MMI.get_child_count(): return
-	MMI.get_child(index).transform = member.transform
+func set_spatial_for_member_idx(member_idx: int):
+	if member_idx >= MMI.get_child_count(): return
+	MMI.get_child(member_idx).transform = get_member_transform(member_idx)
+
+
+func get_member_transform(member_idx: int):
+	return member_placeforms[member_idx][2]
 
 
 func reset_member_spatials():
@@ -492,8 +558,8 @@ func clear_all_member_spatials():
 
 
 func spawn_all_member_spatials():
-	for member in members:
-		spawn_spatial_for_member(member)
+	for member_idx in member_count():
+		spawn_spatial_for_member_idx(member_idx)
 
 
 # Recursively MMI_refresh_instance_placements()
@@ -510,19 +576,17 @@ func MMI_refresh_instance_placements_recursive():
 # But Idk if allocated and hidden instances (with reduced visible_instance_count) still tank GPU perfomance or not
 # If they do, we're better off keeping things as is to have better in-game performance
 func MMI_refresh_instance_placements():
-	MMI.multimesh.instance_count = members.size()
-	for member_index in range(0, members.size()):
-		var member = members[member_index]
-		MMI.multimesh.set_instance_transform(member_index, member.transform)
+	MMI.multimesh.instance_count = member_count()
+	for member_idx in range(0, member_count()):
+		MMI.multimesh.set_instance_transform(member_idx, member_placeforms[member_idx][2])
 
 
 # Refresh member Transform when reapplying a new Transform
 # This avoids completely refreshing all instances like in MMI_refresh_instance_placements()
-func MMI_refresh_member(member_index):
-	assert(MMI.multimesh.instance_count > member_index, "Trying to refresh multimesh instance [%d] that isn't allocated!" % [member_index])
-	
-	var member = members[member_index]
-	MMI.multimesh.set_instance_transform(member_index, member.transform)
+func MMI_refresh_member(member_idx: int, transform: Transform):
+	assert(MMI.multimesh.instance_count > member_idx, "Trying to refresh multimesh instance [%d] that isn't allocated!" % [member_idx])
+
+	MMI.multimesh.set_instance_transform(member_idx, transform)
 
 
 
@@ -599,7 +663,7 @@ func try_collapse_children(instigator_child:int):
 					reason = "child.child_nodes.size() > 0"
 					break
 				else:
-					total_member_count += child.members.size()
+					total_member_count += child.member_count()
 	
 	if !can_collapse:
 		print_address("", "can't collapse children: %s" % [reason])
@@ -624,7 +688,7 @@ func try_collapse_self(instigator_child:int):
 		for child in child_nodes:
 			if can_collapse:
 				# If child has members or children - it might become the new root
-				if child.members.size() > 0 || !child.is_leaf:
+				if child.member_count() > 0 || !child.is_leaf:
 					# But if there is more than one child with members or other children - we can't collapse self
 					if child_with_descendants >= 0:
 						can_collapse = false
@@ -649,15 +713,15 @@ func try_collapse_self(instigator_child:int):
 # Is meant to optimise members that can easily fit into a higher-level node
 # (And thus save processing power on iterating over child nodes)
 func _collapse_children():
-	var total_members := []
+	var total_placeforms := []
 	for child in child_nodes:
 		if child.is_leaf:
-			total_members.append_array(child.members)
+			total_placeforms.append_array(child.get_placeforms())
 		child.prepare_for_removal()
 	child_nodes = []
 	set_is_leaf(true)
 	
-	add_members(total_members)
+	add_members(total_placeforms)
 	
 	if parent:
 		parent.try_collapse_children(0)
@@ -680,28 +744,45 @@ func collapse_self(new_root_octant:int):
 #-------------------------------------------------------------------------------
 
 
+# Get total members in this node (from temporary placeform array)
+func member_count() -> int:
+	return member_placeforms.size()
+
+
+# Call a function for each placeform of this node
+func iter_placeforms(obj: Object, method: String):
+	for placeform in member_placeforms:
+		obj.call(method, placeform)
+
+
+# Get a list of placeforms
+func get_placeforms() -> Array:
+	return member_placeforms
+
+
+# Get an individual placeform
+func get_placeform(member_idx: int) -> Reference:
+	return member_placeforms[member_idx]
+
+
 # Recursively get all members contained by this node and it's children
-func get_all_members() -> Array:
-	var all_members := []
-	
+func get_nested_placeforms(target_array: Array = []):
 	if is_leaf:
-		all_members.append_array(members)
+		target_array.append_array(member_placeforms)
 	else:
 		for child in child_nodes:
-			all_members.append_array(child.get_all_members())
-	
-	return all_members
+			child.get_nested_placeforms(target_array)
 
 
 # Recursively get member count in the whole octree
-func get_member_count() -> int:
+func get_nested_member_count() -> int:
 	var member_count := 0
 	
 	if is_leaf:
-		member_count += members.size()
+		member_count += member_count()
 	else:
 		for child in child_nodes:
-			member_count += child.get_member_count()
+			member_count += child.get_nested_member_count()
 	
 	return member_count
 
@@ -757,11 +838,11 @@ func _get_octant_center_offset(octant:int):
 # Assumes the point is inside node bounds already
 func _map_point_to_octant(point:Vector3) -> int:
 	var octant := 0
-	if point.x >= center_pos.x:
+	if point.x > center_pos.x:
 		octant += 4
-	if point.y >= center_pos.y:
+	if point.y > center_pos.y:
 		octant += 2
-	if point.z >= center_pos.z:
+	if point.z > center_pos.z:
 		octant += 1
 	return octant
 
@@ -817,13 +898,13 @@ func debug_dump_tree(results:Dictionary = {"string": "", "total_members": 0}):
 	string += " LOD: %d" % [active_LOD_index]
 	if is_leaf:
 		string += " is leaf"
-	if members.size() > 0:
-		string += " members: %d" % [members.size()]
+	if member_count() > 0:
+		string += " members: %d" % [member_count()]
 	
 	results.string += string + "\n"
 	
 	if is_leaf:
-		results.total_members += members.size()
+		results.total_members += member_count()
 	else:
 		for child in child_nodes:
 			child.debug_dump_tree(results)

@@ -16,9 +16,9 @@ func _init().(
 
 
 func add_instance(placement: Vector3, surface_normal: Vector3, transform: Transform, plant_index: int, painting_changes: PaintingChanges):
-	var placement_transform:PlacementTransform = PlacementTransform.new(placement, surface_normal, transform)
-	painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placement_transform, placement_transform) 
+	var placeform:Array = Placeform.mk(placement, surface_normal, transform)
+	painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placeform, placeform) 
 
 
-func remove_instance(placement_transform: PlacementTransform, plant_index: int, painting_changes: PaintingChanges):
-	painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placement_transform, placement_transform)
+func remove_instance(placeform: Array, plant_index: int, painting_changes: PaintingChanges):
+	painting_changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, placeform, placeform)
