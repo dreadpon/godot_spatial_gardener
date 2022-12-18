@@ -235,8 +235,8 @@ func debug_draw_node(octree_node:MMIOctreeNode, MMI:MultiMeshInstance):
 		var member_extent = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/debug_viewer_octree_member_size", 0.0) * 0.5
 		extents = Vector3(member_extent, member_extent, member_extent)
 		var basis = Basis.IDENTITY.scaled(extents)
-		for member in octree_node.members:
-			render_transform = Transform(basis, member.placement)
+		for placeform in octree_node.get_placeforms():
+			render_transform = Transform(basis, placeform[0])
 			index = MMI.multimesh.visible_instance_count
 			MMI.multimesh.visible_instance_count += 1
 			MMI.multimesh.set_instance_transform(index, render_transform)
@@ -252,7 +252,7 @@ func set_debug_redraw_instance_count(octree_node:MMIOctreeNode, MMI:MultiMeshIns
 		MMI.multimesh.instance_count += 1
 	
 	if octree_node.is_leaf && draw_members:
-		MMI.multimesh.instance_count += octree_node.members.size()
+		MMI.multimesh.instance_count += octree_node.member_count()
 	
 	for child in octree_node.child_nodes:
 		set_debug_redraw_instance_count(child, MMI, draw_node, draw_members)

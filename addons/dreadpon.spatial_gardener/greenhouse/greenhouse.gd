@@ -85,7 +85,6 @@ func create_ui(__base_control:Control, __resource_previewer):
 	
 	_file_dialog = FileDialog.new()
 	_file_dialog.connect('hide', self, 'on_file_dialog_hide')
-	
 	return ui_category_greenhouse
 
 

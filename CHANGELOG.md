@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.2.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.2.0) - 2022-12-18
+
+### Changed
+
+#### Gardener
+- Optimize Gardener storage to use less space in a .tscn file (up to 50% less) (suggested by [@rick551a](https://github.com/rick551a))
+	- This change breaks compatability with previous versions. Refer [here](reference/TUTORIAL_SCENE_CONVERSION.md) for a conversion guide
+
+<br/><br/>
+
 ## [v1.1.1](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.1.1) - 2022-12-13
 ### Added
 

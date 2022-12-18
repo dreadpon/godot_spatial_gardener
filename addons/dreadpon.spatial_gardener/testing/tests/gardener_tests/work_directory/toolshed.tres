@@ -10,8 +10,12 @@ __meta__ = {
 "class": "Toolshed_Brush"
 }
 behavior/behavior_brush_type = 0
-shape/shape_size = 20.0
+shape/shape_volume_size = 20.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
 
 [sub_resource type="Resource" id=2]
 resource_name = "Toolshed_Brush"
@@ -20,8 +24,12 @@ __meta__ = {
 "class": "Toolshed_Brush"
 }
 behavior/behavior_brush_type = 1
-shape/shape_size = 10.0
+shape/shape_volume_size = 10.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
 
 [sub_resource type="Resource" id=3]
 resource_name = "Toolshed_Brush"
@@ -30,7 +38,12 @@ __meta__ = {
 "class": "Toolshed_Brush"
 }
 behavior/behavior_brush_type = 2
-shape/shape_size = 1.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
+behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
 
 [sub_resource type="Resource" id=4]
 resource_name = "Toolshed_Brush"
@@ -39,7 +52,12 @@ __meta__ = {
 "class": "Toolshed_Brush"
 }
 behavior/behavior_brush_type = 3
-shape/shape_size = 10.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
+behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
 
 [resource]
 resource_name = "Toolshed"

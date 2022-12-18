@@ -18,6 +18,7 @@ const DebugViewer = preload("gardener/debug_viewer.gd")
 const UI_SidePanel_SCN = preload("controls/side_panel/ui_side_panel.tscn")
 const UI_SidePanel = preload("controls/side_panel/ui_side_panel.gd")
 const ThemeAdapter = preload("controls/theme_adapter.gd")
+const SceneConverter = preload("scene_converter/scene_converter.gd")
 
 const Greenhouse = preload("greenhouse/greenhouse.gd")
 const Greenhouse_Plant = preload("greenhouse/greenhouse_plant.gd")
@@ -25,7 +26,6 @@ const Greenhouse_PlantState = preload("greenhouse/greenhouse_plant_state.gd")
 const Greenhouse_LODVariant = preload("greenhouse/greenhouse_LOD_variant.gd")
 const Toolshed = preload("toolshed/toolshed.gd")
 const Toolshed_Brush = preload("toolshed/toolshed_brush.gd")
-const PlacementTransform = preload("arborist/placement_transform.gd")
 
 const Console_SCN = preload("utility/console/console.tscn")
 const Console = preload("utility/console/console.gd")
@@ -44,6 +44,7 @@ var debug_view_menu:MenuButton
 var active_gardener = null
 var gardeners_in_tree:Array = []
 var folding_states: Dictionary = {}
+var scene_converter: SceneConverter = null
 
 var logger = null
 
@@ -67,9 +68,6 @@ func _ready():
 	
 	logger = Logger.get_for(self)
 	
-	_base_control = get_editor_interface().get_base_control()
-	_resource_previewer = get_editor_interface().get_resource_previewer()
-	
 	# Using selection to start/stop editing of chosen Gardener
 	get_editor_interface().get_selection().connect("selection_changed", self, "selection_changed")
 	get_tree().connect("node_added", self, "on_tree_node_added")
@@ -87,8 +85,14 @@ func _enter_tree():
 	
 	if !Engine.editor_hint: return
 	
-	adapt_editor_theme()
+	_base_control = get_editor_interface().get_base_control()
+	_resource_previewer = get_editor_interface().get_resource_previewer()
 	
+	adapt_editor_theme()
+	ProjectSettings.connect('project_settings_changed', self, '_on_project_settings_changed')
+	
+	scene_converter = SceneConverter.new()
+	scene_converter.setup(_base_control)
 	_side_panel = UI_SidePanel_SCN.instance()
 	_side_panel.theme = control_theme
 	toolbar.visible = false
@@ -97,15 +101,20 @@ func _enter_tree():
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	add_control_to_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	selection_changed()
+	
 
 
 func _exit_tree():
 	if !Engine.editor_hint: return
+		
+	if scene_converter:
+		scene_converter.destroy()
 	
 	set_gardener_edit_state(null)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	remove_custom_types()
+
 
 
 # Previously here was 'apply_changes', but it fired even when scene was closed without saving
@@ -124,7 +133,6 @@ func add_custom_types():
 	add_custom_type("Greenhouse_LODVariant", "Resource", Greenhouse_LODVariant, null)
 	add_custom_type("Toolshed", "Resource", Toolshed, null)
 	add_custom_type("Toolshed_Brush", "Resource", Toolshed_Brush, null)
-	add_custom_type("PlacementTransform", "Resource", PlacementTransform, null)
 
 
 func remove_custom_types():
@@ -135,7 +143,6 @@ func remove_custom_types():
 	remove_custom_type("Greenhouse_LODVariant")
 	remove_custom_type("Toolshed")
 	remove_custom_type("Toolshed_Brush")
-	remove_custom_type("PlacementTransform")
 
 
 func on_tree_node_added(node:Node):
@@ -162,6 +169,11 @@ func apply_changes_to_gardeners():
 
 func get_plugin_name() -> String:
 	return 'SpatialGardener'
+
+
+func _on_project_settings_changed():
+	if scene_converter:
+		scene_converter._on_project_settings_changed()
 
 
 
@@ -354,7 +366,15 @@ func start_gardener_edit(gardener):
 	#		There's more.
 	#		Foldable states are reset two (maybe even all resource incuding gardeners and toolsheds, etc.?)
 	#			Doesn't seem so, but still weird
-	active_gardener._ready()
+	#
+	#		Worth noting, that this leads to a severe slowdown when clicking through gardeners in a scene
+	#		Since stuff like "restoring after load" has to run again
+#	active_gardener._ready()
+	
+	# I am testing a workaround of just restoring references, to avoid the unneccesary operations caused be previous solution
+	# UPD: Actually seems to work even without calling the method below. I'm confused
+	# I'll keep it here *just in case* the bug still persists but hides well
+	active_gardener.restore_references()
 	
 	active_gardener.connect("tree_exited", self, "set_gardener_edit_state", [null])
 	active_gardener.connect("greenhouse_prop_action_executed", self, "on_greenhouse_prop_action_executed")
