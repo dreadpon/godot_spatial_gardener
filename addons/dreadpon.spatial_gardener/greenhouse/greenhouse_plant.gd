@@ -342,7 +342,7 @@ func _modify_prop(prop:String, val):
 		"mesh/mesh_LOD_variants":
 			# TODO retain Greenhouse_LODVariant if it already exists when drag-and-dropping a .mesh or a .tscn resource
 			for i in range(0, val.size()):
-				if !(val[i] is Greenhouse_LODVariant):
+				if !(is_instance_of(val[i], Greenhouse_LODVariant)):
 					val[i] = Greenhouse_LODVariant.new()
 				
 				FunLib.ensure_signal(val[i], "changed", self, "on_changed_LOD_variant")
@@ -388,7 +388,7 @@ func _modify_prop(prop:String, val):
 func request_prop_action(prop_action:PropAction):
 	match prop_action.prop:
 		"mesh/mesh_LOD_variants":
-			if prop_action is PA_ArraySet:
+			if is_instance_of(prop_action, PA_ArraySet):
 				
 				var new_prop_action = null
 				if prop_action.val is PackedScene:

@@ -7,6 +7,6 @@ extends RichTextLabel
 func _ready():
 	for child in get_children():
 		if child is VScrollBar:
-			child.minimum_size.x = scrollbar_size
+			child.custom_minimum_size.x = scrollbar_size
 		elif child is HScrollBar:
-			child.minimum_size.y = scrollbar_size
+			child.custom_minimum_size.y = scrollbar_size

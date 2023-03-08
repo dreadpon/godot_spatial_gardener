@@ -75,7 +75,7 @@ func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settin
 		var prop_label := Label.new()
 		prop_label.name = "prop_label_-_%s" % [str(value_index)]
 		prop_label.text = prop_label_text[representation_type][value_index]
-		prop_label.valign = Label.VALIGN_CENTER
+		prop_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		prop_label.size_flags_vertical = Control.SIZE_FILL
 		prop_label.add_theme_color_override("font_color", Color(prop_label_text_colors[value_index]))
 		
@@ -105,7 +105,7 @@ func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settin
 				var dash_label := Label.new()
 				dash_label.name = "dash_label_-_%s" % [str(value_index)]
 				dash_label.text = "–"
-				dash_label.valign = Label.VALIGN_CENTER
+				dash_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 				dash_label.size_flags_vertical = Control.SIZE_FILL
 				dash_label.add_theme_color_override("font_color", Color(prop_label_text_colors[value_index]))
 				
@@ -126,7 +126,7 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 

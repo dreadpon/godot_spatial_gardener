@@ -519,7 +519,7 @@ func _get_configuration_warnings():
 		return "Arborist is missing a valid MMI_container child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"
 
 
-func add_child(node:Node, legible_unique_name:bool = false, internal:int=0):
+func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode=0) ->  void:
 	super.add_child(node, legible_unique_name)
 	update_configuration_warnings()
 

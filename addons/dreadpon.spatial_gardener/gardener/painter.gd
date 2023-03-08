@@ -97,11 +97,11 @@ func set_brush_mesh(is_sphere: bool = false):
 		paint_brush_node.mesh = SphereMesh.new()
 		paint_brush_node.mesh.radial_segments = 32
 		paint_brush_node.mesh.rings = 16
-		paint_brush_node.cast_shadow = false
+		paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		paint_brush_node.material_override = sphere_brush_material.duplicate()
 	else:
 		paint_brush_node.mesh = QuadMesh.new()
-		paint_brush_node.cast_shadow = false
+		paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		paint_brush_node.material_override = circle_brush_material.duplicate()
 
 

@@ -108,7 +108,7 @@ func on_active_brush_tab_changed(active_tab):
 
 
 func on_prop_action_executed(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet:
+	if is_instance_of(prop_action, PA_PropSet):
 		if prop_action.prop == "brush/active_brush":
 			if tab_container_brushes_nd:
 				tab_container_brushes_nd.disconnect("tab_changed",Callable(self,"on_active_brush_tab_changed"))
@@ -148,7 +148,7 @@ func _modify_prop(prop:String, val):
 	match prop:
 		"brush/brushes":
 			for i in range(0, val.size()):
-				if !(val[i] is Toolshed_Brush):
+				if !(is_instance_of(val[i],Toolshed_Brush)):
 					val[i] = Toolshed_Brush.new()
 				
 				FunLib.ensure_signal(val[i], "changed", self, "on_changed_brush")

@@ -50,7 +50,7 @@ func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settin
 	_resource_previewer = settings._resource_previewer
 	element_display_size = settings.element_display_size
 	file_dialog = FileDialog.new()
-	file_dialog.mode = FileDialog.FILE_MODE_OPEN_FILE
+	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	add_file_dialog_filter()
 	file_dialog.current_dir = "res://"
 	file_dialog.current_path = "res://"
@@ -106,7 +106,7 @@ func set_thumb_interaction_feature_with_data(interaction_flag:int, val, data:Dic
 
 # Shorthand for setting action thumbnail features
 func set_thumb_interaction_feature(thumb, interaction_flag:int, val):
-	if thumb && !(thumb is UI_ActionThumbnailCreateInst):
+	if thumb && !( is_instance_of(thumb, UI_ActionThumbnailCreateInst)):
 		thumb.set_features_val_to_flag(interaction_flag, val)
 
 

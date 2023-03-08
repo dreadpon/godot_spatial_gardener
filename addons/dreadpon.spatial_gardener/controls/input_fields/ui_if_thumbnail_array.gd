@@ -51,13 +51,13 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of (prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
-	elif prop_action is PA_ArrayInsert:
+	elif is_instance_of (prop_action, PA_ArrayInsert):
 		insert_element(final_val[prop_action.index], prop_action.index)
-	elif prop_action is PA_ArrayRemove:
+	elif is_instance_of (prop_action, PA_ArrayRemove):
 		remove_element(prop_action.index)
-	elif prop_action is PA_ArraySet:
+	elif is_instance_of (prop_action, PA_ArraySet):
 		set_element(final_val[prop_action.index], prop_action.index)
 
 

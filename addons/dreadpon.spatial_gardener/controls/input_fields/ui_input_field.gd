@@ -97,7 +97,7 @@ func _ready():
 # Set tabulation offset and color
 func _set_tab(index:int):
 	tab_index = index
-	tab_spacer.minimum_size.x = tab_index * tab_size
+	tab_spacer.custom_minimum_size.x = tab_index * tab_size
 	tab_spacer.size.x = tab_spacer.minimum_size.x
 	tab_spacer.visible = false if tab_index <= 0 else true
 	

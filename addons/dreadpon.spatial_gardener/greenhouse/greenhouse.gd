@@ -185,7 +185,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 
 
 func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state):
-	if prop_action is PA_PropSet:
+	if is_instance_of(prop_action, PA_PropSet):
 		var plant_index = greenhouse_plant_states.find(plant_state)
 		match prop_action.prop:
 			"plant/plant_brush_active":
@@ -238,7 +238,7 @@ func _modify_prop(prop:String, val):
 	match prop:
 		"plant_types/greenhouse_plant_states":
 			for i in range(0, val.size()):
-				if !(val[i] is Greenhouse_PlantState):
+				if !(is_instance_of(val[i],Greenhouse_PlantState)):
 					val[i] = Greenhouse_PlantState.new()
 				
 				FunLib.ensure_signal(val[i], "changed", self, "on_changed_plant_state")

@@ -193,7 +193,7 @@ func ensure_MMIs(amount:int):
 			MMI.cast_shadow = false
 			MMI.multimesh = MultiMesh.new()
 			MMI.multimesh.transform_format = 1
-			MMI.multimesh.color_format = MultiMesh.COLOR_8BIT
+#			MMI.multimesh.color_format = MultiMesh.COLOR_8BIT # TODO CONVERSION: G4 seems not to have this property
 			MMI.multimesh.mesh = DebugDraw.generate_cube(Vector3.ONE * 0.5, Color.WHITE)
 			octree_MMIs.append(MMI)
 	elif octree_MMIs.size() > amount:

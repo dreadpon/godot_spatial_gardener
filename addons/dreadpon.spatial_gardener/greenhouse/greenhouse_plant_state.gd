@@ -68,7 +68,7 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant,
 func _modify_prop(prop:String, val):
 	match prop:
 		"plant/plant":
-			if !(val is Greenhouse_Plant):
+			if !(is_instance_of(val, Greenhouse_Plant)):
 				val = Greenhouse_Plant.new()
 			
 			FunLib.ensure_signal(val, "changed", self, "on_changed_plant")

@@ -138,7 +138,7 @@ func on_tree_node_removed(node:Node):
 # Call _apply_changes checked all Gardeners in the scene
 func apply_changes_to_gardeners():
 	for gardener in gardeners_in_tree:
-		if gardener is Gardener && is_instance_valid(gardener):
+		if is_instance_of(gardener, Gardener) && is_instance_valid(gardener):
 			gardener._apply_changes()
 
 
@@ -155,7 +155,7 @@ func _get_plugin_name() -> String:
 
 # Allows editor to forward us the spatial GUI input for any Gardener
 func handles(object):
-	return object is Gardener
+	return is_instance_of(object, Gardener)
 
 
 # Handle events
@@ -304,7 +304,7 @@ func handle_selected_gardener(selection:Array):
 	if selection.size() == 1:
 		# Find a Gardener in selection. If found more than one - abort because of ambiguity
 		for selected in selection:
-			if selected is Gardener:
+			if is_instance_of(selected, Gardener):
 				if gardener:
 					gardener = null
 					logger.warn("Cannot edit multiple Gardeners at once!")

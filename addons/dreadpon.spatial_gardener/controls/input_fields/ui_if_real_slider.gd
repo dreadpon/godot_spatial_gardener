@@ -38,7 +38,7 @@ func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settin
 	value_input.name = "value_input"
 	value_input.size_flags_horizontal = SIZE_EXPAND_FILL
 	value_input.size_flags_stretch_ratio = 0.5
-	value_input.minimum_size.x = 25.0
+	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
 	value_input.connect("focus_entered",Callable(self,"select_line_edit").bind(value_input, true))
 	value_input.connect("focus_exited",Callable(self,"select_line_edit").bind(value_input, false))
@@ -63,7 +63,7 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 

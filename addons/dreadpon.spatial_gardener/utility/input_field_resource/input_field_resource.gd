@@ -342,6 +342,7 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 		
 		var input_field:UI_InputField = _create_input_field(_base_control, _resource_previewer, prop)
 		
+
 		if input_field:
 			input_field.name = prop
 			input_field.set_tooltip(get_prop_tooltip(prop))
@@ -352,7 +353,7 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 			self.connect("prop_list_changed",Callable(input_field,"on_prop_list_changed"))
 			input_field.connect("ready",Callable(self,"on_if_ready").bind(input_field))
 			
-			if input_field is UI_IF_ThumbnailArray:
+			if is_instance_of(input_field, UI_IF_ThumbnailArray):
 				input_field.connect("requested_press",Callable(self,"on_if_thumbnail_array_press").bind(input_field))
 				connect("req_change_interaction_feature",Callable(input_field,"on_changed_interaction_feature"))
 			
