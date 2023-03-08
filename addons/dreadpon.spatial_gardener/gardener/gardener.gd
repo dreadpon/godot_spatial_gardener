@@ -170,7 +170,7 @@ func init_painter():
 func init_arborist():
 	# A fancy way of saying
 	# "Make sure there is a correct node with a correct name"
-	if has_node("Arborist" && is_instance_of(get_node("Arborist"), Arborist):
+	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
 		arborist = get_node("Arborist")
 		logger.info("Found existing Arborist")
 	else:
