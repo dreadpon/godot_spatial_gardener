@@ -1,4 +1,4 @@
-tool
+@tool
 extends "stroke_handler.gd"
 
 
@@ -22,11 +22,11 @@ func should_abort_early(brush_data:Dictionary):
 
 
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
-	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
+	brush_placement_area:BrushPlacementArea, container_transform:Transform3D, painting_changes:PaintingChanges):
 	
 	var member_pos = brush_data.brush_pos
 	
-	var plant_transform: Transform = TransformGenerator.generate_plant_transform(member_pos, brush_data.brush_normal, plant, randomizer)
+	var plant_transform: Transform3D = TransformGenerator.generate_plant_transform(member_pos, brush_data.brush_normal, plant, randomizer)
 	var placeform: Array = Placeform.mk(member_pos, brush_data.brush_normal, plant_transform)
 	painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placeform, placeform)
 

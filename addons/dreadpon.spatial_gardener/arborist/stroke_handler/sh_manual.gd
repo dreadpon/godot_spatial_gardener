@@ -1,4 +1,4 @@
-tool
+@tool
 extends "stroke_handler.gd"
 
 
@@ -15,7 +15,7 @@ func _init().(
 	set_meta("class", "SH_Manual")
 
 
-func add_instance(placement: Vector3, surface_normal: Vector3, transform: Transform, plant_index: int, painting_changes: PaintingChanges):
+func add_instance(placement: Vector3, surface_normal: Vector3, transform: Transform3D, plant_index: int, painting_changes: PaintingChanges):
 	var placeform:Array = Placeform.mk(placement, surface_normal, transform)
 	painting_changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, placeform, placeform) 
 

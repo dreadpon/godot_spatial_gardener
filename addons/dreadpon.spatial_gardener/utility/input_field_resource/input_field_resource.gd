@@ -1,4 +1,4 @@
-tool
+@tool
 extends Resource
 
 
@@ -38,7 +38,7 @@ const UI_IF_Object = preload("../../controls/input_fields/ui_if_object.gd")
 const UI_IF_ThumbnailObject = preload("../../controls/input_fields/ui_if_thumbnail_object.gd")
 
 
-var _undo_redo:UndoRedo = null setget set_undo_redo
+var _undo_redo:UndoRedo = null : set = set_undo_redo
 # Backups that can be restored when using non-destructive PA_PropEdit
 var prop_edit_backups:Dictionary = {}
 # Properties added here will be ignored when creating input fields
@@ -81,7 +81,7 @@ func set_undo_redo(val:UndoRedo):
 
 # This doesn't account for resources inside nested Arrays/Dictionaries (i.e. [[Resource:1, Resource:2], [Resource:3]])
 func duplicate_ifr(subresources:bool = false, ifr_subresources:bool = false) -> Resource:
-	var copy = .duplicate(false)
+	var copy = super.duplicate(false)
 	
 	if subresources || ifr_subresources:
 		var property_list = copy.get_property_list()
@@ -217,7 +217,7 @@ func _perform_prop_action(prop_action:PropAction):
 			prop_action.val = get(prop_action.prop)[prop_action.index]
 		"PA_ArrayRemove":
 			prop_action.val = current_val_copy[prop_action.index]
-			current_val_copy.remove(prop_action.index)
+			current_val_copy.remove_at(prop_action.index)
 			_set(prop_action.prop, current_val_copy)
 		"PA_ArraySet":
 			current_val_copy[prop_action.index] = prop_action.val
@@ -338,10 +338,10 @@ func _get_property_list():
 	return prop_dict.values()
 
 
-# A wrapper around built-in property_list_changed_notify()
+# A wrapper around built-in notify_property_list_changed()
 # To support a custom signal we can bind manually
 func _emit_property_list_changed_notify():
-	property_list_changed_notify()
+	notify_property_list_changed()
 	emit_signal('prop_list_changed', _filter_prop_dictionary(_get_prop_dictionary()))
 
 
@@ -361,7 +361,7 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 	
 	for prop in prop_names:
 		# Conditional rejection of a property
-		if whitelist.empty():
+		if whitelist.is_empty():
 			if input_field_blacklist.has(prop): continue
 		else:
 			if !whitelist.has(prop): continue
@@ -373,14 +373,14 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 			input_field.set_tooltip(get_prop_tooltip(prop))
 			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
 			
-			input_field.connect("prop_action_requested", self, "request_prop_action")
-			self.connect("prop_action_executed", input_field, "on_prop_action_executed")
-			self.connect("prop_list_changed", input_field, "on_prop_list_changed")
-			input_field.connect("ready", self, "on_if_ready", [input_field])
+			input_field.connect("prop_action_requested",Callable(self,"request_prop_action"))
+			self.connect("prop_action_executed",Callable(input_field,"on_prop_action_executed"))
+			self.connect("prop_list_changed",Callable(input_field,"on_prop_list_changed"))
+			input_field.connect("ready",Callable(self,"on_if_ready").bind(input_field))
 			
 			if input_field is UI_IF_ThumbnailArray:
-				input_field.connect("requested_press", self, "on_if_thumbnail_array_press", [input_field])
-				connect("req_change_interaction_feature", input_field, "on_changed_interaction_feature")
+				input_field.connect("requested_press",Callable(self,"on_if_thumbnail_array_press").bind(input_field))
+				connect("req_change_interaction_feature",Callable(input_field,"on_changed_interaction_feature"))
 			
 			input_fields.append(input_field)
 	
@@ -395,7 +395,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 
 # Do something with an input field when it's _ready()
 func on_if_ready(input_field:UI_InputField):
-	input_field.disconnect("ready", self, "on_if_ready")
+	input_field.disconnect("ready",Callable(self,"on_if_ready"))
 	
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:

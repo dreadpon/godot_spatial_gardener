@@ -1,10 +1,10 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 
 #-------------------------------------------------------------------------------
 # A storage object for changes to the octree members
-# To be passed to UnroRedo or executed on the spot
+# To be passed to UndoRedo or executed on the spot
 # Can also generate opposite actions (provided it's set up correctly)
 #-------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ func _to_string():
 #-------------------------------------------------------------------------------
 
 
-class Change extends Reference:
+class Change extends RefCounted:
 
 	var change_type:int = -1
 	var at_index:int = -1
@@ -83,7 +83,7 @@ class Change extends Reference:
 	var old_val = null
 	
 	
-	func _init(_change_type:int = -1, _at_index:int = -1, _new_val = null, _old_val = null):
+	func _init(_change_type:int = -1,_at_index:int = -1,_new_val = null,_old_val = null):
 		change_type = _change_type
 		at_index = _at_index
 		new_val = _new_val

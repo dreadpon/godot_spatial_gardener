@@ -35,9 +35,9 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 		if section.props.get('__meta__', {}).get('class', '') != 'MMIOctreeNode': continue
 		found_octree_nodes += 1
 		
-		section.props.member_origin_offsets = Types.PropStruct.new('PoolRealArray( ')
-		section.props.member_surface_normals = Types.PropStruct.new('PoolVector3Array( ')
-		section.props.member_octants = Types.PropStruct.new('PoolByteArray( ')
+		section.props.member_origin_offsets = Types.PropStruct.new('PackedFloat32Array( ')
+		section.props.member_surface_normals = Types.PropStruct.new('PackedVector3Array( ')
+		section.props.member_octants = Types.PropStruct.new('PackedByteArray( ')
 		
 		found_placement_transforms += section.props.members.size()
 		for member_ref in section.props.members:

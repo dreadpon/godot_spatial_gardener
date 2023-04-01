@@ -1,11 +1,11 @@
-tool
+@tool
 extends "test_plant_base.gd"
 
 
 
 
 func execute():
-	.execute()
+	super.execute()
 	
 	var greenhouses := load_greenhouses()
 	

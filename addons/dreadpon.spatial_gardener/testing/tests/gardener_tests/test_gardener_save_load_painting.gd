@@ -1,4 +1,4 @@
-tool
+@tool
 extends "test_gardener_base.gd"
 
 
@@ -8,7 +8,7 @@ var octree_snapshot_check:OctreeSnapshotCheck = null
 
 
 func execute():
-	.execute()
+	super.execute()
 	logger.info("Executing test")
 	octree_snapshot_check = OctreeSnapshotCheck.new()
 	painting_data = GardenerUtils.populate_node_with_surfaces(self, true, true)
@@ -80,7 +80,7 @@ func save_gardener():
 
 func load_gardener():
 	var packed_scene = FunLib.load_res(greenhouse_path, "gardener.tscn")
-	gardener = packed_scene.instance()
+	gardener = packed_scene.instantiate()
 	add_child(gardener)
 	gardener.owner = get_tree().get_edited_scene_root()
 	editor_selection.clear()

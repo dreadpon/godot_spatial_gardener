@@ -1,4 +1,4 @@
-tool
+@tool
 extends TabContainer
 
 
@@ -18,9 +18,9 @@ const PA_ArrayInsert = preload("../../utility/input_field_resource/pa_array_inse
 const PA_ArrayRemove = preload("../../utility/input_field_resource/pa_array_remove.gd")
 const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd")
 
-onready var panel_container_tools_nd = $PanelContainer_Tools
-onready var panel_container_tools_split_nd = $PanelContainer_Tools/PanelContainer_Tools_Split
-onready var label_error_nd = $Label_Error
+@onready var panel_container_tools_nd = $PanelContainer_Tools
+@onready var panel_container_tools_split_nd = $PanelContainer_Tools/PanelContainer_Tools_Split
+@onready var label_error_nd = $Label_Error
 
 
 
@@ -112,7 +112,7 @@ func set_folding_states(states: Dictionary):
 # Bind foldable ui elements to update the relevant folding states
 func bind_foldables(node:Node, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
 	if node is FoldableSection:
-		node.connect('folding_state_changed', self, 'on_foldable_folding_state_changed', [node, folding_states, greenhouse_id, plant_id])
+		node.connect('folding_state_changed',Callable(self,'on_foldable_folding_state_changed').bind(node, folding_states, greenhouse_id, plant_id))
 		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
 	for child in node.get_children():
 		bind_foldables(child, folding_states, greenhouse_id, plant_id)

@@ -1,4 +1,4 @@
-tool
+@tool
 extends PanelContainer
 
 
@@ -50,7 +50,7 @@ var tab_index:int = 0
 	# 0/1 force invisible/visible state
 var visibility_forced:int = -1
 #var visibility_tracked_properties:Array = []
-#var visibility_is_tracked:bool = false setget set_visibility_is_tracked
+#var visibility_is_tracked:bool = false : set = set_visibility_is_tracked
 
 var _undo_redo:UndoRedo = null
 var disable_history:bool = false
@@ -84,12 +84,12 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	value_container.name = "value_container"
 	value_container.size_flags_horizontal = SIZE_EXPAND_FILL
-	value_container.alignment = BoxContainer.ALIGN_CENTER
+	value_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	if settings.has("tab"):
 		tab_index = settings.tab
 	
-	set_stylebox(get_stylebox('panel', 'PanelContainer'))
+	set_stylebox(get_theme_stylebox('panel', 'PanelContainer'))
 	
 	set_tooltip(tooltip)
 
@@ -105,8 +105,8 @@ func _ready():
 # Set tabulation offset and color
 func _set_tab(index:int):
 	tab_index = index
-	tab_spacer.rect_min_size.x = tab_index * tab_size
-	tab_spacer.rect_size.x = tab_spacer.rect_min_size.x
+	tab_spacer.custom_minimum_size.x = tab_index * tab_size
+	tab_spacer.size.x = tab_spacer.custom_minimum_size.x
 	tab_spacer.visible = false if tab_index <= 0 else true
 	
 	if tab_index > 0:
@@ -114,7 +114,7 @@ func _set_tab(index:int):
 		set_stylebox(styleboxes.sub_inspector_bg)
 	else:
 		var stylebox = StyleBoxFlat.new()
-		stylebox.bg_color = Color.transparent
+		stylebox.bg_color = Color.TRANSPARENT
 		set_stylebox(stylebox)
 
 
@@ -122,7 +122,7 @@ func set_tooltip(tooltip:String):
 	if tooltip.length() > 0:
 		label.mouse_filter = MOUSE_FILTER_STOP
 		label.mouse_default_cursor_shape = Control.CURSOR_HELP
-		label.hint_tooltip = tooltip
+		label.tooltip_text = tooltip
 	else:
 		label.mouse_filter = MOUSE_FILTER_IGNORE
 
@@ -133,7 +133,7 @@ func set_stylebox(stylebox:StyleBox):
 	stylebox.content_margin_top = 1
 	stylebox.content_margin_right = 0
 	stylebox.content_margin_left = 0
-	add_stylebox_override("panel", stylebox)
+	add_theme_stylebox_override("panel", stylebox)
 
 
 
@@ -211,7 +211,7 @@ func _request_prop_action(val, prop_action_class:String, optional:Dictionary = {
 func on_node_received_input(event, node):
 	if node.has_focus():
 		if event is InputEventKey && !event.pressed:
-			if event.scancode == KEY_ENTER || event.scancode == KEY_ESCAPE:
+			if event.keycode == KEY_ENTER || event.keycode == KEY_ESCAPE:
 				node.release_focus()
 
 

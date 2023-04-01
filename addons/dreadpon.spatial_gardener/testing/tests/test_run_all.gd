@@ -1,4 +1,4 @@
-tool
+@tool
 extends "test_base.gd"
 
 
@@ -9,7 +9,7 @@ var result_list:Array = []
 
 
 func execute():
-	.execute()
+	super.execute()
 	
 	logger.info("Executing all plant tests")
 	result_list = []
@@ -22,16 +22,16 @@ func execute():
 
 
 func execute_next_test():
-	execution_list[0].connect("finished_execution", self, "test_execution_finished")
+	execution_list[0].connect("finished_execution",Callable(self,"test_execution_finished"))
 	execution_list[0].execute()
 
 
 func test_execution_finished(results:Array = []):
 	result_list.append_array(results)
 	
-	execution_list[0].disconnect("finished_execution", self, "test_execution_finished")
+	execution_list[0].disconnect("finished_execution",Callable(self,"test_execution_finished"))
 	execution_list.pop_front()
-	if !execution_list.empty():
+	if !execution_list.is_empty():
 		execute_next_test()
 		return
 	

@@ -1,4 +1,4 @@
-tool
+@tool
 extends "ui_if_thumbnail_base.gd"
 
 
@@ -34,7 +34,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	scroll_intermediary = ScrollContainer.new()
 	scroll_intermediary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll_intermediary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll_intermediary.scroll_vertical_enabled = false
+	scroll_intermediary.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	
 	flex_grid = UI_FlexGridContainer.new()
 	
@@ -80,7 +80,7 @@ func _update_ui_to_val(val):
 		else:
 			flex_grid.get_child(i).set_thumbnail(null)
 	
-	._update_ui_to_val(val.duplicate())
+	super._update_ui_to_val(val.duplicate())
 
 
 # Set possible interaction features for an action thumbnail

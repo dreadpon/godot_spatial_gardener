@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 const GenericUtils = preload("generic_utils.gd")
@@ -15,25 +15,25 @@ static func populate_node_with_surfaces(parent_node:Node, landscape_surface:bool
 		painting_data.append(PaintBodyData.new("landscape", Vector3.ZERO, Basis.IDENTITY, 40.0))
 	if plane_surfaces:
 		painting_data.append_array([
-			PaintBodyData.new("plane", Vector3(120, 0, 120), Basis(Quat(Vector3(PI/4, PI/4, 0))), 10.0),
-			PaintBodyData.new("plane", Vector3(-120, 0, 120), Basis(Quat(Vector3(PI/2, 7*PI/4, 0))), 13.33),
-			PaintBodyData.new("plane", Vector3(120, 0, -120), Basis(Quat(Vector3(7*PI/4, 3*PI/4, 0))), 16.66),
-			PaintBodyData.new("plane", Vector3(-120, 0, -120), Basis(Quat(Vector3(PI, 5*PI/4, 0))), 20.0)])
+			PaintBodyData.new("plane", Vector3(120, 0, 120), Basis(Quaternion.from_euler(Vector3(PI/4, PI/4, 0))), 10.0),
+			PaintBodyData.new("plane", Vector3(-120, 0, 120), Basis(Quaternion.from_euler(Vector3(PI/2, 7*PI/4, 0))), 13.33),
+			PaintBodyData.new("plane", Vector3(120, 0, -120), Basis(Quaternion.from_euler(Vector3(7*PI/4, 3*PI/4, 0))), 16.66),
+			PaintBodyData.new("plane", Vector3(-120, 0, -120), Basis(Quaternion.from_euler(Vector3(PI, 5*PI/4, 0))), 20.0)])
 	
 	for data in painting_data:
 		var mesh_instance = null
 		
 		match data.type:
 			"landscape":
-				mesh_instance = Landscape_SCN.instance()
-				mesh_instance.global_transform = Transform(data.basis, data.origin)
+				mesh_instance = Landscape_SCN.instantiate()
+				mesh_instance.global_transform = Transform3D(data.basis, data.origin)
 				mesh_instance.scale = Vector3(data.extent, data.extent, data.extent) * 2.0
 			"plane":
-				mesh_instance = MeshInstance.new()
-				mesh_instance.mesh = CubeMesh.new()
+				mesh_instance = MeshInstance3D.new()
+				mesh_instance.mesh = BoxMesh.new()
 				mesh_instance.mesh.size = Vector3(data.extent, 1, data.extent) * 2.0
 				
-				mesh_instance.global_transform = Transform(data.basis, data.origin)
+				mesh_instance.global_transform = Transform3D(data.basis, data.origin)
 				mesh_instance.create_trimesh_collision()
 		
 		parent_node.add_child(mesh_instance)

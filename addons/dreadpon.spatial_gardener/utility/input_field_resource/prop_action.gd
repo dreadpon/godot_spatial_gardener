@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 
 #-------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ var can_create_history:bool
 
 
 
-func _init(__prop:String, __val):
+func _init(__prop:String,__val):
 	set_meta("class", "PropAction")
 	
 	prop = __prop

@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 const GenericUtils = preload("../utility/generic_utils.gd")
@@ -91,7 +91,7 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 	return node_results
 
 
-static func analyze_octree_scene_tree(octree_node:OctreeNode, MMI_container:Spatial, spawns_spatial:bool) -> Dictionary:
+static func analyze_octree_scene_tree(octree_node:OctreeNode, MMI_container:Node3D, spawns_spatial:bool) -> Dictionary:
 	var node_results := {}
 	node_results.missing_MMIs = []
 	node_results.extra_MMIs = []

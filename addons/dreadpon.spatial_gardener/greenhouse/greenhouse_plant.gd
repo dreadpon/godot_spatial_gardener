@@ -1,4 +1,4 @@
-tool
+@tool
 extends "../utility/input_field_resource/input_field_resource.gd"
 
 
@@ -112,7 +112,7 @@ signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 #-------------------------------------------------------------------------------
 
 
-func _init().():
+func _init():
 	set_meta("class", "Greenhouse_Plant")
 	resource_name = "Greenhouse_Plant"
 	
@@ -163,12 +163,12 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				_base_control, _resource_previewer, ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"])
 			var settings := {"button_text": "Configure Octree", "_base_control": _base_control, "bound_input_fields": bound_input_fields}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
-			input_field.connect("applied_changes", self, "on_dialog_if_applied_changes", [input_field])
-			input_field.connect("cancelled_changes", self, "on_dialog_if_cancelled_changes", [input_field])
+			input_field.connect("applied_changes",Callable(self,"on_dialog_if_applied_changes").bind(input_field))
+			input_field.connect("cancelled_changes",Callable(self,"on_dialog_if_cancelled_changes").bind(input_field))
 		"octree/octree_recenter_button":
 			var settings := {"button_text": "Recenter Octree"}
 			input_field = UI_IF_Button.new(octree_recenter_button, "Octree Centring", prop, settings)
-			input_field.connect("pressed", self, "on_if_button", [input_field])
+			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
 		#======================================================
 		"density/density_per_units":
 			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value", 2000.0)
@@ -277,11 +277,11 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"import_export/import_button":
 			var settings := {"button_text": "Import"}
 			input_field = UI_IF_Button.new(import_export_import_button, "Import Transforms", prop, settings)
-			input_field.connect("pressed", self, "on_if_button", [input_field])
+			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
 		"import_export/export_button":
 			var settings := {"button_text": "Export"}
 			input_field = UI_IF_Button.new(import_export_export_button, "Export Transforms", prop, settings)
-			input_field.connect("pressed", self, "on_if_button", [input_field])
+			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
 	
 	return input_field
 
@@ -438,7 +438,7 @@ func request_prop_action(prop_action:PropAction):
 
 
 func set_undo_redo(val:UndoRedo):
-	.set_undo_redo(val)
+	super.set_undo_redo(val)
 	for LOD_variant in mesh_LOD_variants:
 		LOD_variant.set_undo_redo(_undo_redo)
 
@@ -617,7 +617,7 @@ func _filter_prop_dictionary(prop_dict: Dictionary) -> Dictionary:
 		props_to_hide.append("fwd_vector/fwd_vector_blending")
 	
 	for prop in props_to_hide:
-		prop_dict[prop].usage = PROPERTY_USAGE_NOEDITOR
+		prop_dict[prop].usage = PROPERTY_USAGE_NO_EDITOR
 	
 	return prop_dict
 
@@ -641,14 +641,14 @@ func _get_prop_dictionary():
 		"mesh/mesh_LOD_max_distance":
 		{
 			"name": "mesh/mesh_LOD_max_distance",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
 		"mesh/mesh_LOD_kill_distance":
 		{
 			"name": "mesh/mesh_LOD_kill_distance",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -662,7 +662,7 @@ func _get_prop_dictionary():
 		"mesh/mesh_LOD_min_size":
 		{
 			"name": "mesh/mesh_LOD_min_size",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -684,7 +684,7 @@ func _get_prop_dictionary():
 		"density/density_per_units":
 		{
 			"name": "density/density_per_units",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -738,7 +738,7 @@ func _get_prop_dictionary():
 		"up_vector/up_vector_blending":
 		{
 			"name": "up_vector/up_vector_blending",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,1.0"
@@ -777,7 +777,7 @@ func _get_prop_dictionary():
 		"fwd_vector/fwd_vector_blending":
 		{
 			"name": "fwd_vector/fwd_vector_blending",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,1.0"
@@ -793,7 +793,7 @@ func _get_prop_dictionary():
 		"offset/offset_jitter_fraction":
 		{
 			"name": "offset/offset_jitter_fraction",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
@@ -801,7 +801,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_y":
 		{
 			"name": "rotation/rotation_random_y",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -809,7 +809,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_x":
 		{
 			"name": "rotation/rotation_random_x",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -817,7 +817,7 @@ func _get_prop_dictionary():
 		"rotation/rotation_random_z":
 		{
 			"name": "rotation/rotation_random_z",
-			"type": TYPE_REAL,
+			"type": TYPE_FLOAT,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_RANGE,
 			"hint_string": "0.0,180.0"
@@ -868,7 +868,7 @@ func get_prop_tooltip(prop:String) -> String:
 			return "The distance after which the lowest-detailed LOD (last one in the array) is chosen\n" \
 				+ "LODs in-between are spread evenly across this distance\n"
 		"mesh/mesh_LOD_kill_distance":
-			return "The distance after which the mesh and it's Spawned Spatial are removed entirely\n" \
+			return "The distance after which the mesh and it's Spawned Node3D are removed entirely\n" \
 				+ "Used to save perfomance by rejecting small objects like grass or rocks at big distances\n" \
 				+ "A default value of '-1' disables this behavior (the object will be active forever)"
 		"mesh/mesh_LOD_max_capacity":

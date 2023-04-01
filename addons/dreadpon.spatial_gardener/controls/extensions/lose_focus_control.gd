@@ -1,4 +1,4 @@
-tool
+@tool
 extends LineEdit
 
 
@@ -7,7 +7,7 @@ extends LineEdit
 func _gui_input(event):
 	if has_focus():
 		if event is InputEventKey && !event.pressed:
-			if event.scancode == KEY_ENTER || event.scancode == KEY_ESCAPE:
+			if event.keycode == KEY_ENTER || event.keycode == KEY_ESCAPE:
 				release_focus()
 				if self is LineEdit:
-					caret_position = 0
+					caret_column = 0

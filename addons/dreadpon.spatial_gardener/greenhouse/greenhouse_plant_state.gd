@@ -1,4 +1,4 @@
-tool
+@tool
 extends "../utility/input_field_resource/input_field_resource.gd"
 
 
@@ -30,7 +30,7 @@ signal req_export_transforms(plant)
 #-------------------------------------------------------------------------------
 
 
-func _init().():
+func _init():
 	set_meta("class", "Greenhouse_PlantState")
 	resource_name = "Greenhouse_PlantState"
 	# A workaround to trigger the initial creation of a plant
@@ -99,7 +99,7 @@ func _modify_prop(prop:String, val):
 
 
 func set_undo_redo(val:UndoRedo):
-	.set_undo_redo(val)
+	super.set_undo_redo(val)
 	plant.set_undo_redo(_undo_redo)
 
 

@@ -1,11 +1,11 @@
-tool
+@tool
 extends "test_gardener_base.gd"
 
 
 
 
 func execute():
-	.execute()
+	super.execute()
 	logger.info("Executing test")
 	painting_data = GardenerUtils.populate_node_with_surfaces(self, true, true)
 

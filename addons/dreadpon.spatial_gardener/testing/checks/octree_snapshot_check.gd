@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 
 const GenericUtils = preload("../utility/generic_utils.gd")
@@ -22,29 +22,29 @@ var given_octree_snapshots:Array = []
 
 func snapshot_tree(node:Node):
 	var snapshot = GardenerUtils.snapshot_tree(node)
-	if reference_tree_snapshot.empty():
+	if reference_tree_snapshot.is_empty():
 		reference_tree_snapshot = snapshot
-	elif given_tree_snapshot.empty():
+	elif given_tree_snapshot.is_empty():
 		given_tree_snapshot = snapshot
 	else:
-		assert(true, "Both 'last' and 'new' tree snapshots are already defined!")
+		assert(true) #,"Both 'last' and 'new' tree snapshots are already defined!")
 
 
 func snapshot_octrees(octree_managers:Array):
 	var snapshot = GardenerUtils.snapshot_octrees(octree_managers)
-	if reference_octree_snapshots.empty():
+	if reference_octree_snapshots.is_empty():
 		reference_octree_snapshots = snapshot
-	elif given_octree_snapshots.empty():
+	elif given_octree_snapshots.is_empty():
 		given_octree_snapshots = snapshot
 	else:
-		assert(true, "Both 'last' and 'new' octree snapshots are already defined!")
+		assert(true) #,"Both 'last' and 'new' octree snapshots are already defined!")
 
 
 func check_tree_snapshots(logger, text:String = "") -> Array:
 	var tree_discrepancies = GenericUtils.check_values(given_tree_snapshot, reference_tree_snapshot)
 	
 	logger.info("Found '%d' discrepancies %s %s" % [tree_discrepancies.size(), "in node tree", text])
-	if !tree_discrepancies.empty():
+	if !tree_discrepancies.is_empty():
 		for discrepancy in tree_discrepancies:
 			logger.info(str(discrepancy))
 		logger.info(given_tree_snapshot)
@@ -57,7 +57,7 @@ func check_octree_snapshots(logger, text:String = "") -> Array:
 	var octree_discrepancies = GenericUtils.check_values(given_octree_snapshots, reference_octree_snapshots)
 	
 	logger.info("Found '%d' discrepancies %s %s" % [octree_discrepancies.size(), "in octree", text])
-	if !octree_discrepancies.empty():
+	if !octree_discrepancies.is_empty():
 		for discrepancy in octree_discrepancies:
 			logger.info(str(discrepancy))
 		logger.info(given_octree_snapshots)

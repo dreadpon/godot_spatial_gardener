@@ -1,4 +1,4 @@
-tool
+@tool
 extends "../utility/input_field_resource/input_field_resource.gd"
 
 
@@ -46,7 +46,7 @@ signal req_export_transforms(plant_idx, file)
 #-------------------------------------------------------------------------------
 
 
-func _init().():
+func _init():
 	set_meta("class", "Greenhouse")
 	resource_name = "Greenhouse"
 	
@@ -59,11 +59,11 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
-	ui_category_greenhouse = ui_category_greenhouse_SCN.instance()
-	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_node('ScrollContainer_PlantThumbnails')
-	scroll_container_properties_nd = ui_category_greenhouse.find_node('ScrollContainer_Properties')
-	panel_container_properties_nd = ui_category_greenhouse.find_node('PanelContainer_PlantThumbnails')
-	panel_container_category_nd = ui_category_greenhouse.find_node('PanelContainer_Category')
+	ui_category_greenhouse = ui_category_greenhouse_SCN.instantiate()
+	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_child('ScrollContainer_PlantThumbnails')
+	scroll_container_properties_nd = ui_category_greenhouse.find_child('ScrollContainer_Properties')
+	panel_container_properties_nd = ui_category_greenhouse.find_child('PanelContainer_PlantThumbnails')
+	panel_container_category_nd = ui_category_greenhouse.find_child('PanelContainer_Category')
 	
 	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
 	ThemeAdapter.assign_node_type(panel_container_properties_nd, 'InspectorInnerPanelContainer')
@@ -75,8 +75,8 @@ func create_ui(__base_control:Control, __resource_previewer):
 	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
 	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_container_plant_thumbnails_nd.connect("requested_check", self, "on_plant_state_check")
-	grid_container_plant_thumbnails_nd.connect("requested_label_edit", self, "on_plant_label_edit")
+	grid_container_plant_thumbnails_nd.connect("requested_check",Callable(self,"on_plant_state_check"))
+	grid_container_plant_thumbnails_nd.connect("requested_label_edit",Callable(self,"on_plant_label_edit"))
 	
 	vbox_container_properties_nd = input_fields[1]
 	
@@ -84,7 +84,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
 	
 	_file_dialog = FileDialog.new()
-	_file_dialog.connect('hide', self, 'on_file_dialog_hide')
+	_file_dialog.connect('hidden',Callable(self,'on_file_dialog_hide'))
 	return ui_category_greenhouse
 
 
@@ -140,7 +140,7 @@ func set_plant_state_label(index:int, label_text:String):
 
 
 func on_if_ready(input_field:UI_InputField):
-	.on_if_ready(input_field)
+	super.on_if_ready(input_field)
 	
 	if input_field.prop_name == "plant_types/greenhouse_plant_states":
 		for i in range(0, greenhouse_plant_states.size()):
@@ -157,12 +157,12 @@ func show_transform_import(type: String):
 	_base_control.add_child(_file_dialog)
 	_file_dialog.popup_centered(Vector2(500, 400))
 	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
-	_file_dialog.filters = PoolStringArray(['*.json ; JSON'])
+	_file_dialog.filters = PackedStringArray(['*.json ; JSON'])
 	match type:
 		'import':
-			_file_dialog.mode = FileDialog.MODE_OPEN_FILE
+			_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		'export':
-			_file_dialog.mode = FileDialog.MODE_SAVE_FILE
+			_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 
 
 func on_file_dialog_hide():
@@ -189,12 +189,12 @@ func on_req_octree_recenter(plant, plant_state):
 func on_req_import_transforms(plant, plant_state):
 	show_transform_import('import')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.connect('file_selected', self, 'on_req_import_export_file', ['req_import_transforms', plant_idx])
+	_file_dialog.connect('file_selected',Callable(self,'on_req_import_export_file').bind('req_import_transforms', plant_idx))
 
 func on_req_export_transforms(plant, plant_state):
 	show_transform_import('export')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.connect('file_selected', self, 'on_req_import_export_file', ['req_export_transforms', plant_idx])
+	_file_dialog.connect('file_selected',Callable(self,'on_req_import_export_file').bind('req_export_transforms', plant_idx))
 
 func on_req_import_export_file(file_path: String, signal_name: String, plant_idx: int):
 	emit_signal(signal_name, file_path, plant_idx)
@@ -255,7 +255,7 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant,
 
 
 func set_undo_redo(val:UndoRedo):
-	.set_undo_redo(val)
+	super.set_undo_redo(val)
 	for plant_state in greenhouse_plant_states:
 		plant_state.set_undo_redo(_undo_redo)
 

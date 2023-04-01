@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 #-------------------------------------------------------------------------------
@@ -29,13 +29,13 @@ static func clear_children(node):
 # A shorthand for checking/connecting a signal
 # Kinda wish Godot had a built-in one
 static func ensure_signal(source:Object, _signal:String, target:Object, method:String, binds:Array = [], flags:int = 0):
-	if !source.is_connected(_signal, target, method):
-		source.connect(_signal, target, method, binds, flags)
+	if !source.is_connected(_signal,Callable(target,method)):
+		source.connect(_signal,Callable(target,method).bind(binds),flags)
 
 
 static func disconnect_all(obj: Object, signal_name: String):
 	for connection_data in obj.get_signal_connection_list(signal_name):
-		obj.disconnect(signal_name, connection_data.target, connection_data.method)
+		obj.disconnect(signal_name,Callable(connection_data.target,connection_data.method))
 
 
 
@@ -70,10 +70,10 @@ static func str_to_vec3(string: String) -> Vector3:
 	return Vector3(split[0], split[1], split[2])
 
 
-static func str_to_transform(string: String) -> Transform:
+static func str_to_transform(string: String) -> Transform3D:
 	string = string.replace(' - ', ', ')
 	var split = string.split(', ')
-	return Transform(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
+	return Transform3D(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
 
 
 
@@ -127,7 +127,7 @@ static func vector_tri_lerp(from:Vector3, to:Vector3, weight:Vector3):
 
 
 static func get_msec():
-	return OS.get_ticks_msec()
+	return Time.get_ticks_msec()
 
 
 static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int = TimeTrimMode.NONE):
@@ -141,23 +141,23 @@ static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int 
 			match trim_mode:
 				TimeTrimMode.EXACT:
 					if time_units[i] <= 0:
-						time_units.remove(i)
+						time_units.remove_at(i)
 					else:
 						break
 				TimeTrimMode.EXTRA_ONE:
 					if  time_units[i] > 0:
 						break
 					if i + 1 < time_units.size() && time_units[i + 1] <= 0:
-						time_units.remove(i + 1)
+						time_units.remove_at(i + 1)
 				TimeTrimMode.KEEP_ONE:
 					if i >= 1:
-						time_units.remove(i)
+						time_units.remove_at(i)
 				TimeTrimMode.KEEP_TWO:
 					if i >= 2:
-						time_units.remove(i)
+						time_units.remove_at(i)
 				TimeTrimMode.KEEP_THREE:
 					if i >= 3:
-						time_units.remove(i)
+						time_units.remove_at(i)
 			
 	
 	
@@ -176,10 +176,7 @@ static func msec_to_time(msec:int = -1, include_msec:bool = true, trim_mode:int 
 
 
 static func print_system_time(suffix:String = ""):
-	var time = OS.get_time()
-	var msecond = OS.get_ticks_msec() % 1000
-	var time_formatted = String(time.hour) +":"+String(time.minute)+":"+String(time.second)+":"+String(msecond)
-	print(time_formatted + " " + suffix)
+	print("[%s] : %s" % [Time.get_time_string_from_system(), suffix])
 
 
 
@@ -275,7 +272,7 @@ static func save_res(res:Resource, dir:String, res_name:String):
 	# Taking over path and subpaths is still required
 	# Still keeping FLAG_CHANGE_PATH in case we want to save to a different location
 	res.take_over_path(full_path)
-	var err = ResourceSaver.save(full_path, res, ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
+	var err = ResourceSaver.save(res, full_path, ResourceSaver.FLAG_CHANGE_PATH | ResourceSaver.FLAG_REPLACE_SUBRESOURCE_PATHS)
 	if err != OK:
 		logger.error("Could not save '%s', error %s!" % [full_path, Globals.get_err_message(err)])
 
@@ -288,12 +285,12 @@ static func load_res(dir:String, res_name:String, default_res:Resource = null, n
 	var logger = Logger.get_for_string("FunLib")
 	
 	if ResourceLoader.exists(full_path):
-		res = ResourceLoader.load(full_path, "", no_cache)
+		res = ResourceLoader.load(full_path, "", ResourceLoader.CacheMode.CACHE_MODE_REPLACE if no_cache else ResourceLoader.CacheMode.CACHE_MODE_REUSE)
 	elif is_instance_valid(default_res):
 		res = default_res.duplicate(true)
-		logger.info("Path '%s', doesn't exist. Using default resource." % [full_path])
+		logger.info("Path3D '%s', doesn't exist. Using default resource." % [full_path])
 	else:
-		logger.warn("Path '%s', doesn't exist. No default resource exists either!" % [full_path])
+		logger.warn("Path3D '%s', doesn't exist. No default resource exists either!" % [full_path])
 	
 	if !res:
 		if !is_dir_valid(dir) || res_name == "":
@@ -311,7 +308,7 @@ static func combine_dir_and_file(dir_path: String, file_name: String):
 
 
 static func is_dir_valid(dir):
-	return dir != "" && dir != "/" && Directory.new().dir_exists(dir)
+	return dir != "" && dir != "/" && DirAccess.dir_exists_absolute(dir)
 
 
 
@@ -326,7 +323,7 @@ static func remove_dir_recursive(path, keep_first:bool = false) -> bool:
 	
 	var error = dir.open(path)
 	if error == OK:
-		dir.list_dir_begin(true)
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if dir.current_is_dir():
@@ -356,7 +353,7 @@ static func iterate_files(dir_path: String, deep: bool, obj: Object, method_name
 	if dir_path.ends_with('/'):
 		dir_path = dir_path.trim_suffix('/')
 	if error == OK:
-		dir.list_dir_begin(true)
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var full_path = ''
 		var file_name = dir.get_next()
 		while file_name != '':

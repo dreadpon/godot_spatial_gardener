@@ -1,4 +1,4 @@
-tool
+@tool
 extends "stroke_handler.gd"
 
 
@@ -15,7 +15,7 @@ func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _
 
 
 func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Plant, plant_index:int, octree_manager:MMIOctreeManager, 
-	brush_placement_area:BrushPlacementArea, container_transform:Transform, painting_changes:PaintingChanges):
+	brush_placement_area:BrushPlacementArea, container_transform:Transform3D, painting_changes:PaintingChanges):
 	
 	# We create a grid and detect overlaps
 	brush_placement_area.init_grid_data(plant.density_per_units, 1.0 - brush.behavior_strength)

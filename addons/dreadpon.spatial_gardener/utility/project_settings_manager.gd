@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 #-------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ static func add_plugin_project_settings():
 	add_project_setting(
 		"dreadpons_spatial_gardener/painting/projection_raycast_margin",
 		0.1,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/painting/simplify_projection_frustum",
 		true,
@@ -43,10 +43,10 @@ static func add_plugin_project_settings():
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale",
 		1.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button",
-		Globals.ButtonList.BUTTON_RIGHT, Globals.ButtonList)
+		Globals.ButtonList.MOUSE_BUTTON_RIGHT, Globals.ButtonList)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier",
 		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
@@ -59,27 +59,27 @@ static func add_plugin_project_settings():
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/brush_volume_size_slider_max_value",
 		100.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/brush_projection_size_slider_max_value",
 		1000.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value",
 		1000.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/plant_kill_distance_slider_max_value",
 		2000.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value",
 		2000.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/octree_min_node_size_slider_max_value",
 		500.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	
 	# Plugin
 	add_project_setting(
@@ -113,7 +113,7 @@ static func add_plugin_project_settings():
 	add_project_setting(
 		"dreadpons_spatial_gardener/debug/debug_viewer_octree_member_size",
 		2.0,
-		TYPE_REAL)
+		TYPE_FLOAT)
 	add_project_setting(
 		"dreadpons_spatial_gardener/debug/stroke_handler_debug_draw",
 		false,

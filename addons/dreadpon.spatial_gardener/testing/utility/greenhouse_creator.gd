@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 
@@ -12,12 +12,12 @@ const Globals = preload("../../utility/globals.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
 
 
-export(Array, Resource) var greenhouses:Array setget set_greenhouses
-export(Array, Resource) var toolsheds:Array setget set_toolsheds
-export(String, DIR) var save_path:String = ""
-export var do_load_resources_for_edit:bool = false setget set_do_load_resources_for_edit
-export var do_save_resources:bool = false setget set_do_save_resources
-export var do_save_backups:bool = false setget set_do_save_backups
+@export var greenhouses:Array :set = set_greenhouses # (Array, Resource)
+@export var toolsheds:Array : set = set_toolsheds # (Array, Resource)
+@export var save_path:String = "" # (String, DIR)
+@export var do_load_resources_for_edit:bool = false : set = set_do_load_resources_for_edit
+@export var do_save_resources:bool = false : set = set_do_save_resources
+@export var do_save_backups:bool = false : set = set_do_save_backups
 
 var logger = null
 
@@ -121,8 +121,7 @@ func _save_backup(res:InputFieldResource, res_name:String, index:int = -1):
 		backup_path = save_path + "/%s.backup" % [res_name]
 	
 	FunLib.save_res(res, save_path, res_filename)
-	
-	var err = Directory.new().rename(full_path, backup_path)
+	var err = dir.rename_absolute (full_path, backup_path)
 	if err != OK:
 		logger.error("Could not rename '%s' to '%s', error %s!" % [full_path, backup_path, Globals.get_err_message(err)])
 	res.take_over_path(backup_path)

@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 enum RunMode {RECREATE, DRY, CONVERT}
 

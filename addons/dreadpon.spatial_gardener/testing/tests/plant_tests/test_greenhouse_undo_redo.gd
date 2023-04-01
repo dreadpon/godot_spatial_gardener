@@ -1,11 +1,11 @@
-tool
+@tool
 extends "test_plant_base.gd"
 
 
 
 
 func execute():
-	.execute()
+	super.execute()
 	
 	var greenhouses := load_greenhouses()
 	for greenhouse in greenhouses:
@@ -35,7 +35,7 @@ func execute():
 	finish_execution(results)
 
 
-func finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
+func on_finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
 	var greenhouses = callback_binds[0]
 	var greenhouse_i = callback_binds[1]
 	var curr_greenhouse = callback_binds[2]

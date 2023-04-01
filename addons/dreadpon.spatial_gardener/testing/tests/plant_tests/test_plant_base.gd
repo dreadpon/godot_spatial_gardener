@@ -1,4 +1,4 @@
-tool
+@tool
 extends "../test_base.gd"
 
 
@@ -7,7 +7,7 @@ const PlantSnapshotCheck = preload("../../checks/plant_snapshot_check.gd")
 const Greenhouse = preload("../../../greenhouse/greenhouse.gd")
 
 
-export(String, DIR) var save_path:String = ""
+@export var save_path:String = "" # (String, DIR)
 
 
 

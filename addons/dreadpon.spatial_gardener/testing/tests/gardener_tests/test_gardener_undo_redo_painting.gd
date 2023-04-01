@@ -1,4 +1,4 @@
-tool
+@tool
 extends "test_gardener_base.gd"
 
 
@@ -21,7 +21,7 @@ var member_count_snapshots_list:Array = []
 
 
 func execute():
-	.execute()
+	super.execute()
 	logger.info("Executing test")
 	octree_snapshot_check = OctreeSnapshotCheck.new()
 	painting_data = GardenerUtils.populate_node_with_surfaces(self, true, false)
@@ -81,7 +81,7 @@ func finished_painter_action(painter_action:PainterAction):
 		member_count_snapshots_list[i].append(all_placeforms.size())
 
 
-func finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
+func on_finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
 	if callback_return_value == null:
 		callback_return_value = {}
 	

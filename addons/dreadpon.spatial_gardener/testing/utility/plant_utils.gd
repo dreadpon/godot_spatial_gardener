@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 const GenericUtils = preload("generic_utils.gd")
@@ -75,7 +75,7 @@ static func get_morph_actions_recursive(initial, target, address:Array, prop_nam
 	
 	else:
 		var do_edit_actions = false
-		if typeof(target) == typeof(initial) && typeof(target) == TYPE_REAL:
+		if typeof(target) == typeof(initial) && typeof(target) == TYPE_FLOAT:
 			do_edit_actions = enable_prop_edit_actions
 		
 		morph_actions.append_array(get_prop_morph_actions(
@@ -177,10 +177,10 @@ static func perform_morph_actions(initial:Greenhouse, morph_actions:Array):
 
 class MorphAction:
 	var prop_address:Array = []
-	var prop_action:Reference = null
+	var prop_action:RefCounted = null
 	
 	
-	func _init(_prop_address:Array = [], _prop_action:Reference = null):
+	func _init(_prop_address:Array = [],_prop_action:RefCounted = null):
 		prop_address = _prop_address
 		prop_action = _prop_action
 	

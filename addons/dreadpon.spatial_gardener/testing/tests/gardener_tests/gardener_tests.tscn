@@ -20,6 +20,6 @@ greenhouse_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener
 script = ExtResource( 2 )
 greenhouse_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"
 
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.146447, 0.853553, -0.5, -0.5, 0.5, 0.707107, 0.853553, 0.146447, 0.5, 0, 25.1513, 0 )
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D( 0.146447, 0.853553, -0.5, -0.5, 0.5, 0.707107, 0.853553, 0.146447, 0.5, 0, 25.1513, 0 )
 light_energy = 0.8

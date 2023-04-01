@@ -1,4 +1,4 @@
-tool
+@tool
 extends "ui_input_field.gd"
 
 
@@ -23,7 +23,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	displayed_label = Label.new()
 	displayed_label.name = "displayed_label"
 	displayed_label.size_flags_horizontal = SIZE_EXPAND_FILL
-	displayed_label.align = Label.ALIGN_CENTER
+	displayed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
@@ -48,4 +48,4 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 func _update_ui_to_val(val):
 	displayed_label.text = val
-	._update_ui_to_val(val)
+	super._update_ui_to_val(val)

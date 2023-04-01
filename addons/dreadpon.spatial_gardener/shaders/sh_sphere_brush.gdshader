@@ -1,17 +1,19 @@
 shader_type spatial;
-render_mode blend_mix,cull_disabled,unshaded,depth_draw_opaque,depth_test_disable;
+render_mode blend_mix,cull_disabled,unshaded,depth_draw_opaque;
 
 
 // Base color + opacity
-uniform vec4 albedo : hint_color;
+uniform vec4 albedo : source_color;
+// Brush diameter
+uniform float proximity_multiplier = 1.0;
+// Distance at which proximity highlight occurs
+uniform float proximity_treshold = 0.4;
+// Depth texture
+uniform sampler2D depth_texture : hint_depth_texture;
 
 
 void fragment() {
 	ALBEDO = albedo.rgb;
-	
-	if (length(UV - vec2(0.5)) > 0.5) {
-		discard;
-	}
 	
 	// Fancy dithered alpha stuff
 	float opacity = albedo.a;
@@ -41,4 +43,13 @@ void fragment() {
 	// Skip drawing a pixel below the opacity limit
 	if (opacity < limit)
 		discard;
+	
+	// Proximity highlight to make brush bounds more visible in the scene
+	float depth_tex = textureLod(depth_texture,SCREEN_UV, 0.0).r;
+	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);
+	world_pos.xyz /= world_pos.w;
+	float proximity = 1.0 - clamp(1.0 - smoothstep(world_pos.z + proximity_treshold * proximity_multiplier, world_pos.z, VERTEX.z), 0.0, 1.0);
+	
+	// Highlight pixels that are close to other geometry
+	ALBEDO = clamp(ALBEDO + vec3(proximity * 0.5), 0.0, 1.0);
 }

@@ -1,4 +1,4 @@
-tool
+@tool
 extends Resource
 
 
@@ -19,30 +19,30 @@ const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.g
 
 # An array for looking up placements conviniently
 # Since a member placement is practically it's ID
-var member_placeforms: Array = []
+var member_placeforms: Array[Placeform] = []
 # And these are for storage on disk
-export(PoolRealArray) var member_origin_offsets: PoolRealArray = PoolRealArray()
-export(PoolVector3Array) var member_surface_normals: PoolVector3Array = PoolVector3Array()
-export(PoolByteArray) var member_octants: PoolByteArray = PoolByteArray()
+@export var member_origin_offsets: PackedFloat32Array = PackedFloat32Array()
+@export var member_surface_normals: PackedVector3Array = PackedVector3Array()
+@export var member_octants: PackedByteArray = PackedByteArray()
 
-export(Array, Resource) var child_nodes:Array
-export var max_members:int
-export var min_leaf_extent:float
+@export var child_nodes:Array # (Array, Resource)
+@export var max_members:int
+@export var min_leaf_extent:float
 
-export var octant:int
-export var is_leaf:bool
+@export var octant:int
+@export var is_leaf:bool
 
-export var center_pos:Vector3
-export var extent:float
-export var bounds:AABB
-export var max_bounds_to_center_dist:float
-export var min_bounds_to_center_dist:float
+@export var center_pos:Vector3
+@export var extent:float
+@export var bounds:AABB
+@export var max_bounds_to_center_dist:float
+@export var min_bounds_to_center_dist:float
 
 var parent:Resource
-var MMI_container:Spatial = null
-var MMI:MultiMeshInstance = null
-export var active_LOD_index:int = -1
-export var MMI_name:String = ""
+var MMI_container:Node3D = null
+var MMI:MultiMeshInstance3D = null
+@export var active_LOD_index:int = -1
+@export var MMI_name:String = ""
 
 var shared_LOD_variants:Array = []
 
@@ -63,7 +63,7 @@ signal req_debug_redraw()
 
 # Last two variables will be used only if there was no parent passed
 func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0, __center_pos:Vector3 = Vector3.ZERO,
-	__octant:int = -1, __min_leaf_extent:float = 0.0, __MMI_container:Spatial = null, __LOD_variants:Array = []):
+	__octant:int = -1, __min_leaf_extent:float = 0.0, __MMI_container:Node3D = null, __LOD_variants:Array = []):
 	
 	resource_local_to_scene = true
 	set_meta("class", "MMIOctreeNode")
@@ -138,7 +138,7 @@ func prepare_for_removal():
 
 
 # Restore any states that might be broken after loading this node
-func restore_after_load(__MMI_container:Spatial, LOD_variants:Array):
+func restore_after_load(__MMI_container:Node3D, LOD_variants:Array):
 	MMI_container = __MMI_container
 	shared_LOD_variants = LOD_variants
 	
@@ -158,7 +158,7 @@ func restore_after_load(__MMI_container:Spatial, LOD_variants:Array):
 func set_is_leaf(val):
 	is_leaf = val
 	if is_leaf && !is_instance_valid(MMI) && is_instance_valid(MMI_container):
-		MMI = MultiMeshInstance.new()
+		MMI = MultiMeshInstance3D.new()
 		MMI_container.add_child(MMI, true)
 		MMI.owner = MMI_container.owner
 		MMI_name = MMI.name
@@ -215,13 +215,13 @@ func set_LODs_to_active_index():
 func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float):
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
-	if shared_LOD_variants.empty(): return
+	if shared_LOD_variants.is_empty(): return
 	
 	var dist_to_node_center := (center_pos - camera_pos).length()
 	
 	var max_LOD_dist := LOD_max_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
 	var max_kill_dist := LOD_kill_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
-	var dist_to_node_center_bounds_estimate := clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
+	var dist_to_node_center_bounds_estimate: float = clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
 	
 	var skip_assignment := false
 	var skip_children := false
@@ -296,9 +296,9 @@ func clear_LOD_member_state():
 # Reset all arrays storing the member data
 func reset_member_arrays():
 	member_placeforms = []
-	member_origin_offsets = PoolRealArray()
-	member_surface_normals = PoolVector3Array()
-	member_octants = PoolByteArray()
+	member_origin_offsets = PackedFloat32Array()
+	member_surface_normals = PackedVector3Array()
+	member_octants = PackedByteArray()
 
 
 # Add new member data
@@ -317,10 +317,10 @@ func erase_from_member_arrays(placeform: Array):
 
 # Remove member data by index
 func remove_at_from_member_arrays(member_idx: int):
-	member_placeforms.remove(member_idx)
-	member_origin_offsets.remove(member_idx)
-	member_surface_normals.remove(member_idx)
-	member_octants.remove(member_idx)
+	member_placeforms.remove_at(member_idx)
+	member_origin_offsets.remove_at(member_idx)
+	member_surface_normals.remove_at(member_idx)
+	member_octants.remove_at(member_idx)
 
 
 # Set member data by index
@@ -335,7 +335,7 @@ func set_member_arrays_at_index(idx:int, placeform: Array):
 func restore_placeforms():
 	if !is_leaf: return
 	member_placeforms = []
-	var MMI_inst_transform: Transform
+	var MMI_inst_transform: Transform3D
 	for idx in range(0, MMI.multimesh.instance_count):
 		MMI_inst_transform = MMI.multimesh.get_instance_transform(idx)
 		member_placeforms.append(Placeform.set_placement_from_origin_offset(
@@ -364,7 +364,7 @@ func add_members(new_placeforms:Array):
 		# So we abort
 		return
 	
-	if new_placeforms.empty(): return
+	if new_placeforms.is_empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
@@ -372,12 +372,12 @@ func add_members(new_placeforms:Array):
 	
 	var members_changed := false
 	if extent * 0.5 >= min_leaf_extent:
-		if child_nodes.empty() && member_count() + new_placeforms.size() > max_members:
+		if child_nodes.is_empty() && member_count() + new_placeforms.size() > max_members:
 			_make_children()
 			iter_placeforms(self, '_add_member_to_child')
 			reset_member_arrays()
 	
-	if !child_nodes.empty():
+	if !child_nodes.is_empty():
 		for placeform in new_placeforms:
 			_add_member_to_child(placeform)
 	else:
@@ -394,7 +394,7 @@ func add_members(new_placeforms:Array):
 # Remove members from self, or children
 # This function is destructive to the passed array. Duplicate it if the original needs to stay intact
 func remove_members(old_placeforms:Array):
-	if old_placeforms.empty(): return
+	if old_placeforms.is_empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
@@ -432,14 +432,14 @@ func set_members(changes:Array):
 
 # Rejects members outside the bounds
 func reject_outside_placeforms(new_placeforms:Array):
-	if parent || new_placeforms.empty(): return []
+	if parent || new_placeforms.is_empty(): return []
 	
 	var rejected := []
 	for i in range(new_placeforms.size() - 1, -1, -1):
 		var placeform = new_placeforms[i]
 		if !bounds.has_point(placeform[0]):
 			rejected.append(placeform)
-			new_placeforms.remove(i)
+			new_placeforms.remove_at(i)
 	
 	return rejected
 
@@ -466,11 +466,11 @@ func _remove_member_from_child(old_placeform: Array):
 #-------------------------------------------------------------------------------
 
 
-# Make sure our MMI exists and is, in fact, a MultiMeshInstance
+# Make sure our MMI exists and is, in fact, a MultiMeshInstance3D
 # If not - delete it, and recreate inside set_is_leaf()
 func validate_MMI():
 	MMI = MMI_container.get_node_or_null(MMI_name)
-	if MMI && !(MMI is MultiMeshInstance):
+	if MMI && !(MMI is MultiMeshInstance3D):
 		MMI_container.remove_child(MMI)
 		MMI.owner = null
 		MMI = null
@@ -486,7 +486,7 @@ func validate_member_spatials():
 	if !LODVariant || !LODVariant.spawned_spatial: return
 	
 	# Create an example spatial for class checks
-	var spawned_spatial = LODVariant.spawned_spatial.instance()
+	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
 	
 	# Remove spatials of wrong class
 	# Update those that are of correct class
@@ -508,7 +508,7 @@ func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
 	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
 	if !LODVariant || !LODVariant.spawned_spatial: return
 	
-	var spawned_spatial = LODVariant.spawned_spatial.instance()
+	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
 	spawned_spatial.transform = get_member_transform(member_idx)
 	MMI.add_child(spawned_spatial)
 	spawned_spatial.owner = MMI.owner
@@ -522,7 +522,7 @@ func remove_spatial_for_member_idx(member_idx:int):
 		MMI.remove_child(MMI.get_child(member_idx))
 
 
-# Set spatial's Transform for member
+# Set spatial's Transform3D for member
 func set_spatial_for_member_idx(member_idx: int):
 	if member_idx >= MMI.get_child_count(): return
 	MMI.get_child(member_idx).transform = get_member_transform(member_idx)
@@ -581,10 +581,10 @@ func MMI_refresh_instance_placements():
 		MMI.multimesh.set_instance_transform(member_idx, member_placeforms[member_idx][2])
 
 
-# Refresh member Transform when reapplying a new Transform
+# Refresh member Transform3D when reapplying a new Transform3D
 # This avoids completely refreshing all instances like in MMI_refresh_instance_placements()
-func MMI_refresh_member(member_idx: int, transform: Transform):
-	assert(MMI.multimesh.instance_count > member_idx, "Trying to refresh multimesh instance [%d] that isn't allocated!" % [member_idx])
+func MMI_refresh_member(member_idx: int, transform: Transform3D):
+	assert(MMI.multimesh.instance_count > member_idx) #,"Trying to refresh multimesh instance [%d] that isn't allocated!" % [member_idx])
 
 	MMI.multimesh.set_instance_transform(member_idx, transform)
 
@@ -607,7 +607,7 @@ func _make_children():
 
 # Adopt another OctreeNode as a child in a given octant
 func adopt_child(child, octant:int):
-	if child_nodes.empty():
+	if child_nodes.is_empty():
 		_make_children()
 	
 	child_nodes[octant].prepare_for_removal()
@@ -732,7 +732,7 @@ func _collapse_children():
 # Collapse self by making one of the children a new root
 # This action actually happens in an OctreeManager, since OctreeNodes cannot makes themselves root nodes
 func collapse_self(new_root_octant:int):
-	child_nodes.remove(new_root_octant)
+	child_nodes.remove_at(new_root_octant)
 	print_address("", "collapsed self")
 	prepare_for_removal()
 
@@ -761,7 +761,7 @@ func get_placeforms() -> Array:
 
 
 # Get an individual placeform
-func get_placeform(member_idx: int) -> Reference:
+func get_placeform(member_idx: int) -> RefCounted:
 	return member_placeforms[member_idx]
 
 
@@ -788,17 +788,17 @@ func get_nested_member_count() -> int:
 
 
 # Recursively get a child by it's address (relative to the node of inception)
-func find_child_by_address(address:PoolByteArray) -> Resource:
-	if address.empty(): return self
-	if child_nodes.empty(): return null
+func find_child_by_address(address:PackedByteArray) -> Resource:
+	if address.is_empty(): return self
+	if child_nodes.is_empty(): return null
 	
 	var child = child_nodes[address[0]]
-	address.remove(0)
+	address.remove_at(0)
 	return child.find_child_by_address(address)
 
 
 # Recursively get a full address of this node
-func get_address(address:PoolByteArray = PoolByteArray()) -> PoolByteArray:
+func get_address(address:PackedByteArray = PackedByteArray()) -> PackedByteArray:
 	if parent:
 		address.insert(0, octant)
 		return parent.get_address(address)
@@ -881,11 +881,11 @@ func debug_get_color():
 	var address = get_address()
 	match address.size() % 3:
 		0:
-			return Color.red
+			return Color.RED
 		1:
-			return Color.yellow
+			return Color.YELLOW
 		2:
-			return Color.blue
+			return Color.BLUE
 
 
 # Recursively dump an entire octree

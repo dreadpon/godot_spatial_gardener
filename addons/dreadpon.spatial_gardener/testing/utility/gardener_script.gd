@@ -74,7 +74,7 @@ static func mk_script_actions_cover(script:Array, paint_body_data:PaintBodyData,
 			var brush_size_alpha := float(y) /float(move_count + 1)
 			var brush_size:float = lerp(brush_size_range.x, brush_size_range.y, brush_size_alpha)
 			
-			if !stroke_length_list.empty() && current_stroke_action >= stroke_length_list[stroke_length_index]:
+			if !stroke_length_list.is_empty() && current_stroke_action >= stroke_length_list[stroke_length_index]:
 				current_stroke_action = 0
 				stroke_length_index += 1
 				if stroke_length_list.size() <= stroke_length_index:

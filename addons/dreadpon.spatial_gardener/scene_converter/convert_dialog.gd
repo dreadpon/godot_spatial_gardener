@@ -1,5 +1,5 @@
-tool
-extends WindowDialog
+@tool
+extends Window
 
 
 signal confirm_pressed
@@ -9,7 +9,7 @@ signal dont_ask_again_toggled(state)
 
 
 func _ready():
-	$'%TreeScenes'.connect('item_selected', self, '_on_tree_item_selected')
+	$'%TreeScenes'.connect('item_selected',Callable(self,'_on_tree_item_selected'))
 
 
 func _on_tree_item_selected():
@@ -54,8 +54,8 @@ func _on_ButtonCancel_pressed():
 	emit_signal('cancel_pressed')
 
 
-func _on_ButtonDontAskAgain_toggled(button_pressed):
-	emit_signal('dont_ask_again_toggled', button_pressed)
+func _on_ButtonDontAskAgain_toggled(pressed):
+	emit_signal('dont_ask_again_toggled', pressed)
 
 
 func _on_ConvertDialog_about_to_show():

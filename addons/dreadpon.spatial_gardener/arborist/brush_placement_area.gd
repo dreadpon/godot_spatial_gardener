@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 
 #-------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ extends Reference
 	# All the points that remain will spawn an instance
 	# Add a random jitter to each placement (it should be smaller than 0.5 to prevent occasional overlap)
 	# Get the raycast start and end positions
-		# They are aligned to the plane's normal and clamped at the sphere's bounds
+		# They are aligned to the plane's normal and limit_length at the sphere's bounds
 			# Last one prevents out raycast from going outside the sphere
 	# Back in the StrokeHandler, use these positions to raycast to surface and determine actual placement positions
 
@@ -90,7 +90,7 @@ var logger = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__sphere_pos:Vector3, __sphere_radius:float, __plane_normal:Vector3, __jitter_fraction:float = 0.6):
+func _init(__sphere_pos:Vector3,__sphere_radius:float,__plane_normal:Vector3,__jitter_fraction:float = 0.6):
 	logger = Logger.get_for(self)
 	sphere_pos = __sphere_pos
 	sphere_radius = __sphere_radius
@@ -101,9 +101,9 @@ func _init(__sphere_pos:Vector3, __sphere_radius:float, __plane_normal:Vector3, 
 
 # Find two perpedicular vectors, so all 3 describe a plane/flat circle
 func init_axis_vectors(source:Vector3):
-	var nx := abs(source.x)
-	var ny := abs(source.y)
-	var nz := abs(source.z)
+	var nx: float = abs(source.x)
+	var ny: float = abs(source.y)
+	var nz: float = abs(source.z)
 	var axis1:Vector3
 	var axis2:Vector3
 	
@@ -193,7 +193,7 @@ func init_placement_overlaps(octree_manager:MMIOctreeManager, edge_extension:int
 # Recursively calculate placement overlaps in an octree
 func get_overlap_member_data(octree_node:MMIOctreeNode, max_dist:float):
 	var max_bounds_to_center_dist = octree_node.max_bounds_to_center_dist
-	var dist_node := clamp((octree_node.center_pos - sphere_pos).length() - max_bounds_to_center_dist - sphere_radius, 0.0, INF)
+	var dist_node: float = clamp((octree_node.center_pos - sphere_pos).length() - max_bounds_to_center_dist - sphere_radius, 0.0, INF)
 	if dist_node >= max_dist: return
 	
 	if !octree_node.is_leaf:
@@ -217,7 +217,7 @@ func get_placeforms_for_deletion():
 	
 	var placeforms_for_deletion := []
 	# Don't delete more than is exessive or actually overdense
-	var deletion_count := min(overlapped_member_data.size() - max_placements_allowed, overdense_member_data.size())
+	var deletion_count: int = min(overlapped_member_data.size() - max_placements_allowed, overdense_member_data.size())
 	var deletion_increment := float(deletion_count) / float(overdense_member_data.size())
 	var deletion_progress := 0.0
 	
@@ -303,7 +303,7 @@ func generate_raycast_positions():
 		for y in range(0, grid_linear_size):
 			if !placement_grid[x][y]: continue
 			var grid_coord := Vector2(x, y)
-			var UV_jitter := Vector2(rand_range(-jitter_fraction, jitter_fraction), rand_range(-jitter_fraction, jitter_fraction))
+			var UV_jitter := Vector2(randf_range(-jitter_fraction, jitter_fraction), randf_range(-jitter_fraction, jitter_fraction))
 			grid_coord += UV_jitter
 			var centered_UV := grid_coord_to_centered_UV(grid_coord)
 			
@@ -322,8 +322,8 @@ func generate_raycast_positions():
 	# Yet it doesn't 100% work on angled surfaces
 	# We still might go over max placements, hence the limit check below
 	# The percieved visual density should be unaffected though, especially at high (>= 0.5) jitter
-	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.empty():
-		raycast_positions.remove(randi() % raycast_positions.size())
+	while raycast_positions.size() + placement_overlaps.size() > max_placements_allowed && !raycast_positions.is_empty():
+		raycast_positions.remove_at(randi() % raycast_positions.size())
 
 
 
@@ -355,7 +355,7 @@ func grid_coord_to_local_pos(grid_coord:Vector2) -> Vector2:
 
 # Convert local position to grid coordinates
 # Resulting vector will try to fit in range (0, grid_linear_size)
-# (indexes might be outside the grid if positions lie outside, so the result usually should be clamped or rejected manually)
+# (indexes might be outside the grid if positions lie outside, so the result usually should be limit_length or rejected manually)
 func local_pos_to_grid_coord(local_pos:Vector2) -> Vector2:
 	if point_distance <= 0.0:
 		return Vector2.ZERO

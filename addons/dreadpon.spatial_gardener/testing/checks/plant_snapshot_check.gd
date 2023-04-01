@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 const GenericUtils = preload("../utility/generic_utils.gd")

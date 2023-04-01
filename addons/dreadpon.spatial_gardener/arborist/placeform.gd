@@ -1,11 +1,11 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 
 #-------------------------------------------------------------------------------
 # PLACEment transFORM
 # A pseudo-struct meant to store a placement (initial position), surface normal
-# Final Transform and an occupied octree octant (what part of the 2x2x2 cube it's in)
+# Final Transform3D and an occupied octree octant (what part of the 2x2x2 cube it's in)
 #
 # Originally was a resource, but after some quick tests, the overhead of having 
 # Thousands of Resources as simple containers became apparent
@@ -22,7 +22,7 @@ extends Reference
 # [3] - octree_octant
 
 
-static func mk(placement:Vector3 = Vector3(), surface_normal:Vector3 = Vector3(), transform:Transform = Transform(), octree_octant:int = 0) -> Array:
+static func mk(placement:Vector3 = Vector3(), surface_normal:Vector3 = Vector3(), transform:Transform3D = Transform3D(), octree_octant:int = 0) -> Array:
 	return [
 		# A designated position for an instance
 		placement, 

@@ -1,4 +1,4 @@
-tool
+@tool
 extends "ui_if_thumbnail_base.gd"
 
 

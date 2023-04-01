@@ -1,4 +1,4 @@
-tool
+@tool
 extends "ui_input_field.gd"
 
 
@@ -31,21 +31,21 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	real_slider.allow_greater = settings.allow_greater
 	real_slider.allow_lesser = settings.allow_lesser
 	real_slider.size_flags_vertical = SIZE_SHRINK_CENTER
-	real_slider.connect("value_changed", self, "_convert_and_request", ["PA_PropEdit"])
-	real_slider.connect("drag_ended", self, "_slider_drag_ended", ["PA_PropSet"])
+	real_slider.connect("value_changed",Callable(self,"_convert_and_request").bind("PA_PropEdit"))
+	real_slider.connect("drag_ended",Callable(self,"_slider_drag_ended").bind("PA_PropSet"))
 	
 	value_input = LineEdit.new()
 	value_input.name = "value_input"
 	value_input.size_flags_horizontal = SIZE_EXPAND_FILL
 	value_input.size_flags_stretch_ratio = 0.5
-	value_input.rect_min_size.x = 25.0
+	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
-	value_input.connect("focus_entered", self, "select_line_edit", [value_input, true])
-	value_input.connect("focus_exited", self, "select_line_edit", [value_input, false])
+	value_input.connect("focus_entered",Callable(self,"select_line_edit").bind(value_input, true))
+	value_input.connect("focus_exited",Callable(self,"select_line_edit").bind(value_input, false))
 	# focus_exited is our main signal to commit the value in LineEdit
 	# release_focus() is expected to be called when pressing enter and only then we commit the value
-	value_input.connect("focus_exited", self, "focus_lost", [value_input])
-	value_input.connect("gui_input", self, "on_node_received_input", [value_input])
+	value_input.connect("focus_exited",Callable(self,"focus_lost").bind(value_input))
+	value_input.connect("gui_input",Callable(self,"on_node_received_input").bind(value_input))
 	ThemeAdapter.assign_node_type(value_input, 'IF_LineEdit')
 
 
@@ -71,17 +71,17 @@ func _update_ui_to_val(val):
 	val = _string_to_val(val)
 	# So uhm... the signal is emitted when setting value through a variable too
 	# And I only want to emit it on UI interaction, so disconnect and then reconnect the signal
-	real_slider.disconnect("value_changed", self, "_convert_and_request")
+	real_slider.disconnect("value_changed",Callable(self,"_convert_and_request"))
 	real_slider.value = val
-	real_slider.connect("value_changed", self, "_convert_and_request", ["PA_PropEdit"])
+	real_slider.connect("value_changed",Callable(self,"_convert_and_request").bind("PA_PropEdit"))
 	
-	value_input.text = String(float(str("%.3f" % val)))
+	value_input.text = str(float(str("%.3f" % val)))
 	
-	._update_ui_to_val(val)
+	super._update_ui_to_val(val)
 
 
 func _slider_drag_ended(value_changed: bool, prop_action_class:String):
-	_convert_and_request(String(real_slider.value), prop_action_class)
+	_convert_and_request(str(real_slider.value), prop_action_class)
 
 
 func _convert_and_request(val, prop_action_class:String):

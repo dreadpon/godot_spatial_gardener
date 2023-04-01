@@ -1,16 +1,16 @@
-tool
+@tool
 extends MarginContainer
 
 
 const ThemeAdapter = preload("../theme_adapter.gd")
 
-export var arrow_down:Image = null
-export var arrow_right:Image = null
+@export var arrow_down:Image = null
+@export var arrow_right:Image = null
 
-var folded: bool = false setget set_folded
-var button_text: String = 'Section' setget set_button_text
+var folded: bool = false : set = set_folded
+var button_text: String = 'Section' : set = set_button_text
 var pending_children: Array = []
-var nesting_level: int = 0 setget set_nesting_level
+var nesting_level: int = 0 : set = set_nesting_level
 
 signal folding_state_changed(new_state)
 
@@ -24,8 +24,8 @@ func _ready():
 	set_nesting_level(nesting_level)
 	
 	if get_parent() is BoxContainer:
-		var separation = get_parent().get_constant('separation')
-		add_constant_override('margin_bottom', -separation)
+		var separation = get_parent().get_theme_constant('separation')
+		add_theme_constant_override('offset_bottom', -separation)
 
 
 func toggle_folded():

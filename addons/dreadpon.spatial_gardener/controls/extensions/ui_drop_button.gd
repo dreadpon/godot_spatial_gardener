@@ -1,4 +1,4 @@
-tool
+@tool
 extends Button
 
 
@@ -22,10 +22,10 @@ func _init():
 #-------------------------------------------------------------------------------
 
 
-func can_drop_data(position, data):
+func _can_drop_data(position, data):
 	if typeof(data) == TYPE_DICTIONARY && data.has("files") && data["files"].size() == 1:
 		return true
 
 
-func drop_data(position, data):
+func _drop_data(position, data):
 	emit_signal("dropped", data["files"][0])

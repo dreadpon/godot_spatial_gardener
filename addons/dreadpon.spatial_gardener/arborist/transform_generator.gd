@@ -1,4 +1,4 @@
-tool
+@tool
 
 
 #-------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ const Greenhouse_Plant = preload("../greenhouse/greenhouse_plant.gd")
 
 
 # Randomize an instance transform according to its Greenhouse_Plant settings
-static func generate_plant_transform(placement, normal, plant, randomizer) -> Transform:
+static func generate_plant_transform(placement, normal, plant, randomizer) -> Transform3D:
 	var up_vector_primary:Vector3 = get_dir_vector(plant.up_vector_primary_type, plant.up_vector_primary, normal)
 	var up_vector_secondary:Vector3 = get_dir_vector(plant.up_vector_secondary_type, plant.up_vector_secondary, normal)
 	var plant_up_vector:Vector3 = lerp(up_vector_primary, up_vector_secondary, plant.up_vector_blending).normalized()
@@ -32,9 +32,9 @@ static func generate_plant_transform(placement, normal, plant, randomizer) -> Tr
 	var plant_y_offset = lerp(plant.offset_y_range[0], plant.offset_y_range[1], randomizer.randf_range(0.0, 1.0)) * plant_scale
 	
 	var plant_rotation = Vector3(
-		deg2rad(lerp(-plant.rotation_random_x, plant.rotation_random_x, randomizer.randf_range(0.0, 1.0))),
-		deg2rad(lerp(-plant.rotation_random_y, plant.rotation_random_y, randomizer.randf_range(0.0, 1.0))),
-		deg2rad(lerp(-plant.rotation_random_z, plant.rotation_random_z, randomizer.randf_range(0.0, 1.0)))
+		deg_to_rad(lerp(-plant.rotation_random_x, plant.rotation_random_x, randomizer.randf_range(0.0, 1.0))),
+		deg_to_rad(lerp(-plant.rotation_random_y, plant.rotation_random_y, randomizer.randf_range(0.0, 1.0))),
+		deg_to_rad(lerp(-plant.rotation_random_z, plant.rotation_random_z, randomizer.randf_range(0.0, 1.0)))
 	)
 	
 	var plant_basis:Basis = Basis()
@@ -59,14 +59,14 @@ static func generate_plant_transform(placement, normal, plant, randomizer) -> Tr
 	plant_basis.z *= plant_scale.z
 	
 	var plant_origin = placement + plant_y_offset * plant_basis.y.normalized()
-	var plant_transform = Transform(plant_basis, plant_origin)
+	var plant_transform = Transform3D(plant_basis, plant_origin)
 	return plant_transform
 
 
 # See slope_allowedRange in Greenhouse_Plant
 static func is_plant_slope_allowed(normal, plant) -> bool:
 	var up_vector_primary:Vector3 = get_dir_vector(plant.up_vector_primary_type, plant.up_vector_primary, normal)
-	var slope_angle = abs(rad2deg(up_vector_primary.angle_to(normal)))
+	var slope_angle = abs(rad_to_deg(up_vector_primary.angle_to(normal)))
 	return slope_angle >= plant.slope_allowed_range[0] && slope_angle <= plant.slope_allowed_range[1]
 
 

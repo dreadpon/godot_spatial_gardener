@@ -1,5 +1,5 @@
-tool
-extends Spatial
+@tool
+extends Node3D
 
 
 #-------------------------------------------------------------------------------
@@ -37,14 +37,14 @@ const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 var plugin_version: String = ""
 var storage_version: int = 0
 #export
-var refresh_octree_shared_LOD_variants:bool = false setget set_refresh_octree_shared_LOD_variants
+var refresh_octree_shared_LOD_variants:bool = false : set = set_refresh_octree_shared_LOD_variants
 
 # file_management
-var garden_work_directory:String setget set_garden_work_directory
+var garden_work_directory:String : set = set_garden_work_directory
 # gardening
-var gardening_collision_mask := pow(2, 0) setget set_gardening_collision_mask
+var gardening_collision_mask := pow(2, 0) : set = set_gardening_collision_mask
 
-var initialized_for_edit:bool = false setget set_initialized_for_edit
+var initialized_for_edit:bool = false : set = set_initialized_for_edit
 var is_edited: bool = false
 
 var toolshed:Toolshed = null
@@ -61,7 +61,7 @@ var _side_panel:UI_SidePanel = null
 var ui_category_brushes:Control = null
 var ui_category_plants:Control = null
 
-var painting_node:Spatial = null
+var painting_node:Node3D = null
 
 var logger = null
 var forward_input_events:bool = true
@@ -90,11 +90,11 @@ func update_plugin_ver():
 
 
 static func get_plugin_ver():
-	return '1.2.0'
+	return '1.3.0'
 
 
 static func get_storage_ver():
-	return 2
+	return 3
 
 
 func _ready():
@@ -104,12 +104,12 @@ func _ready():
 	
 	# Without editor we only care about an Arborist
 	# But it is already self-sufficient, so no need to initialize it
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	if has_node('painting'):
 		painting_node = get_node('painting')
 	else:
-		painting_node = Spatial.new()
+		painting_node = Node3D.new()
 		painting_node.name = "painting"
 		add_child(painting_node)
 	
@@ -134,9 +134,9 @@ func _enter_tree():
 
 
 func _exit_tree():
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
-	apply_changes()
+	_apply_changes()
 	stop_editing()
 
 
@@ -145,8 +145,8 @@ func _process(delta):
 		painter.update(delta)
 
 
-func apply_changes():
-	if !Engine.editor_hint: return
+func _apply_changes():
+	if !Engine.is_editor_hint(): return
 	
 	save_toolshed()
 	save_greenhouse()
@@ -155,9 +155,9 @@ func apply_changes():
 #	init_arborist()
 
 
-func add_child(node:Node, legible_unique_name:bool = false):
-	.add_child(node, legible_unique_name)
-	update_configuration_warning()
+func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode = 0):
+	super.add_child(node, legible_unique_name)
+	update_configuration_warnings()
 
 
 
@@ -181,7 +181,7 @@ func forwarded_input(camera, event):
 
 # A hack to propagate editor camera
 # Should be called by plugin.gd
-func propagate_camera(camera:Camera):
+func propagate_camera(camera:Camera3D):
 	if arborist:
 		arborist.active_camera_override = camera
 
@@ -197,7 +197,7 @@ func propagate_camera(camera:Camera):
 # Instead of recalculating everything, we hope it's enough to just restore the member references
 func restore_references():
 	logger = Logger.get_for(self, name)
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	
 	if has_node('painting'):
 		painting_node = get_node('painting')
@@ -219,10 +219,10 @@ func restore_references():
 # Assumed to be the first manager to initialize
 func init_painter():
 	painter = Painter.new(painting_node)
-	painter.connect("stroke_updated", self, "on_painter_stroke_updated")
-	painter.connect("changed_active_brush_prop", self, "on_changed_active_brush_prop")
-	painter.connect("stroke_started", self, "on_painter_stroke_started")
-	painter.connect("stroke_finished", self, "on_painter_stroke_finished")
+	painter.connect("stroke_updated",Callable(self,"on_painter_stroke_updated"))
+	painter.connect("changed_active_brush_prop",Callable(self,"on_changed_active_brush_prop"))
+	painter.connect("stroke_started",Callable(self,"on_painter_stroke_started"))
+	painter.connect("stroke_finished",Callable(self,"on_painter_stroke_finished"))
 
 
 # Initialize the Arborist and connect it to other objects
@@ -255,7 +255,7 @@ func reload_resources():
 	var last_toolshed = toolshed
 	var last_greenhouse = greenhouse
 	
-	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED(), false)
+	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED(), false) as Toolshed
 	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres", null, false)
 	if !toolshed: 
 		toolshed = Toolshed.new()
@@ -268,20 +268,20 @@ func reload_resources():
 	greenhouse.set_undo_redo(_undo_redo)
 	
 	if last_toolshed:
-		last_toolshed.disconnect("prop_action_executed", self, "on_toolshed_prop_action_executed")
-		last_toolshed.disconnect("prop_action_executed_on_brush", self, "on_toolshed_prop_action_executed_on_brush")
+		last_toolshed.disconnect("prop_action_executed",Callable(self,"on_toolshed_prop_action_executed"))
+		last_toolshed.disconnect("prop_action_executed_on_brush",Callable(self,"on_toolshed_prop_action_executed_on_brush"))
 	FunLib.ensure_signal(toolshed, "prop_action_executed", self, "on_toolshed_prop_action_executed")
 	FunLib.ensure_signal(toolshed, "prop_action_executed_on_brush", self, "on_toolshed_prop_action_executed_on_brush")
 	
 	if last_greenhouse:
-		last_greenhouse.disconnect("prop_action_executed", self, "on_greenhouse_prop_action_executed")
-		last_greenhouse.disconnect("prop_action_executed_on_plant_state", self, "on_greenhouse_prop_action_executed_on_plant_state")
-		last_greenhouse.disconnect("prop_action_executed_on_plant_state_plant", self, "on_greenhouse_prop_action_executed_on_plant_state_plant")
-		last_greenhouse.disconnect("prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
-		last_greenhouse.disconnect("req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
-		last_greenhouse.disconnect("req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
-		last_greenhouse.disconnect("req_import_transforms", self, "on_greenhouse_req_import_transforms")
-		last_greenhouse.disconnect("req_export_transforms", self, "on_greenhouse_req_export_transforms")
+		last_greenhouse.disconnect("prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
+		last_greenhouse.disconnect("prop_action_executed_on_plant_state",Callable(self,"on_greenhouse_prop_action_executed_on_plant_state"))
+		last_greenhouse.disconnect("prop_action_executed_on_plant_state_plant",Callable(self,"on_greenhouse_prop_action_executed_on_plant_state_plant"))
+		last_greenhouse.disconnect("prop_action_executed_on_LOD_variant",Callable(self,"on_greenhouse_prop_action_executed_on_LOD_variant"))
+		last_greenhouse.disconnect("req_octree_reconfigure",Callable(self,"on_greenhouse_req_octree_reconfigure"))
+		last_greenhouse.disconnect("req_octree_recenter",Callable(self,"on_greenhouse_req_octree_recenter"))
+		last_greenhouse.disconnect("req_import_transforms",Callable(self,"on_greenhouse_req_import_transforms"))
+		last_greenhouse.disconnect("req_export_transforms",Callable(self,"on_greenhouse_req_export_transforms"))
 	FunLib.ensure_signal(greenhouse, "prop_action_executed", self, "on_greenhouse_prop_action_executed")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state", self, "on_greenhouse_prop_action_executed_on_plant_state")
 	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state_plant", self, "on_greenhouse_prop_action_executed_on_plant_state_plant")
@@ -316,8 +316,8 @@ func pair_arborist_greenhouse():
 	# We could duplicate an array, but that's additional overhead so we assume Arborist won't change it
 	arborist.setup(greenhouse.greenhouse_plant_states)
 	
-	if !arborist.is_connected("member_count_updated", greenhouse, "plant_count_updated"):
-		arborist.connect("member_count_updated", greenhouse, "plant_count_updated")
+	if !arborist.is_connected("member_count_updated",Callable(greenhouse,"plant_count_updated")):
+		arborist.connect("member_count_updated",Callable(greenhouse,"plant_count_updated"))
 
 
 func pair_debug_viewer_greenhouse():
@@ -336,8 +336,8 @@ func pair_debug_viewer_arborist():
 		if !arborist: logger.warn("DebugViewer->Arborist: Arborist is not initialized!")
 		return
 	
-	if !arborist.is_connected("req_debug_redraw", debug_viewer, "request_debug_redraw"):
-		arborist.connect("req_debug_redraw", debug_viewer, "request_debug_redraw")
+	if !arborist.is_connected("req_debug_redraw",Callable(debug_viewer,"request_debug_redraw")):
+		arborist.connect("req_debug_redraw",Callable(debug_viewer,"request_debug_redraw"))
 
 
 
@@ -354,7 +354,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 	_undo_redo = __undoRedo
 	
 	_side_panel = __side_panel
-	connect("changed_initialized_for_edit", _side_panel, "set_main_control_state")
+	connect("changed_initialized_for_edit",Callable(_side_panel,"set_main_control_state"))
 	
 	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
 	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
@@ -381,7 +381,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 # Stop editing (painting) a scene
 func stop_editing():
 	if is_instance_valid(_side_panel):
-		disconnect("changed_initialized_for_edit", _side_panel, "set_main_control_state")
+		disconnect("changed_initialized_for_edit",Callable(_side_panel,"set_main_control_state"))
 		_side_panel = null
 	
 	if is_instance_valid(painter):
@@ -436,7 +436,7 @@ func set_garden_work_directory(val):
 	var changed = garden_work_directory != val
 	garden_work_directory = val
 	
-	if !Engine.editor_hint: return
+	if !Engine.is_editor_hint(): return
 	# If we changed a directory, reload everything that resides there
 	if changed:
 		if is_inside_tree():
@@ -716,7 +716,7 @@ func _get_property_list():
 
 
 # Warning to be displayed in editor SceneTree
-func _get_configuration_warning():
+func _get_configuration_warnings():
 	var arborist_check = get_node("Arborist")
 	if arborist_check && arborist_check is Arborist:
 		return ""

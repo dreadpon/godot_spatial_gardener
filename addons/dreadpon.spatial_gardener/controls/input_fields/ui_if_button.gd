@@ -1,4 +1,4 @@
-tool
+@tool
 extends "ui_input_field.gd"
 
 
@@ -29,7 +29,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.size_flags_horizontal = SIZE_EXPAND_FILL
 	button.size_flags_vertical = SIZE_SHRINK_CENTER
 	button.text = settings.button_text
-	button.connect("pressed", self, "on_button_pressed")
+	button.connect("pressed",Callable(self,"on_pressed"))
 	ThemeAdapter.assign_node_type(button, 'InspectorButton')
 
 
@@ -47,5 +47,5 @@ func _ready():
 #-------------------------------------------------------------------------------
 
 
-func on_button_pressed():
+func on_pressed():
 	emit_signal("pressed")

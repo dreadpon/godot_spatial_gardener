@@ -1,4 +1,4 @@
-tool
+@tool
 extends "../test_base.gd"
 
 
@@ -18,9 +18,9 @@ const PA_ArrayRemove = preload("../../../utility/input_field_resource/pa_array_r
 const PA_ArraySet = preload("../../../utility/input_field_resource/pa_array_set.gd")
 
 
-export(String, DIR) var greenhouse_path:String = ""
+@export var greenhouse_path:String = "" # (String, DIR)
 var gardener:Gardener = null
-var editor_selection:EditorSelection = null setget set_editor_selection
+var editor_selection:EditorSelection = null : set = set_editor_selection
 
 var painting_data:Array = []
 var painter_script:Array = []
@@ -81,7 +81,7 @@ func select_brush(index:int):
 
 
 func execute():
-	.execute()
+	super.execute()
 	create_and_start_gardener_editing()
 	gardener.forward_input_events = false
 	stage = 0
@@ -91,7 +91,7 @@ func finish_execution(results:Array = []):
 	if gardener:
 		gardener.visible = false
 		gardener.forward_input_events = true
-	.finish_execution(results)
+	super.finish_execution(results)
 
 
 func execute_next_stage():
@@ -101,7 +101,7 @@ func execute_next_stage():
 func _process(delta):
 	if !is_executing: return
 	
-	if !painter_script.empty():
+	if !painter_script.is_empty():
 		var painter_action = painter_script.pop_front()
 		GardenerScript.execute_painter_action(gardener.painter, painter_action)
 		finished_painter_action(painter_action)
