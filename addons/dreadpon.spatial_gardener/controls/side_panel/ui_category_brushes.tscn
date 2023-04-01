@@ -1,25 +1,17 @@
-[gd_scene format=2]
+[gd_scene format=3 uid="uid://2fwp1t7pk0r"]
 
 [node name="UI_Category_Brushes" type="VBoxContainer"]
 offset_right = 348.0
 offset_bottom = 112.0
 
 [node name="PanelContainer_Category" type="PanelContainer" parent="."]
-offset_right = 348.0
-offset_bottom = 28.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Label_Category" type="Label" parent="PanelContainer_Category"]
-offset_left = 7.0
-offset_top = 7.0
-offset_right = 341.0
-offset_bottom = 21.0
+layout_mode = 2
 text = "Brushes"
-align = 1
 
 [node name="TabContainer_Brushes" type="TabContainer" parent="."]
-offset_top = 32.0
-offset_right = 348.0
-offset_bottom = 112.0
+layout_mode = 2
 size_flags_vertical = 3
-tab_alignment = 0

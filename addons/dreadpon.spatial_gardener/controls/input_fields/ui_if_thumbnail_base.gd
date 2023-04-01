@@ -42,7 +42,8 @@ signal requested_edit_input_fields
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
+	super(__init_val, __labelText, __prop_name, settings)
 	set_meta("class", "UI_IF_ThumbnailArray")
 	
 	_base_control = settings._base_control

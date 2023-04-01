@@ -271,7 +271,7 @@ func set_features_val_to_flag(flag:int, val):
 			InteractionFlags.PRESS:
 				selection_panel_nd.visible = val
 			InteractionFlags.CHECK:
-				check_box_nd.pressed = val
+				check_box_nd.button_pressed = val
 			InteractionFlags.EDIT_LABEL:
 				if label_line_edit_nd.text != val:
 					label_line_edit_nd.text = val

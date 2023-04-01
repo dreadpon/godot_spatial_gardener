@@ -6,16 +6,13 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
 [application]
 
 config/name="Dreadpon's Spatial Gardener"
+config/features=PackedStringArray("4.0")
 config/icon="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.png"
-
-[editor_plugins]
-
-enabled=PoolStringArray(  )
 
 [physics]
 

@@ -1,8 +1,9 @@
 [remap]
 
 importer="texture"
-type="StreamTexture"
-path="res://.import/gardener_icon.svg-e2120aea76615a63bbcfff6c6cc8c0a1.stex"
+type="CompressedTexture2D"
+uid="uid://dlwmeq6qr0vqn"
+path="res://.godot/imported/gardener_icon.svg-e2120aea76615a63bbcfff6c6cc8c0a1.ctex"
 metadata={
 "vram_texture": false
 }
@@ -10,26 +11,27 @@ metadata={
 [deps]
 
 source_file="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.svg"
-dest_files=[ "res://.import/gardener_icon.svg-e2120aea76615a63bbcfff6c6cc8c0a1.stex" ]
+dest_files=["res://.godot/imported/gardener_icon.svg-e2120aea76615a63bbcfff6c6cc8c0a1.ctex"]
 
 [params]
 
 compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
-compress/hdr_mode=0
-compress/bptc_ldr=0
+compress/hdr_compression=1
 compress/normal_map=0
-flags/repeat=0
-flags/filter=true
-flags/mipmaps=false
-flags/anisotropic=false
-flags/srgb=2
+compress/channel_pack=0
+mipmaps/generate=false
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
 process/fix_alpha_border=true
 process/premult_alpha=false
-process/HDR_as_SRGB=false
-process/invert_color=false
 process/normal_map_invert_y=false
-stream=false
-size_limit=0
-detect_3d=true
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
 svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

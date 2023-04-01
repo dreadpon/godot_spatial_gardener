@@ -1,18 +1,13 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://b1r8m47n3hvh4"]
 
-[ext_resource path="res://addons/dreadpon.spatial_gardener/controls/input_fields/dialog_if/ui_dialog_if.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/controls/input_fields/dialog_if/ui_dialog_if.gd" id="1"]
 
 [node name="UI_Dialog_IF" type="Window"]
-offset_right = 371.0
-offset_bottom = 203.0
-window_title = "Apply Changes"
-resizable = true
-script = ExtResource( 1 )
-__meta__ = {
-"class": "UI_Dialog_IF"
-}
+script = ExtResource("1")
+metadata/class = "UI_Dialog_IF"
 
 [node name="VBoxContainer_Main" type="VBoxContainer" parent="."]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
@@ -21,45 +16,25 @@ offset_right = -4.0
 offset_bottom = -4.0
 
 [node name="PanelContainer_Fields" type="PanelContainer" parent="VBoxContainer_Main"]
-offset_right = 363.0
-offset_bottom = 147.0
+layout_mode = 2
 size_flags_vertical = 3
 
 [node name="VBoxContainer_Fields" type="VBoxContainer" parent="VBoxContainer_Main/PanelContainer_Fields"]
-offset_left = 7.0
-offset_top = 7.0
-offset_right = 356.0
-offset_bottom = 140.0
+layout_mode = 2
 
 [node name="MarginContainer_Actions" type="MarginContainer" parent="VBoxContainer_Main"]
-offset_top = 151.0
-offset_right = 363.0
-offset_bottom = 191.0
-custom_constants/offset_right = 10
-custom_constants/offset_top = 10
-custom_constants/offset_left = 10
-custom_constants/offset_bottom = 10
-__meta__ = {
-"_edit_use_anchors_": false
-}
+layout_mode = 2
 
 [node name="HBoxContainer_Actions" type="HBoxContainer" parent="VBoxContainer_Main/MarginContainer_Actions"]
-offset_left = 120.0
-offset_top = 10.0
-offset_right = 242.0
-offset_bottom = 30.0
+layout_mode = 2
 size_flags_horizontal = 6
-custom_constants/separation = 20
 
 [node name="Button_Apply" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
-offset_right = 48.0
-offset_bottom = 20.0
+layout_mode = 2
 text = "Apply"
 
 [node name="Button_Cancel" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
-offset_left = 68.0
-offset_right = 122.0
-offset_bottom = 20.0
+layout_mode = 2
 text = "Cancel"
 
 [connection signal="about_to_popup" from="." to="." method="_on_about_to_show"]

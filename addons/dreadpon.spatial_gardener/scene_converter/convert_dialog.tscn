@@ -1,100 +1,71 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://uhmxpabnq061"]
 
-[ext_resource path="res://addons/dreadpon.spatial_gardener/scene_converter/convert_dialog.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/scene_converter/convert_dialog.gd" id="1"]
 
 [node name="ConvertDialog" type="Window"]
-visible = true
-offset_right = 522.0
-offset_bottom = 365.0
-window_title = "Outdated Node3D Gardener scenes were found"
-resizable = true
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
-offset_left = 7.0
-offset_top = 7.0
-offset_right = 515.0
-offset_bottom = 358.0
+layout_mode = 2
 
 [node name="LabelInfo" type="Label" parent="PanelContainer/VBoxContainer"]
-offset_right = 508.0
-offset_bottom = 14.0
+layout_mode = 2
 size_flags_horizontal = 3
 text = "The following outdated Node3D Gardener scenes were found:"
-autowrap = true
 
 [node name="TreeScenes" type="Tree" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
-offset_top = 18.0
-offset_right = 508.0
-offset_bottom = 236.0
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 allow_reselect = true
 
 [node name="LabelPrompt" type="Label" parent="PanelContainer/VBoxContainer"]
-offset_top = 240.0
-offset_right = 508.0
-offset_bottom = 271.0
+layout_mode = 2
 size_flags_horizontal = 3
 text = "Would you like to convert them to the current version?
 (results wll be in the console/output)"
-autowrap = true
 
 [node name="ButtonBackup" type="CheckBox" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
-offset_top = 275.0
-offset_right = 508.0
-offset_bottom = 299.0
+layout_mode = 2
 text = "Create backup duplicates"
 
 [node name="ButtonDontAskAgain" type="CheckBox" parent="PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
-offset_top = 303.0
-offset_right = 508.0
-offset_bottom = 327.0
+layout_mode = 2
 text = "Don't ask me again"
 
 [node name="ActionButtons" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
-offset_top = 331.0
-offset_right = 508.0
-offset_bottom = 351.0
+layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 
 [node name="Spacer" type="Control" parent="PanelContainer/VBoxContainer/ActionButtons"]
-offset_right = 125.0
-offset_bottom = 20.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="ButtonConfirm" type="Button" parent="PanelContainer/VBoxContainer/ActionButtons"]
 unique_name_in_owner = true
-offset_left = 129.0
-offset_right = 190.0
-offset_bottom = 20.0
+layout_mode = 2
 text = "Convert"
 
 [node name="Spacer2" type="Control" parent="PanelContainer/VBoxContainer/ActionButtons"]
-offset_left = 194.0
-offset_right = 320.0
-offset_bottom = 20.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="ButtonCancel" type="Button" parent="PanelContainer/VBoxContainer/ActionButtons"]
 unique_name_in_owner = true
-offset_left = 324.0
-offset_right = 378.0
-offset_bottom = 20.0
+layout_mode = 2
 text = "Cancel"
 
 [node name="Spacer3" type="Control" parent="PanelContainer/VBoxContainer/ActionButtons"]
-offset_left = 382.0
-offset_right = 508.0
-offset_bottom = 20.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [connection signal="about_to_popup" from="." to="." method="_on_ConvertDialog_about_to_show"]

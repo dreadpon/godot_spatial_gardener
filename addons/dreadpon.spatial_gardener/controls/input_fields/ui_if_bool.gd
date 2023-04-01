@@ -17,7 +17,7 @@ var bool_check:CheckBox = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settings:Dictionary = {},__init_val,__labelText,__prop_name,settings):
 	set_meta("class", "UI_IF_Bool")
 	
 	bool_check = CheckBox.new()
@@ -47,5 +47,5 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 
 func _update_ui_to_val(val):
-	bool_check.pressed = val
+	bool_check.button_pressed = val
 	super._update_ui_to_val(val)

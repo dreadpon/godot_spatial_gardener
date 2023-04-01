@@ -18,7 +18,8 @@ var value_input:LineEdit = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
+func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
+	super(__init_val, __labelText, __prop_name, settings)
 set_meta("class", "UI_IF_IntLineEdit")
 	
 	value_input = LineEdit.new()

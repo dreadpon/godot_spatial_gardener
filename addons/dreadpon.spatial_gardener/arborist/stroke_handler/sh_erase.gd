@@ -9,8 +9,8 @@ extends "stroke_handler.gd"
 # Remove members from an octree according to the target density
 
 
-func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int).(
-	_brush, _plant_states, _octree_managers, _space_state, _camera, _collision_mask):
+func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState, _camera: Camera, _collision_mask:int):
+	super(_brush, _plant_states, _octree_managers, _space_state, _camera, _collision_mask)
 		set_meta("class", "SH_Erase")
 
 

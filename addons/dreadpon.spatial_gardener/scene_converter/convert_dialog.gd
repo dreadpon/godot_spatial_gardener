@@ -59,5 +59,5 @@ func _on_ButtonDontAskAgain_toggled(pressed):
 
 
 func _on_ConvertDialog_about_to_show():
-	$'%ButtonBackup'.pressed = true
-	$'%ButtonDontAskAgain'.pressed = false
+	$'%ButtonBackup'.button_pressed = true
+	$'%ButtonDontAskAgain'.button_pressed = false
