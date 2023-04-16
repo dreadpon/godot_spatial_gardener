@@ -23,7 +23,7 @@ func _ready():
 	set_button_text(button_text)
 	set_nesting_level(nesting_level)
 	
-	if get_parent() is BoxContainer:
+	if is_instance_of(get_parent(), BoxContainer):
 		var separation = get_parent().get_theme_constant('separation')
 		add_theme_constant_override('offset_bottom', -separation)
 
@@ -37,7 +37,7 @@ func set_folded(val):
 	if is_inside_tree():
 		$VBoxContainer_Main/HBoxContainer_Offset.visible = !folded
 		$VBoxContainer_Main/Button_Fold.icon.image = arrow_right if folded else arrow_down
-	emit_signal('folding_state_changed', folded)
+	folding_state_changed.emit(folded)
 
 
 func set_button_text(val):

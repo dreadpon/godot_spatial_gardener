@@ -163,12 +163,12 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 				_base_control, _resource_previewer, ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"])
 			var settings := {"button_text": "Configure Octree", "_base_control": _base_control, "bound_input_fields": bound_input_fields}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
-			input_field.connect("applied_changes",Callable(self,"on_dialog_if_applied_changes").bind(input_field))
-			input_field.connect("cancelled_changes",Callable(self,"on_dialog_if_cancelled_changes").bind(input_field))
+			input_field.applied_changes.connect(on_dialog_if_applied_changes.bind(input_field))
+			input_field.cancelled_changes.connect(on_dialog_if_cancelled_changes.bind(input_field))
 		"octree/octree_recenter_button":
 			var settings := {"button_text": "Recenter Octree"}
 			input_field = UI_IF_Button.new(octree_recenter_button, "Octree Centring", prop, settings)
-			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
+			input_field.pressed.connect(on_if_button.bind(input_field))
 		#======================================================
 		"density/density_per_units":
 			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_density_slider_max_value", 2000.0)
@@ -277,11 +277,11 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 		"import_export/import_button":
 			var settings := {"button_text": "Import"}
 			input_field = UI_IF_Button.new(import_export_import_button, "Import Transforms", prop, settings)
-			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
+			input_field.pressed.connect(on_if_button.bind(input_field))
 		"import_export/export_button":
 			var settings := {"button_text": "Export"}
 			input_field = UI_IF_Button.new(import_export_export_button, "Export Transforms", prop, settings)
-			input_field.connect("pressed",Callable(self,"on_if_button").bind(input_field))
+			input_field.pressed.connect(on_if_button.bind(input_field))
 	
 	return input_field
 
@@ -298,7 +298,7 @@ func on_changed_LOD_variant():
 
 
 func reconfigure_octree():
-	emit_signal("req_octree_reconfigure")
+	req_octree_reconfigure.emit()
 
 
 
@@ -315,8 +315,8 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 	var index = mesh_LOD_variants.find(LOD_variant)
 	var update_thumbnail = prop_action.prop == "mesh"
 	if update_thumbnail:
-		emit_signal("prop_action_executed", PA_ArraySet.new("mesh/mesh_LOD_variants", LOD_variant, index), mesh_LOD_variants)
-	emit_signal("prop_action_executed_on_LOD_variant", prop_action, final_val, LOD_variant)
+		prop_action_executed", PA_ArraySet.new("mesh/mesh_LOD_variants.emit(LOD_variant, index), mesh_LOD_variants)
+	prop_action_executed_on_LOD_variant.emit(prop_action, final_val, LOD_variant)
 
 
 
@@ -330,7 +330,7 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 func on_dialog_if_applied_changes(initial_values:Array, final_values:Array, input_field:UI_InputField):
 	match input_field.prop_name:
 		"octree/octree_reconfigure_button":
-			_undo_redo.create_action("Reconfigure Octree")
+			_undo_redo.create_action("Reconfigure Octree", 0, self)
 			_undo_redo.add_do_method(input_field, "set_values", final_values)
 			_undo_redo.add_do_method(self, "reconfigure_octree")
 			_undo_redo.add_undo_method(input_field, "set_values", initial_values)
@@ -347,11 +347,11 @@ func on_dialog_if_cancelled_changes(input_field:UI_InputField):
 func on_if_button(input_field:UI_InputField):
 	match input_field.prop_name:
 		"octree/octree_recenter_button":
-			emit_signal("req_octree_recenter")
+			req_octree_recenter.emit()
 		"import_export/import_button":
-			emit_signal("req_import_transforms")
+			req_import_transforms.emit()
 		"import_export/export_button":
-			emit_signal("req_export_transforms")
+			req_export_transforms.emit()
 
 
 
@@ -366,11 +366,11 @@ func _modify_prop(prop:String, val):
 		"mesh/mesh_LOD_variants":
 			# TODO retain Greenhouse_LODVariant if it already exists when drag-and-dropping a .mesh or a .tscn resource
 			for i in range(0, val.size()):
-				if !(val[i] is Greenhouse_LODVariant):
+				if !is_instance_of(val[i], Greenhouse_LODVariant):
 					val[i] = Greenhouse_LODVariant.new()
 				
-				FunLib.ensure_signal(val[i], "changed", self, "on_changed_LOD_variant")
-				FunLib.ensure_signal(val[i], "prop_action_executed", self, "on_prop_action_executed_on_LOD_variant", [val[i]])
+				FunLib.ensure_signal(val[i].changed, on_changed_LOD_variant)
+				FunLib.ensure_signal(val[i].prop_action_executed, on_prop_action_executed_on_LOD_variant, [val[i]])
 				
 				if val[i]._undo_redo != _undo_redo:
 					val[i].set_undo_redo(_undo_redo)
@@ -412,10 +412,10 @@ func _modify_prop(prop:String, val):
 func request_prop_action(prop_action:PropAction):
 	match prop_action.prop:
 		"mesh/mesh_LOD_variants":
-			if prop_action is PA_ArraySet:
+			if is_instance_of(prop_action, PA_ArraySet):
 				
 				var new_prop_action = null
-				if prop_action.val is PackedScene:
+				if is_instance_of(prop_action.val, PackedScene):
 					new_prop_action = PA_PropSet.new("spawned_spatial", prop_action.val)
 				else:
 					for mesh_class in Globals.MESH_CLASSES:

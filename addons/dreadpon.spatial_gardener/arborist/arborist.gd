@@ -50,8 +50,7 @@ var active_painting_changes:PaintingChanges = null
 #var exit_instance_placement:bool
 #var done_instance_placement:bool
 
-var _undo_redo:UndoRedo = null
-var apply_undo_redo:bool = true
+var _undo_redo:EditorUndoRedoManager = null
 
 var debug_redraw_requested_managers:Array = []
 
@@ -94,7 +93,7 @@ func _ready():
 	owner = get_tree().get_edited_scene_root()
 	
 	MMI_container = get_node_or_null("MMI_container")
-	if MMI_container && !(MMI_container is Node3D):
+	if MMI_container && !is_instance_of(MMI_container, Node3D):
 		remove_child(MMI_container)
 		MMI_container = null
 	if !MMI_container:
@@ -260,14 +259,14 @@ func recenter_octree(plant_state, plant_index:int):
 
 # Connect all OctreeManager signals
 func connect_octree_manager(octree_manager:MMIOctreeManager):
-	if !octree_manager.is_connected("req_debug_redraw",Callable(self,"on_req_debug_redraw")):
-		octree_manager.connect("req_debug_redraw",Callable(self,"on_req_debug_redraw").bind(octree_manager))
+	if !octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
+		octree_manager.req_debug_redraw.connect(on_req_debug_redraw.bind(octree_manager))
 
 
 # Disconnect all OctreeManager signals
 func disconnect_octree_manager(octree_manager:MMIOctreeManager):
-	if octree_manager.is_connected("req_debug_redraw",Callable(self,"on_req_debug_redraw")):
-		octree_manager.disconnect("req_debug_redraw",Callable(self,"on_req_debug_redraw"))
+	if octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
+		octree_manager.req_debug_redraw.disconnect(on_req_debug_redraw)
 
 
 
@@ -340,19 +339,17 @@ func on_stroke_updated(brush_data:Dictionary):
 	debug_print_lifecycle("Total stroke %s update took: %s" % [active_stroke_handler.get_meta("class"), FunLib.msec_to_time(msec_end - msec_start)])
 
 
-# Use collected PaintingChanges to add UndoRedo actions
+# Use collected PaintingChanges to add EditorUndoRedoManager actions
 func on_stroke_finished():
 	assert(active_stroke_handler)
 	assert(active_painting_changes)
 	
-	_undo_redo.create_action("Apply Arborist MMI changes")
+	_undo_redo.create_action("Apply Arborist MMI changes", 0, self)
 	_undo_redo.add_do_method(self, "_action_apply_changes", active_painting_changes)
 	_undo_redo.add_undo_method(self, "_action_apply_changes", active_painting_changes.pop_opposite())
 	
 	# We toggle this flag to avoid reapplying already commited changes all over again
-	apply_undo_redo = false
-	_undo_redo.commit_action()
-	apply_undo_redo = true
+	_undo_redo.commit_action(false)
 	
 	debug_print_lifecycle("Stroke %s finished, total changes made: %d" % [active_stroke_handler.get_meta("class"), active_painting_changes.changes.size()])
 	
@@ -362,8 +359,6 @@ func on_stroke_finished():
 
 # A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
 func _action_apply_changes(changes):
-	if !apply_undo_redo: return
-	
 #	mutex_placement.lock()
 	apply_stroke_update_changes(changes)
 #	mutex_placement.unlock()
@@ -414,7 +409,7 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 
 
 func emit_member_count(octree_index:int):
-	emit_signal("member_count_updated", octree_index, octree_managers[octree_index].root_octree_node.get_nested_member_count())
+	member_count_updated.emit(octree_index, octree_managers[octree_index].root_octree_node.get_nested_member_count())
 
 
 func _process(delta):
@@ -528,7 +523,7 @@ func export_instance_transforms(file_path: String, plant_idx: int):
 
 
 func _unhandled_input(event):
-	if event is InputEventKey && !event.pressed:
+	if is_instance_of(event, InputEventKey) && !event.pressed:
 		if event.keycode == debug_get_dump_tree_key():
 			for octree_manager in octree_managers:
 				logger.info(octree_manager.root_octree_node.debug_dump_tree())
@@ -592,7 +587,7 @@ func _get_property_list():
 
 func _get_configuration_warnings():
 	var MMI_container_check = get_node("MMI_container")
-	if MMI_container_check && MMI_container_check is Node3D:
+	if MMI_container_check && is_instance_of(MMI_container_check, Node3D):
 		return ""
 	else:
 		return "Arborist is missing a valid MMI_container child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"
@@ -634,7 +629,7 @@ func request_debug_redraw():
 		requested_indexes.append(octree_managers.find(octree_manager))
 	
 	if !requested_indexes.is_empty():
-		emit_signal("req_debug_redraw", octree_managers)
+		req_debug_redraw.emit(octree_managers)
 	debug_redraw_requested_managers = []
 
 

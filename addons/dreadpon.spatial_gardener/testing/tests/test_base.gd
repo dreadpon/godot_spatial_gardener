@@ -9,7 +9,7 @@ const FunLib = preload("../../utility/fun_lib.gd")
 
 @export var do_execute:bool = false : set = set_do_execute
 var logger = null
-var undo_redo:UndoRedo = null : set = set_undo_redo
+var undo_redo:EditorUndoRedoManager = null : set = set_undo_redo
 var is_executing:bool = false
 
 signal finished_execution(result)
@@ -36,7 +36,7 @@ func execute():
 
 func finish_execution(results:Array = []):
 	is_executing = false
-	emit_signal("finished_execution", results)
+	finished_execution.emit(results)
 
 
 func set_undo_redo(val):
@@ -68,6 +68,7 @@ func print_and_get_result(list_index:int, error_counters:Dictionary):
 func execute_undo_redo_sequence(intervals:Array, undoable_action_count:int, callback_binds:Array = []):
 	var current_action_index := undoable_action_count
 	var callback_return_value = null
+	var history_undo_redo = undo_redo.get_history_undo_redo(undo_redo.get_object_history_id(self))
 	
 	for index in intervals:
 		while current_action_index != index:
@@ -75,11 +76,11 @@ func execute_undo_redo_sequence(intervals:Array, undoable_action_count:int, call
 			if current_action_index > index:
 				current_action_index -= 1
 				action_name = "Undo: %s" % [undo_redo.get_current_action_name()]
-				undo_redo.undo()
+				history_undo_redo.undo()
 			else:
 				current_action_index += 1
 				action_name = "Redo: %s" % [undo_redo.get_current_action_name()]
-				undo_redo.redo()
+				history_undo_redo.redo()
 			callback_return_value = on_finished_undo_redo_action(current_action_index, action_name, callback_return_value, callback_binds)
 	
 	return callback_return_value

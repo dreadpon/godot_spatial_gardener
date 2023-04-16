@@ -82,7 +82,7 @@ func cleanup_folding_states(folding_states:Dictionary):
 
 # Selected a new plant for edit. Update it's folding and bind foldables
 func on_greenhouse_prop_action_executed(folding_states:Dictionary, greenhouse:Greenhouse, prop_action: PropAction, final_val):
-	if prop_action is PA_PropSet && prop_action.prop == 'plant_types/selected_for_edit_resource':
+	if is_instance_of(prop_action, PA_PropSet) && prop_action.prop == 'plant_types/selected_for_edit_resource':
 		if greenhouse.selected_for_edit_resource:
 			var greenhouse_id = get_res_name_or_path(folding_states, greenhouse)
 			var plant_id = get_res_name_or_path(folding_states[greenhouse_id], greenhouse.selected_for_edit_resource)
@@ -111,8 +111,8 @@ func set_folding_states(states: Dictionary):
 
 # Bind foldable ui elements to update the relevant folding states
 func bind_foldables(node:Node, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
-	if node is FoldableSection:
-		node.connect('folding_state_changed',Callable(self,'on_foldable_folding_state_changed').bind(node, folding_states, greenhouse_id, plant_id))
+	if is_instance_of(node, FoldableSection):
+		node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(node, folding_states, greenhouse_id, plant_id))
 		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
 	for child in node.get_children():
 		bind_foldables(child, folding_states, greenhouse_id, plant_id)

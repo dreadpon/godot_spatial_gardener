@@ -56,7 +56,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	add_file_dialog_filter()
 	file_dialog.current_dir = "res://"
 	file_dialog.current_path = "res://"
-	file_dialog.connect("popup_hide",Callable(self,"file_dialog_hidden"))
+	file_dialog.popup_hide.connect(file_dialog_hidden)
 	
 	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -108,7 +108,7 @@ func set_thumb_interaction_feature_with_data(interaction_flag:int, val, data:Dic
 
 # Shorthand for setting action thumbnail features
 func set_thumb_interaction_feature(thumb, interaction_flag:int, val):
-	if thumb && !(thumb is UI_ActionThumbnailCreateInst_GD):
+	if thumb && !is_instance_of(thumb, UI_ActionThumbnailCreateInst_GD):
 		thumb.set_features_val_to_flag(interaction_flag, val)
 
 
@@ -123,13 +123,13 @@ func set_thumb_interaction_feature(thumb, interaction_flag:int, val):
 func _generate_thumbnail():
 	var thumb := UI_ActionThumbnail.instantiate()
 	thumb.init(element_display_size, int(float(element_display_size) * 0.24), element_interaction_flags)
-	thumb.connect("requested_delete",Callable(self,"on_requested_delete").bind(thumb))
-	thumb.connect("requested_clear",Callable(self,"on_requested_clear").bind(thumb))
-	thumb.connect("requested_set_dialog",Callable(self,"on_set_dialog").bind(thumb))
-	thumb.connect("requested_set_drag",Callable(self,"on_set_drag").bind(thumb))
-	thumb.connect("requested_press",Callable(self,"on_press").bind(thumb))
-	thumb.connect("requested_check",Callable(self,"on_check").bind(thumb))
-	thumb.connect("requested_label_edit",Callable(self,"on_label_edit").bind(thumb))
+	thumb.requested_delete.connect(on_requested_delete.bind(thumb))
+	thumb.requested_clear.connect(on_requested_clear.bind(thumb))
+	thumb.requested_set_dialog.connect(on_set_dialog.bind(thumb))
+	thumb.requested_set_drag.connect(on_set_drag.bind(thumb))
+	thumb.requested_press.connect(on_press.bind(thumb))
+	thumb.requested_check.connect(on_check.bind(thumb))
+	thumb.requested_label_edit.connect(on_label_edit.bind(thumb))
 	
 	return thumb
 
@@ -138,7 +138,7 @@ func _generate_thumbnail():
 func _generate_thumbnail_create_inst():
 	var thumb := UI_ActionThumbnailCreateInst.instantiate()
 	thumb.init(element_display_size, float(element_display_size) * 0.5, PRESET_NEW)
-	thumb.connect("requested_press",Callable(self,"on_requested_add"))
+	thumb.requested_press.connect(on_requested_add)
 	
 	return thumb
 
@@ -168,7 +168,7 @@ func on_requested_clear(thumb):
 # Action thumbnail callback
 func on_set_dialog(thumb):
 	file_dialog.popup_centered_ratio(0.5)
-	file_dialog.connect("file_selected",Callable(self,"on_file_selected").bind(thumb))
+	file_dialog.file_selected.connect(on_file_selected.bind(thumb))
 
 
 # Action thumbnail callback
@@ -199,8 +199,8 @@ func on_press(thumb):
 
 
 func file_dialog_hidden():
-	if file_dialog.is_connected("file_selected",Callable(self,"on_file_selected")):
-		file_dialog.disconnect("file_selected",Callable(self,"on_file_selected"))
+	if file_dialog.file_selected.is_connected(on_file_selected):
+		file_dialog.file_selected.disconnect(on_file_selected)
 
 
 # Load and try to assign a choosen resource

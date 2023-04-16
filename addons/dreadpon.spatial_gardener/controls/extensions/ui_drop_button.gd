@@ -28,4 +28,4 @@ func _can_drop_data(position, data):
 
 
 func _drop_data(position, data):
-	emit_signal("dropped", data["files"][0])
+	dropped.emit(data["files"][0])

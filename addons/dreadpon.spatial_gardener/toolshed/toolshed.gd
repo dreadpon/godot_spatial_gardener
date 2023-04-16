@@ -66,7 +66,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	
 	if brushes.size() > 0:
 		tab_container_brushes_nd.current_tab = brushes.find(active_brush)
-	tab_container_brushes_nd.connect("tab_changed",Callable(self,"on_active_brush_tab_changed"))
+	tab_container_brushes_nd.tab_changed.connect(on_active_brush_tab_changed)
 	
 	return ui_category_brushes_nd
 
@@ -88,7 +88,7 @@ func forwarded_input(camera, event):
 	
 	var index_tab = -1
 	
-	if event is InputEventKey && !event.pressed:
+	if is_instance_of(event, InputEventKey) && !event.pressed:
 		var index_map := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0]
 		index_tab = index_map.find(event.keycode)
 		
@@ -110,12 +110,12 @@ func on_active_brush_tab_changed(active_tab):
 
 
 func on_prop_action_executed(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet:
+	if is_instance_of(prop_action, PA_PropSet):
 		if prop_action.prop == "brush/active_brush":
 			if tab_container_brushes_nd:
-				tab_container_brushes_nd.disconnect("tab_changed",Callable(self,"on_active_brush_tab_changed"))
+				tab_container_brushes_nd.tab_changed.disconnect(on_active_brush_tab_changed)
 				tab_container_brushes_nd.current_tab = brushes.find(final_val)
-				tab_container_brushes_nd.connect("tab_changed",Callable(self,"on_active_brush_tab_changed"))
+				tab_container_brushes_nd.tab_changed.connect(on_active_brush_tab_changed)
 
 
 
@@ -130,7 +130,7 @@ func on_changed_brush():
 
 
 func on_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
-	emit_signal("prop_action_executed_on_brush", prop_action, final_val, brush)
+	prop_action_executed_on_brush.emit(prop_action, final_val, brush)
 
 
 
@@ -140,7 +140,7 @@ func on_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:UndoRedo):
+func set_undo_redo(val:EditorUndoRedoManager):
 	super.set_undo_redo(val)
 	for brush in brushes:
 		brush.set_undo_redo(_undo_redo)
@@ -150,11 +150,11 @@ func _modify_prop(prop:String, val):
 	match prop:
 		"brush/brushes":
 			for i in range(0, val.size()):
-				if !(val[i] is Toolshed_Brush):
+				if !is_instance_of(val[i], Toolshed_Brush):
 					val[i] = Toolshed_Brush.new()
 				
-				FunLib.ensure_signal(val[i], "changed", self, "on_changed_brush")
-				FunLib.ensure_signal(val[i], "prop_action_executed", self, "on_prop_action_executed_on_brush", [val[i]])
+				FunLib.ensure_signal(val[i].changed, on_changed_brush)
+				FunLib.ensure_signal(val[i].prop_action_executed, on_prop_action_executed_on_brush, [val[i]])
 				
 				if val[i]._undo_redo != _undo_redo:
 					val[i].set_undo_redo(_undo_redo)

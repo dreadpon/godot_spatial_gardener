@@ -25,11 +25,11 @@ func _init():
 
 
 func on_button_apply_pressed():
-	emit_signal("confirmed")
+	confirmed.emit()
 
 
 func on_button_cancel_pressed():
-	emit_signal("cancelled")
+	cancelled.emit()
 
 
 func _on_about_to_show():

@@ -55,7 +55,7 @@ var debug_viewer:DebugViewer = null
 
 var _resource_previewer = null
 var _base_control:Control = null
-var _undo_redo:UndoRedo = null
+var _undo_redo:EditorUndoRedoManager = null
 
 var _side_panel:UI_SidePanel = null
 var ui_category_brushes:Control = null
@@ -209,7 +209,7 @@ func restore_references():
 	
 	reload_resources()
 	
-	if has_node("Arborist") && get_node("Arborist") is Arborist:
+	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
 		arborist = get_node("Arborist")
 	
 	set_gardening_collision_mask(gardening_collision_mask)
@@ -219,10 +219,10 @@ func restore_references():
 # Assumed to be the first manager to initialize
 func init_painter():
 	painter = Painter.new(painting_node)
-	painter.connect("stroke_updated",Callable(self,"on_painter_stroke_updated"))
-	painter.connect("changed_active_brush_prop",Callable(self,"on_changed_active_brush_prop"))
-	painter.connect("stroke_started",Callable(self,"on_painter_stroke_started"))
-	painter.connect("stroke_finished",Callable(self,"on_painter_stroke_finished"))
+	painter.stroke_updated.connect(on_painter_stroke_updated)
+	painter.changed_active_brush_prop.connect(on_changed_active_brush_prop)
+	painter.stroke_started.connect(on_painter_stroke_started)
+	painter.stroke_finished.connect(on_painter_stroke_finished)
 
 
 # Initialize the Arborist and connect it to other objects
@@ -230,7 +230,7 @@ func init_painter():
 func init_arborist():
 	# A fancy way of saying
 	# "Make sure there is a correct node with a correct name"
-	if has_node("Arborist") && get_node("Arborist") is Arborist:
+	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
 		arborist = get_node("Arborist")
 		logger.info("Found existing Arborist")
 	else:
@@ -268,28 +268,28 @@ func reload_resources():
 	greenhouse.set_undo_redo(_undo_redo)
 	
 	if last_toolshed:
-		last_toolshed.disconnect("prop_action_executed",Callable(self,"on_toolshed_prop_action_executed"))
-		last_toolshed.disconnect("prop_action_executed_on_brush",Callable(self,"on_toolshed_prop_action_executed_on_brush"))
-	FunLib.ensure_signal(toolshed, "prop_action_executed", self, "on_toolshed_prop_action_executed")
-	FunLib.ensure_signal(toolshed, "prop_action_executed_on_brush", self, "on_toolshed_prop_action_executed_on_brush")
+		last_toolshed.prop_action_executed.disconnect(on_toolshed_prop_action_executed)
+		last_toolshed.prop_action_executed_on_brush.disconnect(on_toolshed_prop_action_executed_on_brush)
+	FunLib.ensure_signal(toolshed.prop_action_executed, on_toolshed_prop_action_executed)
+	FunLib.ensure_signal(toolshed.prop_action_executed_on_brush, on_toolshed_prop_action_executed_on_brush)
 	
 	if last_greenhouse:
-		last_greenhouse.disconnect("prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
-		last_greenhouse.disconnect("prop_action_executed_on_plant_state",Callable(self,"on_greenhouse_prop_action_executed_on_plant_state"))
-		last_greenhouse.disconnect("prop_action_executed_on_plant_state_plant",Callable(self,"on_greenhouse_prop_action_executed_on_plant_state_plant"))
-		last_greenhouse.disconnect("prop_action_executed_on_LOD_variant",Callable(self,"on_greenhouse_prop_action_executed_on_LOD_variant"))
-		last_greenhouse.disconnect("req_octree_reconfigure",Callable(self,"on_greenhouse_req_octree_reconfigure"))
-		last_greenhouse.disconnect("req_octree_recenter",Callable(self,"on_greenhouse_req_octree_recenter"))
-		last_greenhouse.disconnect("req_import_transforms",Callable(self,"on_greenhouse_req_import_transforms"))
-		last_greenhouse.disconnect("req_export_transforms",Callable(self,"on_greenhouse_req_export_transforms"))
-	FunLib.ensure_signal(greenhouse, "prop_action_executed", self, "on_greenhouse_prop_action_executed")
-	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state", self, "on_greenhouse_prop_action_executed_on_plant_state")
-	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_plant_state_plant", self, "on_greenhouse_prop_action_executed_on_plant_state_plant")
-	FunLib.ensure_signal(greenhouse, "prop_action_executed_on_LOD_variant", self, "on_greenhouse_prop_action_executed_on_LOD_variant")
-	FunLib.ensure_signal(greenhouse, "req_octree_reconfigure", self, "on_greenhouse_req_octree_reconfigure")
-	FunLib.ensure_signal(greenhouse, "req_octree_recenter", self, "on_greenhouse_req_octree_recenter")
-	FunLib.ensure_signal(greenhouse, "req_import_transforms", self, "on_greenhouse_req_import_transforms")
-	FunLib.ensure_signal(greenhouse, "req_export_transforms", self, "on_greenhouse_req_export_transforms")
+		last_greenhouse.prop_action_executed.disconnect(on_greenhouse_prop_action_executed)
+		last_greenhouse.prop_action_executed_on_plant_state.disconnect(on_greenhouse_prop_action_executed_on_plant_state)
+		last_greenhouse.prop_action_executed_on_plant_state_plant.disconnect(on_greenhouse_prop_action_executed_on_plant_state_plant)
+		last_greenhouse.prop_action_executed_on_LOD_variant.disconnect(on_greenhouse_prop_action_executed_on_LOD_variant)
+		last_greenhouse.req_octree_reconfigure.disconnect(on_greenhouse_req_octree_reconfigure)
+		last_greenhouse.req_octree_recenter.disconnect(on_greenhouse_req_octree_recenter)
+		last_greenhouse.req_import_transforms.disconnect(on_greenhouse_req_import_transforms)
+		last_greenhouse.req_export_transforms.disconnect(on_greenhouse_req_export_transforms)
+	FunLib.ensure_signal(greenhouse.prop_action_executed, on_greenhouse_prop_action_executed)
+	FunLib.ensure_signal(greenhouse.prop_action_executed_on_plant_state, on_greenhouse_prop_action_executed_on_plant_state)
+	FunLib.ensure_signal(greenhouse.prop_action_executed_on_plant_state_plant, on_greenhouse_prop_action_executed_on_plant_state_plant)
+	FunLib.ensure_signal(greenhouse.prop_action_executed_on_LOD_variant, on_greenhouse_prop_action_executed_on_LOD_variant)
+	FunLib.ensure_signal(greenhouse.req_octree_reconfigure, on_greenhouse_req_octree_reconfigure)
+	FunLib.ensure_signal(greenhouse.req_octree_recenter, on_greenhouse_req_octree_recenter)
+	FunLib.ensure_signal(greenhouse.req_import_transforms, on_greenhouse_req_import_transforms)
+	FunLib.ensure_signal(greenhouse.req_export_transforms, on_greenhouse_req_export_transforms)
 	
 	if arborist:
 		pair_arborist_greenhouse()
@@ -316,8 +316,8 @@ func pair_arborist_greenhouse():
 	# We could duplicate an array, but that's additional overhead so we assume Arborist won't change it
 	arborist.setup(greenhouse.greenhouse_plant_states)
 	
-	if !arborist.is_connected("member_count_updated",Callable(greenhouse,"plant_count_updated")):
-		arborist.connect("member_count_updated",Callable(greenhouse,"plant_count_updated"))
+	if !arborist.member_count_updated.is_connected(greenhouse.plant_count_updated):
+		arborist.member_count_updated.connect(greenhouse.plant_count_updated)
 
 
 func pair_debug_viewer_greenhouse():
@@ -336,8 +336,8 @@ func pair_debug_viewer_arborist():
 		if !arborist: logger.warn("DebugViewer->Arborist: Arborist is not initialized!")
 		return
 	
-	if !arborist.is_connected("req_debug_redraw",Callable(debug_viewer,"request_debug_redraw")):
-		arborist.connect("req_debug_redraw",Callable(debug_viewer,"request_debug_redraw"))
+		if !arborist.req_debug_redraw.is_connected(debug_viewer.request_debug_redraw):
+			arborist.req_debug_redraw.connect(debug_viewer.request_debug_redraw)
 
 
 
@@ -348,13 +348,13 @@ func pair_debug_viewer_arborist():
 
 
 # Start editing (painting) a scene
-func start_editing(__base_control:Control, __resource_previewer, __undoRedo:UndoRedo, __side_panel:UI_SidePanel):
+func start_editing(__base_control:Control, __resource_previewer, __undoRedo:EditorUndoRedoManager, __side_panel:UI_SidePanel):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	_undo_redo = __undoRedo
 	
 	_side_panel = __side_panel
-	connect("changed_initialized_for_edit",Callable(_side_panel,"set_main_control_state"))
+	changed_initialized_for_edit.connect(_side_panel.set_main_control_state)
 	
 	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
 	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
@@ -381,7 +381,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Undo
 # Stop editing (painting) a scene
 func stop_editing():
 	if is_instance_valid(_side_panel):
-		disconnect("changed_initialized_for_edit",Callable(_side_panel,"set_main_control_state"))
+		changed_initialized_for_edit.disconnect(_side_panel.set_main_control_state)
 		_side_panel = null
 	
 	if is_instance_valid(painter):
@@ -446,7 +446,7 @@ func set_garden_work_directory(val):
 
 func set_initialized_for_edit(val):
 	initialized_for_edit = val
-	emit_signal("changed_initialized_for_edit", initialized_for_edit)
+	changed_initialized_for_edit.emit(initialized_for_edit)
 
 
 
@@ -458,17 +458,17 @@ func set_initialized_for_edit(val):
 
 # When Greenhouse properties are changed
 func on_greenhouse_prop_action_executed(prop_action:PropAction, final_val):
-	if prop_action is PA_ArrayInsert:
+	if is_instance_of(prop_action, PA_ArrayInsert):
 		arborist.on_plant_added(final_val[prop_action.index], prop_action.index)
 		reinit_debug_draw_brush_active()
-	elif prop_action is PA_ArrayRemove:
+	elif is_instance_of(prop_action, PA_ArrayRemove):
 		arborist.on_plant_removed(prop_action.val, prop_action.index)
 		reinit_debug_draw_brush_active()
-	elif prop_action is PA_PropSet && prop_action.prop == "plant_types/selected_for_edit_resource":
+	elif is_instance_of(prop_action, PA_PropSet) && prop_action.prop == "plant_types/selected_for_edit_resource":
 		debug_viewer.set_prop_edit_selected_plant(greenhouse.greenhouse_plant_states.find(final_val))
 		debug_viewer.request_debug_redraw(arborist.octree_managers)
 	
-	emit_signal('greenhouse_prop_action_executed', prop_action, final_val)
+	greenhouse_prop_action_executed.emit(prop_action, final_val)
 
 
 # When Greenhouse_PlantState properties are changed
@@ -477,7 +477,7 @@ func on_greenhouse_prop_action_executed_on_plant_state(prop_action:PropAction, f
 	
 	match prop_action.prop:
 		"plant/plant_brush_active":
-			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
 				debug_viewer.request_debug_redraw(arborist.octree_managers)
 
@@ -488,22 +488,22 @@ func on_greenhouse_prop_action_executed_on_plant_state_plant(prop_action:PropAct
 	
 	match prop_action.prop:
 		"mesh/mesh_LOD_variants":
-			if prop_action is PA_ArrayInsert:
+			if is_instance_of(prop_action, PA_ArrayInsert):
 				var mesh_index = prop_action.index
 				arborist.on_LOD_variant_added(plant_index, mesh_index, final_val[mesh_index])
-			elif prop_action is PA_ArrayRemove:
+			elif is_instance_of(prop_action, PA_ArrayRemove):
 				var mesh_index = prop_action.index
 				arborist.on_LOD_variant_removed(plant_index, mesh_index)
-			elif prop_action is PA_ArraySet:
+			elif is_instance_of(prop_action, PA_ArraySet):
 				var mesh_index = prop_action.index
 				arborist.on_LOD_variant_set(plant_index, mesh_index, final_val[mesh_index])
 		
 		"mesh/mesh_LOD_max_distance":
-			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				arborist.update_plant_LOD_max_distance(plant_index, final_val)
 		
 		"mesh/mesh_LOD_kill_distance":
-			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				arborist.update_plant_LOD_kill_distance(plant_index, final_val)
 
 
@@ -514,10 +514,10 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 	
 	match prop_action.prop:
 		"spawned_spatial":
-			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				arborist.on_LOD_variant_prop_changed_spawned_spatial(plant_index, mesh_index, final_val)
 		"cast_shadow":
-			if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				arborist.set_LODs_to_active_index(plant_index)
 
 
@@ -586,7 +586,7 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 # Changed active brush from Toolshed. Update the painter
 func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 	assert(painter)
-	if !(prop_action is PA_PropSet) && !(prop_action is PA_PropEdit): return
+	if !(is_instance_of(prop_action, PA_PropSet)) && !(is_instance_of(prop_action, PA_PropEdit)): return
 	if final_val != toolshed.active_brush:
 		logger.error("Passed final_val is not equal to toolshed.active_brush!")
 		return
@@ -621,7 +621,7 @@ func on_changed_active_brush_prop(prop: String, val, final:bool):
 # Propagate active_brush property changes to Painter
 func on_toolshed_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
 	assert(painter)
-	if !(prop_action is PA_PropSet) && !(prop_action is PA_PropEdit): return
+	if !(is_instance_of(prop_action, PA_PropSet)) && !(is_instance_of(prop_action, PA_PropEdit)): return
 	if brush != toolshed.active_brush: return
 	
 	match prop_action.prop:
@@ -718,7 +718,7 @@ func _get_property_list():
 # Warning to be displayed in editor SceneTree
 func _get_configuration_warnings():
 	var arborist_check = get_node("Arborist")
-	if arborist_check && arborist_check is Arborist:
+	if arborist_check && is_instance_of(arborist_check, Arborist):
 		return ""
 	else:
 		return "Gardener is missing a valid Arborist child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"

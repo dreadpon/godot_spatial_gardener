@@ -52,7 +52,7 @@ var visibility_forced:int = -1
 #var visibility_tracked_properties:Array = []
 #var visibility_is_tracked:bool = false : set = set_visibility_is_tracked
 
-var _undo_redo:UndoRedo = null
+var _undo_redo:EditorUndoRedoManager = null
 var disable_history:bool = false
 
 var logger = null
@@ -197,7 +197,7 @@ func _request_prop_action(val, prop_action_class:String, optional:Dictionary = {
 		prop_action.can_create_history = false
 	
 	debug_print_prop_action("Requesting prop action: %s from \"%s\"" % [str(prop_action), name])
-	emit_signal("prop_action_requested", prop_action)
+	prop_action_requested.emit(prop_action)
 
 
 
@@ -210,7 +210,7 @@ func _request_prop_action(val, prop_action_class:String, optional:Dictionary = {
 # Release focus from a child node when pressing enter
 func on_node_received_input(event, node):
 	if node.has_focus():
-		if event is InputEventKey && !event.pressed:
+		if is_instance_of(event, InputEventKey) && !event.pressed:
 			if event.keycode == KEY_ENTER || event.keycode == KEY_ESCAPE:
 				node.release_focus()
 

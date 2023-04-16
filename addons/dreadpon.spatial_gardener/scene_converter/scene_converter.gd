@@ -111,10 +111,10 @@ func _scan_for_outdated_scenes():
 	
 	if !_convert_dialog:
 		_convert_dialog = ConvertDialog_SCN.instantiate()
-		_convert_dialog.connect('confirm_pressed',Callable(self,'_convert_from_dialog'))
-		_convert_dialog.connect('confirm_pressed',Callable(self,'_hide_dialog'))
-		_convert_dialog.connect('cancel_pressed',Callable(self,'_hide_dialog'))
-		_convert_dialog.connect('dont_ask_again_toggled',Callable(self,'_set_dont_scan_setting'))
+		_convert_dialog.confirm_pressed.connect(_convert_from_dialog)
+		_convert_dialog.confirm_pressed.connect(_hide_dialog)
+		_convert_dialog.cancel_pressed.connect(_hide_dialog)
+		_convert_dialog.dont_ask_again_toggled.connect(_set_dont_scan_setting)
 	if _convert_dialog.get_parent() != _base_control:
 		_base_control.add_child(_convert_dialog)
 	

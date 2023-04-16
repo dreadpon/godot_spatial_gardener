@@ -29,7 +29,7 @@ static func get_idx_msg(prefix = "", list_index:int = 0, suffix = ""):
 static func gather_properties(prop_val, allowed_nested_classes:Array):
 	var element_to_add = null
 	
-	if prop_val is Object:
+	if is_instance_of(prop_val, Object):
 		if prop_val.has_meta("class") && allowed_nested_classes.has(prop_val.get_meta("class")):
 			element_to_add = {}
 			for nested_prop in prop_val._get_prop_dictionary():

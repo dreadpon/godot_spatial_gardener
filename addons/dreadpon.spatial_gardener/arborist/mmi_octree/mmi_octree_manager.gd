@@ -86,16 +86,16 @@ func prepare_for_removal():
 
 func connect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
-	FunLib.ensure_signal(octree_node, "placeforms_rejected", self, "grow_to_members")
-	FunLib.ensure_signal(octree_node, "collapse_self_possible", self, "collapse_root")
-	FunLib.ensure_signal(octree_node, "req_debug_redraw", self, "schedule_debug_redraw")
+	FunLib.ensure_signal(octree_node.placeforms_rejected, grow_to_members)
+	FunLib.ensure_signal(octree_node.collapse_self_possible, collapse_root)
+	FunLib.ensure_signal(octree_node.req_debug_redraw, schedule_debug_redraw)
 
 
 func disconnect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
-	octree_node.disconnect("placeforms_rejected",Callable(self,"grow_to_members"))
-	octree_node.disconnect("collapse_self_possible",Callable(self,"collapse_root"))
-	octree_node.disconnect("req_debug_redraw",Callable(self,"schedule_debug_redraw"))
+	octree_node.placeforms_rejected.disconnect(grow_to_members)
+	octree_node.collapse_self_possible.disconnect(collapse_root)
+	octree_node.req_debug_redraw.disconnect(schedule_debug_redraw)
 
 
 func destroy():
@@ -342,7 +342,7 @@ func update_LODs_no_camera():
 
 # A callback to request a debug redraw
 func request_debug_redraw():
-	emit_signal("req_debug_redraw")
+	req_debug_redraw.emit()
 
 
 # Manually trigger a Logger message when an OctreeNode doesn't know an important action happened

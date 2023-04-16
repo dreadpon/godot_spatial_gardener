@@ -75,8 +75,8 @@ func create_ui(__base_control:Control, __resource_previewer):
 	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
 	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_container_plant_thumbnails_nd.connect("requested_check",Callable(self,"on_plant_state_check"))
-	grid_container_plant_thumbnails_nd.connect("requested_label_edit",Callable(self,"on_plant_label_edit"))
+	grid_container_plant_thumbnails_nd.requested_check.connect(on_plant_state_check)
+	grid_container_plant_thumbnails_nd.requested_label_edit.connect(on_plant_label_edit)
 	
 	vbox_container_properties_nd = input_fields[1]
 	
@@ -84,7 +84,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
 	
 	_file_dialog = FileDialog.new()
-	_file_dialog.connect('hidden',Callable(self,'on_file_dialog_hide'))
+	_file_dialog.hidden.connect(on_file_dialog_hide)
 	return ui_category_greenhouse
 
 
@@ -166,7 +166,7 @@ func show_transform_import(type: String):
 
 
 func on_file_dialog_hide():
-	FunLib.disconnect_all(_file_dialog, 'file_selected')
+	FunLib.disconnect_all(_file_dialog.file_selected)
 	_base_control.remove_child(_file_dialog)
 
 
@@ -181,23 +181,23 @@ func on_changed_plant_state():
 	emit_changed()
 
 func on_req_octree_reconfigure(plant, plant_state):
-	emit_signal("req_octree_reconfigure", plant, plant_state)
+	req_octree_reconfigure.emit(plant, plant_state)
 
 func on_req_octree_recenter(plant, plant_state):
-	emit_signal("req_octree_recenter", plant, plant_state)
+	req_octree_recenter.emit(plant, plant_state)
 
 func on_req_import_transforms(plant, plant_state):
 	show_transform_import('import')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.connect('file_selected',Callable(self,'on_req_import_export_file').bind('req_import_transforms', plant_idx))
+	_file_dialog.file_selected.connect(on_req_import_export_file.bind(req_import_transforms, plant_idx))
 
 func on_req_export_transforms(plant, plant_state):
 	show_transform_import('export')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.connect('file_selected',Callable(self,'on_req_import_export_file').bind('req_export_transforms', plant_idx))
+	_file_dialog.file_selected.connect(on_req_import_export_file.bind(req_export_transforms, plant_idx))
 
-func on_req_import_export_file(file_path: String, signal_name: String, plant_idx: int):
-	emit_signal(signal_name, file_path, plant_idx)
+func on_req_import_export_file(file_path: String, signal_obj: Signal, plant_idx: int):
+	signal_obj.emit(file_path, plant_idx)
 
 
 
@@ -221,7 +221,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 
 
 func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state):
-	if prop_action is PA_PropSet:
+	if is_instance_of(prop_action, PA_PropSet):
 		var plant_index = greenhouse_plant_states.find(plant_state)
 		match prop_action.prop:
 			"plant/plant_brush_active":
@@ -229,7 +229,7 @@ func on_prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
 			"plant/plant_label":
 				set_plant_state_label(plant_index, final_val)
 	
-	emit_signal("prop_action_executed_on_plant_state", prop_action, final_val, plant_state)
+	prop_action_executed_on_plant_state.emit(prop_action, final_val, plant_state)
 
 
 func on_prop_action_executed_on_plant_state_plant(prop_action, final_val, plant, plant_state):
@@ -240,11 +240,11 @@ func on_prop_action_executed_on_plant_state_plant(prop_action, final_val, plant,
 	if update_thumbnail && grid_container_plant_thumbnails_nd:
 		grid_container_plant_thumbnails_nd._update_thumbnail(plant_state, plant_index)
 	
-	emit_signal("prop_action_executed_on_plant_state_plant", prop_action, final_val, plant, plant_state)
+	prop_action_executed_on_plant_state_plant.emit(prop_action, final_val, plant, plant_state)
 
 
 func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant, plant_state):
-	emit_signal("prop_action_executed_on_LOD_variant", prop_action, final_val, LOD_variant, plant, plant_state)
+	prop_action_executed_on_LOD_variant.emit(prop_action, final_val, LOD_variant, plant, plant_state)
 
 
 
@@ -254,7 +254,7 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant,
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:UndoRedo):
+func set_undo_redo(val:EditorUndoRedoManager):
 	super.set_undo_redo(val)
 	for plant_state in greenhouse_plant_states:
 		plant_state.set_undo_redo(_undo_redo)
@@ -274,17 +274,17 @@ func _modify_prop(prop:String, val):
 	match prop:
 		"plant_types/greenhouse_plant_states":
 			for i in range(0, val.size()):
-				if !(val[i] is Greenhouse_PlantState):
+				if !is_instance_of(val[i], Greenhouse_PlantState):
 					val[i] = Greenhouse_PlantState.new()
 				
-				FunLib.ensure_signal(val[i], "changed", self, "on_changed_plant_state")
-				FunLib.ensure_signal(val[i], "prop_action_executed", self, "on_prop_action_executed_on_plant_state", [val[i]])
-				FunLib.ensure_signal(val[i], "prop_action_executed_on_plant", self, "on_prop_action_executed_on_plant_state_plant", [val[i]])
-				FunLib.ensure_signal(val[i], "prop_action_executed_on_LOD_variant", self, "on_prop_action_executed_on_LOD_variant", [val[i]])
-				FunLib.ensure_signal(val[i], "req_octree_reconfigure", self, "on_req_octree_reconfigure", [val[i]])
-				FunLib.ensure_signal(val[i], "req_octree_recenter", self, "on_req_octree_recenter", [val[i]])
-				FunLib.ensure_signal(val[i], "req_import_transforms", self, "on_req_import_transforms", [val[i]])
-				FunLib.ensure_signal(val[i], "req_export_transforms", self, "on_req_export_transforms", [val[i]])
+				FunLib.ensure_signal(val[i].changed, on_changed_plant_state)
+				FunLib.ensure_signal(val[i].prop_action_executed, on_prop_action_executed_on_plant_state, [val[i]])
+				FunLib.ensure_signal(val[i].prop_action_executed_on_plant, on_prop_action_executed_on_plant_state_plant, [val[i]])
+				FunLib.ensure_signal(val[i].prop_action_executed_on_LOD_variant, on_prop_action_executed_on_LOD_variant, [val[i]])
+				FunLib.ensure_signal(val[i].req_octree_reconfigure, on_req_octree_reconfigure, [val[i]])
+				FunLib.ensure_signal(val[i].req_octree_recenter, on_req_octree_recenter, [val[i]])
+				FunLib.ensure_signal(val[i].req_import_transforms, on_req_import_transforms, [val[i]])
+				FunLib.ensure_signal(val[i].req_export_transforms, on_req_export_transforms, [val[i]])
 				
 				if val[i]._undo_redo != _undo_redo:
 					val[i].set_undo_redo(_undo_redo)

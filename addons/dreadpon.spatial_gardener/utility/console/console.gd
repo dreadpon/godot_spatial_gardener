@@ -25,12 +25,12 @@ func _ready():
 
 
 func _unhandled_input(event):
-	if event is InputEventKey && event.keycode == KEY_QUOTELEFT && !event.pressed:
+	if is_instance_of(event, InputEventKey) && event.keycode == KEY_QUOTELEFT && !event.pressed:
 		toggle_console()
 	
 	if !visible: return
 	
-	if event is InputEventKey:
+	if is_instance_of(event, InputEventKey):
 		get_viewport().set_input_as_handled()
 		
 		if !event.pressed:
@@ -98,7 +98,7 @@ func dump_octrees(args:Array = []):
 	var octree_index := -1
 	
 	if args.size() > 1:
-		if current_scene.has_node(args[1]) && current_scene.get_node(args[1]) is Gardener:
+		if current_scene.has_node(args[1]) && is_instance_of(current_scene.get_node(args[1]), Gardener):
 			gardener_path = args[1]
 		else:
 			return "[color=red]'%s' wrong node path in argument '%d'[/color]" % [args[0], 1]
@@ -120,7 +120,7 @@ func dump_octrees(args:Array = []):
 func dump_octrees_from_node(node:Node):
 	var output := ""
 	
-	if node is Gardener:
+	if is_instance_of(node, Gardener):
 		output += dump_octrees_from_gardener(node)
 	else:
 		for child in node.get_children():

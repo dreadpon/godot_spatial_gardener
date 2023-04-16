@@ -92,10 +92,10 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 			value_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			value_input.size_flags_vertical = Control.SIZE_FILL
 			
-			value_input.connect("focus_entered",Callable(self,"select_line_edit").bind(value_input, true))
-			value_input.connect("focus_exited",Callable(self,"select_line_edit").bind(value_input, false))
-			value_input.connect("focus_exited",Callable(self,"focus_lost").bind(value_input, range_index, value_index))
-			value_input.connect("gui_input",Callable(self,"on_node_received_input").bind(value_input))
+			value_input.focus_entered.connect(select_line_edit.bind(value_input, true))
+			value_input.focus_exited.connect(select_line_edit.bind(value_input, false))
+			value_input.focus_exited.connect(focus_lost.bind(value_input, range_index, value_index))
+			value_input.gui_input.connect(on_node_received_input.bind(value_input))
 			
 			field_editable_controls[range_index].append(value_input)
 			value_range_row.add_child(value_input)
@@ -126,7 +126,7 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 
@@ -225,7 +225,7 @@ func _represented_to_actual(input):
 				elif value_array is Array: # this enables correct output_array when passing array-based currentVal as an input
 					output_value_array = value_array.slice(0, 1 + 1) # REVIEW: check if index increment is justified
 			3:
-				if representation_type == RepresentationType.VECTOR && value_array is Vector3:
+				if representation_type == RepresentationType.VECTOR && value_array, Vector3:
 					output_value_array = [value_array.x, value_array.y, value_array.z]
 				elif representation_type == RepresentationType.VALUE && value_array is Array:
 					output_value_array = value_array.slice(0, 2 + 1) # REVIEW: check if index increment is justified

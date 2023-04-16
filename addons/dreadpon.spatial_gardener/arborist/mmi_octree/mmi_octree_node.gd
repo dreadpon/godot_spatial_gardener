@@ -358,7 +358,7 @@ func add_members(new_placeforms:Array):
 	
 	var rejected = reject_outside_placeforms(new_placeforms)
 	if rejected.size() > 0:
-		emit_signal("placeforms_rejected", rejected + new_placeforms)
+		placeforms_rejected.emit(rejected + new_placeforms)
 		# Further execution can lead to members being added to a collapsed node
 		# (OctreeManager tries to collapse children when growing to members)
 		# So we abort
@@ -470,7 +470,7 @@ func _remove_member_from_child(old_placeform: Array):
 # If not - delete it, and recreate inside set_is_leaf()
 func validate_MMI():
 	MMI = MMI_container.get_node_or_null(MMI_name)
-	if MMI && !(MMI is MultiMeshInstance3D):
+	if MMI && !is_instance_of(MMI, MultiMeshInstance3D):
 		MMI_container.remove_child(MMI)
 		MMI.owner = null
 		MMI = null
@@ -704,9 +704,9 @@ func try_collapse_self(instigator_child:int):
 		# If condition fulfilled
 		# Or an edgecase when child_nodes have no members or children at all (i.e. all members were removed in one pass)
 		if child_with_descendants >= 0:
-			emit_signal("collapse_self_possible", child_with_descendants)
+			collapse_self_possible.emit(child_with_descendants)
 		else:
-			emit_signal("collapse_self_possible", instigator_child)
+			collapse_self_possible.emit(instigator_child)
 
 
 # Collapse children into one (their parent)
@@ -873,7 +873,7 @@ func request_debug_redraw():
 	if parent:
 		parent.request_debug_redraw()
 	else:
-		emit_signal("req_debug_redraw")
+		req_debug_redraw.emit()
 
 
 # Get a color depending on address length

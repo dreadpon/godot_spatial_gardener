@@ -111,7 +111,7 @@ static func execute_painter_action(painter:Painter, action:PainterAction):
 		PainterAction.PainterActionType.END_STROKE:
 			painter.stop_brush_stroke()
 		PainterAction.PainterActionType.SET_SIZE:
-			painter.emit_signal('changed_active_brush_prop', 'shape/shape_volume_size', action.action_value, false)
+			painter.changed_active_brush_prop.emit('shape/shape_volume_size', action.action_value, false)
 
 
 static func simulate_painter_move(painter:Painter, paint_body_data:PaintBodyData, fractional_coords:Vector2):

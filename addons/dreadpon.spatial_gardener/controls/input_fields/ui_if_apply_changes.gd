@@ -40,15 +40,15 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.size_flags_horizontal = SIZE_EXPAND_FILL
 	button.size_flags_vertical = SIZE_SHRINK_CENTER
 	button.text = settings.button_text
-	button.connect("pressed",Callable(self,"on_pressed"))
+	button.pressed.connect(on_pressed)
 	
 	_base_control = settings._base_control
 	
 	apply_dialog = UI_Dialog_IF.instantiate()
 	apply_dialog.window_title = settings.button_text
-	apply_dialog.connect("confirmed",Callable(self,"on_dialog_confirmed"))
-	apply_dialog.connect("cancelled",Callable(self,"on_dialog_cancelled"))
-	apply_dialog.connect("popup_hide",Callable(self,"on_dialog_hidden"))
+	apply_dialog.confirmed.connect(on_dialog_confirmed)
+	apply_dialog.cancelled.connect(on_dialog_cancelled)
+	apply_dialog.popup_hide.connect(on_dialog_hidden)
 	
 	bound_input_fields = settings.bound_input_fields
 	
@@ -91,13 +91,13 @@ func on_pressed():
 
 func on_dialog_confirmed():
 	final_values = gather_values()
-	emit_signal("applied_changes", initial_values.duplicate(), final_values.duplicate())
+	applied_changes.emit(initial_values.duplicate(), final_values.duplicate())
 	reset_dialog()
 
 
 func on_dialog_cancelled():
 	set_values(initial_values)
-	emit_signal("cancelled_changes")
+	cancelled_changes.emit()
 	reset_dialog()
 
 
@@ -131,4 +131,4 @@ func set_values(values):
 		prop_action.can_create_history = false
 		
 		debug_print_prop_action("Requesting prop action: %s from \"%s\"" % [str(prop_action), name])
-		emit_signal("prop_action_requested", prop_action)
+		prop_action_requested.emit(prop_action)

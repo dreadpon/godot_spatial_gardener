@@ -28,14 +28,14 @@ static func clear_children(node):
 
 # A shorthand for checking/connecting a signal
 # Kinda wish Godot had a built-in one
-static func ensure_signal(source:Object, _signal:String, target:Object, method:String, binds:Array = [], flags:int = 0):
-	if !source.is_connected(_signal,Callable(target,method)):
-		source.connect(_signal,Callable(target,method).bind(binds),flags)
+static func ensure_signal(_signal:Signal, callable: Callable, binds:Array = [], flags:int = 0):
+	if !_signal.is_connected(callable):
+		_signal.connect(callable.bindv(binds), flags)
 
 
-static func disconnect_all(obj: Object, signal_name: String):
-	for connection_data in obj.get_signal_connection_list(signal_name):
-		obj.disconnect(signal_name,Callable(connection_data.target,connection_data.method))
+static func disconnect_all(_signal: Signal):
+	for connection_data in _signal.get_connections():
+		connection_data.signal.disconnect(connection_data.callable)
 
 
 
@@ -188,7 +188,7 @@ static func print_system_time(suffix:String = ""):
 
 static func get_obj_class_string(obj:Object) -> String:
 	if obj == null: return ""
-	assert(obj is Object)
+	assert(is_instance_of(obj, Object))
 	if obj.has_meta("class"):
 		return obj.get_meta("class")
 	elif obj.get_script():
@@ -200,7 +200,7 @@ static func get_obj_class_string(obj:Object) -> String:
 static func are_same_class(one:Object, two:Object) -> bool:
 	if one == null: return false
 	if two == null: return false
-	assert(one is Object && two is Object)
+	assert(is_instance_of(one, Object) && is_instance_of(two, Object))
 	
 #	print("1 %s, 2 %s" % [one.get_class(), two.get_class()])
 	
@@ -217,13 +217,13 @@ static func are_same_class(one:Object, two:Object) -> bool:
 
 static func obj_is_script(obj:Object, script:Script) -> bool:
 	if obj == null: return false
-	assert(obj is Object)
+	assert(is_instance_of(obj, Object))
 	return obj.get_script() && obj.get_script() == script
 
 
 static func obj_is_class_string(obj:Object, class_string:String) -> bool:
 	if obj == null: return false
-	assert(obj is Object)
+	assert(is_instance_of(obj, Object))
 	
 	if obj.get_class() == class_string:
 		return true

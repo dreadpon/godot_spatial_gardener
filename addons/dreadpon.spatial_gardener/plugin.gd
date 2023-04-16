@@ -161,7 +161,7 @@ func on_tree_node_removed(node:Node):
 # Call _apply_changes on all Gardeners in the scene
 func apply_changes_to_gardeners():
 	for gardener in gardeners_in_tree:
-		if gardener is Gardener && is_instance_valid(gardener):
+		if is_instance_valid(gardener) && is_instance_of(gardener, Gardener):
 			gardener._apply_changes()
 
 
@@ -183,7 +183,7 @@ func _on_project_settings_changed():
 
 # Allows editor to forward us the spatial GUI input for any Gardener
 func handles(object):
-	return object is Gardener
+	return is_instance_of(object, Gardener)
 
 
 # Handle events
@@ -204,7 +204,7 @@ func _forward_3d_gui_input(camera, event):
 
 
 func plugin_input(event):
-	if event is InputEventKey && !event.pressed:
+	if is_instance_of(event, InputEventKey) && !event.pressed:
 		if event.keycode == debug_get_dump_editor_tree_key():
 			debug_dump_editor_tree()
 		elif (event.keycode == get_focus_painter_key()
@@ -328,7 +328,7 @@ func handle_selected_gardener(selection:Array):
 	if selection.size() == 1:
 		# Find a Gardener in selection. If found more than one - abort because of ambiguity
 		for selected in selection:
-			if selected is Gardener:
+			if is_instance_of(selected, Gardener):
 				if gardener:
 					gardener = null
 					logger.warn("Cannot edit multiple Gardeners at once!")
@@ -429,7 +429,7 @@ func debug_get_dump_editor_tree_key():
 
 func debug_toggle_console():
 	var current_scene := get_tree().get_current_scene()
-	if current_scene.has_node("Console") && current_scene.get_node("Console") is Console:
+	if current_scene.has_node("Console") && is_instance_of(current_scene.get_node("Console"), Console):
 		current_scene.remove_child(current_scene.get_node("Console"))
 	else:
 		var console = Console_SCN.instantiate()

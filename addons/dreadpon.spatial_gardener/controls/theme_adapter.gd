@@ -127,7 +127,7 @@ static func assign_node_type(target_control:Control, node_type:String):
 		# We reference ThemeOverrider manually since connecting a signal doesn't
 		theme_overrider.reference()
 		# Our theme overrides can be assigned only after node enters the tree (usually)
-		target_control.connect("tree_entered",Callable(theme_overrider,"set_overrides").bind(target_control, node_type))
+		target_control.tree_entered.connect(theme_overrider.set_overrides.bind(target_control, node_type))
 	else:
 		# No reference/dereference here since we don't need to keep this ThemeOverrider
 		ThemeOverrider.new().set_overrides(target_control, node_type)
@@ -190,8 +190,8 @@ class ThemeOverrider extends RefCounted:
 			target_control.add_theme_stylebox_override(item_name, item_value)
 		
 		# If ThemeOverrider was called from a signal - unreference to free it
-		if target_control.is_connected("tree_entered",Callable(self,"set_overrides")):
-			target_control.disconnect("tree_entered",Callable(self,"set_overrides"))
+		if target_control.tree_entered.is_connected(set_overrides):
+			target_control.tree_entered.disconnect(set_overrides)
 			self.unreference()
 	
 	

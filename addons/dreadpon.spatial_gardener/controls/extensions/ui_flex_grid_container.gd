@@ -23,8 +23,8 @@ func _init():
 
 
 func _ready():
-	connect("resized",Callable(self,"on_resized"))
-	get_parent().connect("resized",Callable(self,"on_resized"))
+	resized.connect(on_resized)
+	get_parent().resized.connect(on_resized)
 
 
 func _enter_tree():

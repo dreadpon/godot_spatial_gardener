@@ -11,7 +11,7 @@ func _process(delta):
 
 func _hide_scrollbar():
 	for child in get_children():
-		if child is VScrollBar:
+		if is_instance_of(child, VScrollBar):
 			child.visible = false
-		elif child is HScrollBar:
+		elif is_instance_of(child, HScrollBar):
 			child.visible = false

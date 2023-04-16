@@ -43,7 +43,7 @@ static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop
 
 static func get_morph_actions_recursive(initial, target, address:Array, prop_name, nested_prop_name_classes:Dictionary, morph_actions: Array, enable_prop_edit_actions:bool = true):
 #	print(address)
-	if target is Object:
+	if is_instance_of(target, Object):
 		if target.has_meta("class") && nested_prop_name_classes.values().has(target.get_meta("class")):
 			for nested_prop in target._get_prop_dictionary():
 				var t_next = target.get(nested_prop)
@@ -125,7 +125,7 @@ static func get_prop_morph_actions(t_val, i_val, adrs:Array, prop:String, edit_b
 		if t_val is Array || t_val is Dictionary:
 			t_val = t_val.duplicate()
 		
-		elif t_val is Resource && t_val.has_method("duplicate_ifr"):
+		elif is_instance_of(t_val, Resource) && t_val.has_method("duplicate_ifr"):
 			t_val = t_val.duplicate_ifr(false, true)
 		
 		elif edit_beforehand:

@@ -28,12 +28,12 @@ set_meta("class", "UI_IF_IntLineEdit")
 	value_input.size_flags_stretch_ratio = 0.5
 	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
-	value_input.connect("focus_entered",Callable(self,"select_line_edit").bind(value_input, true))
-	value_input.connect("focus_exited",Callable(self,"select_line_edit").bind(value_input, false))
+	value_input.focus_entered.connect(select_line_edit.bind(value_input, true))
+	value_input.focus_exited.connect(select_line_edit.bind(value_input, false))
 	# focus_exited is our main signal to commit the value in LineEdit
 	# release_focus() is expected to be called when pressing enter and only then we commit the value
-	value_input.connect("focus_exited",Callable(self,"focus_lost").bind(value_input))
-	value_input.connect("gui_input",Callable(self,"on_node_received_input").bind(value_input))
+	value_input.focus_exited.connect(focus_lost.bind(value_input))
+	value_input.gui_input.connect(on_node_received_input.bind(value_input))
 	ThemeAdapter.assign_node_type(value_input, 'IF_LineEdit')
 
 
@@ -50,7 +50,7 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 

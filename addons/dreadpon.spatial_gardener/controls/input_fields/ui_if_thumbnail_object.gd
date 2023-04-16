@@ -38,7 +38,7 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if prop_action is PA_PropSet || prop_action is PA_PropEdit:
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 
@@ -62,15 +62,15 @@ func on_requested_clear(thumb):
 
 
 func on_check(state, thumb):
-	emit_signal("requested_check", 0, state)
+	requested_check.emit(0, state)
 
 
 func on_label_edit(label_text, thumb):
-	emit_signal("requested_label_edit", 0, label_text)
+	requested_label_edit.emit(0, label_text)
 
 
 func on_press(thumb):
-	emit_signal("requested_press", 0)
+	requested_press.emit(0)
 
 
 

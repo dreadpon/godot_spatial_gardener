@@ -9,7 +9,7 @@ signal dont_ask_again_toggled(state)
 
 
 func _ready():
-	$'%TreeScenes'.connect('item_selected',Callable(self,'_on_tree_item_selected'))
+	$'%TreeScenes'.item_selected.connect(_on_tree_item_selected)
 
 
 func _on_tree_item_selected():
@@ -47,15 +47,15 @@ func should_mk_backups():
 
 
 func _on_ButtonConfirm_pressed():
-	emit_signal('confirm_pressed')
+	confirm_pressed.emit()
 
 
 func _on_ButtonCancel_pressed():
-	emit_signal('cancel_pressed')
+	cancel_pressed.emit()
 
 
 func _on_ButtonDontAskAgain_toggled(pressed):
-	emit_signal('dont_ask_again_toggled', pressed)
+	dont_ask_again_toggled.emit(pressed)
 
 
 func _on_ConvertDialog_about_to_show():

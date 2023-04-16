@@ -69,9 +69,9 @@ func _ready():
 	if has_node("RootButton"):
 		root_button_nd = $RootButton
 		if root_button_nd.has_signal("dropped"):
-			root_button_nd.connect("dropped",Callable(self,"on_set_drag"))
-		root_button_nd.connect("pressed",Callable(self,"on_set_dialog"))
-		root_button_nd.connect("pressed",Callable(self,"on_press"))
+			root_button_nd.dropped.connect(on_set_drag)
+		root_button_nd.pressed.connect(on_set_dialog)
+		root_button_nd.pressed.connect(on_press)
 		ThemeAdapter.assign_node_type(root_button_nd, 'InspectorButton')
 	if has_node("TextureRect"):
 		texture_rect_nd = $TextureRect
@@ -80,12 +80,12 @@ func _ready():
 		selection_panel_nd.visible = false
 	if has_node("CheckBox"):
 		check_box_nd = $CheckBox
-		check_box_nd.connect("pressed",Callable(self,"on_check"))
+		check_box_nd.pressed.connect(on_check)
 		check_box_nd.visible = false
 	if has_node("CounterContainer"):
 		counter_container_nd = $CounterContainer
 		counter_label_nd = $CounterContainer/CounterLabel
-		counter_label_nd.connect('resized',Callable(self,'counter_resized'))
+		counter_label_nd.resized.connect(counter_resized)
 		counter_label_nd.add_theme_font_override('font', get_theme_font("font", "Label").duplicate())
 		counter_container_nd.visible = false
 	if has_node("AltTextMargin"):
@@ -98,12 +98,12 @@ func _ready():
 		label_line_edit_nd = $LabelLineEdit
 		label_line_edit_nd.add_theme_font_override('font', get_theme_font("font", "Label").duplicate())
 		ThemeAdapter.assign_node_type(label_line_edit_nd, "PlantTitleLineEdit")
-		label_line_edit_nd.connect("text_changed",Callable(self,"on_label_edit"))
+		label_line_edit_nd.text_changed.connect(on_label_edit)
 		label_line_edit_nd.visible = false
 	if has_node('MenuButton'):
 		menu_button_nd = $MenuButton
 		ThemeAdapter.assign_node_type(menu_button_nd, "Button")
-		menu_button_nd.get_popup().connect('id_pressed',Callable(self,'on_popup_menu_press'))
+		menu_button_nd.get_popup().id_pressed.connect(on_popup_menu_press)
 	
 	update_size()
 	set_active_interaction_flags(active_interaction_flags)
@@ -207,7 +207,7 @@ func clamp_rect_to_stylebox_margins(rect, content_size, stylebox):
 
 func scale_font(node: Control, font_scale: float):
 	var font = node.get_theme_font('font')
-	if font is FontFile:
+	if is_instance_of(font, FontFile):
 		font.size *= font_scale
 
 
@@ -279,23 +279,23 @@ func set_features_val_to_flag(flag:int, val):
 
 func on_set_dialog():
 	if active_interaction_flags.has(InteractionFlags.SET_DIALOG):
-		emit_signal("requested_set_dialog")
+		requested_set_dialog.emit()
 
 func on_set_drag(path):
 	if active_interaction_flags.has(InteractionFlags.SET_DRAG):
-		emit_signal("requested_set_drag", path)
+		requested_set_drag.emit(path)
 
 func on_press():
 	if active_interaction_flags.has(InteractionFlags.PRESS):
-		emit_signal("requested_press")
+		requested_press.emit()
 
 func on_check():
 	if active_interaction_flags.has(InteractionFlags.CHECK):
-		emit_signal("requested_check", check_box_nd.pressed)
+		requested_check.emit(check_box_nd.pressed)
 
 func on_label_edit(label_text: String):
 	if active_interaction_flags.has(InteractionFlags.EDIT_LABEL):
-		emit_signal("requested_label_edit", label_text)
+		requested_label_edit.emit(label_text)
 
 func on_popup_menu_press(id: int):
 	match id:
@@ -306,11 +306,11 @@ func on_popup_menu_press(id: int):
 
 func on_clear():
 	if active_interaction_flags.has(InteractionFlags.CLEAR):
-		emit_signal("requested_clear")
+		requested_clear.emit()
 
 func on_delete():
 	if active_interaction_flags.has(InteractionFlags.DELETE):
-		emit_signal("requested_delete")
+		requested_delete.emit()
 
 
 

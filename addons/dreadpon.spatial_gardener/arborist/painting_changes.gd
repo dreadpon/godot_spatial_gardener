@@ -4,7 +4,7 @@ extends RefCounted
 
 #-------------------------------------------------------------------------------
 # A storage object for changes to the octree members
-# To be passed to UndoRedo or executed on the spot
+# To be passed to EditorUndoRedoManager or executed on the spot
 # Can also generate opposite actions (provided it's set up correctly)
 #-------------------------------------------------------------------------------
 
