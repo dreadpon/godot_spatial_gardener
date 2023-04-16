@@ -69,9 +69,9 @@ func _ready():
 	logger = Logger.get_for(self)
 	
 	# Using selection to start/stop editing of chosen Gardener
-	get_editor_interface().get_selection().connect("selection_changed",Callable(self,"selection_changed"))
-	get_tree().connect("node_added",Callable(self,"on_tree_node_added"))
-	get_tree().connect("node_removed",Callable(self,"on_tree_node_removed"))
+	get_editor_interface().get_selection().selection_changed.connect(selection_changed)
+	get_tree().node_added.connect(on_tree_node_added)
+	get_tree().node_removed.connect(on_tree_node_removed)
 	
 	make_debug_view_menu()
 	
@@ -89,7 +89,7 @@ func _enter_tree():
 	_resource_previewer = get_editor_interface().get_resource_previewer()
 	
 	adapt_editor_theme()
-	ProjectSettings.connect('project_settings_changed',Callable(self,'_on_project_settings_changed'))
+	ProjectSettings.project_settings_changed.connect(_on_project_settings_changed)
 	
 	scene_converter = SceneConverter.new()
 	scene_converter.setup(_base_control)
@@ -230,8 +230,8 @@ func focus_painter():
 	if !active_gardener: return
 	
 	var editor_selection:EditorSelection = get_editor_interface().get_selection()
-	if get_editor_interface().get_selection().is_connected("selection_changed",Callable(self,"selection_changed")):
-		get_editor_interface().get_selection().disconnect("selection_changed",Callable(self,"selection_changed"))
+	if get_editor_interface().get_selection().selection_changed.is_connected(selection_changed):
+		get_editor_interface().get_selection().selection_changed.disconnect(selection_changed)
 	
 	editor_selection.clear()
 	editor_selection.add_node(active_gardener.painter.paint_brush_node)
@@ -257,8 +257,8 @@ func restore_gardener_selection():
 	editor_selection.clear()
 	editor_selection.add_node(active_gardener)
 	
-	if !get_editor_interface().get_selection().is_connected("selection_changed",Callable(self,"selection_changed")):
-		get_editor_interface().get_selection().connect("selection_changed",Callable(self,"selection_changed"))
+	if get_editor_interface().get_selection().selection_changed.is_connected(selection_changed):
+		get_editor_interface().get_selection().selection_changed.connect(selection_changed)
 
 
 func get_focus_painter_key():
@@ -275,7 +275,7 @@ func get_focus_painter_key():
 
 func make_debug_view_menu():
 	debug_view_menu = DebugViewer.make_debug_view_menu()
-	debug_view_menu.get_popup().connect("id_pressed",Callable(self,"on_debug_view_menu_id_pressed"))
+	debug_view_menu.get_popup().id_pressed.connect(on_debug_view_menu_id_pressed)
 
 
 # Modify editor theme to use proper colors, margins, etc.
@@ -373,8 +373,8 @@ func start_gardener_edit(gardener):
 	# I'll keep it here *just in case* the bug still persists but hides well
 	active_gardener.restore_references()
 	
-	active_gardener.connect("tree_exited",Callable(self,"set_gardener_edit_state").bind(null))
-	active_gardener.connect("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
+	active_gardener.tree_exited.connect(set_gardener_edit_state.bind(null))
+	active_gardener.greenhouse_prop_action_executed.connect(on_greenhouse_prop_action_executed)
 	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), _side_panel)
 	_side_panel.visible = true
 	toolbar.visible = true
@@ -390,10 +390,10 @@ func stop_gardener_edit():
 
 	if active_gardener:
 		active_gardener.stop_editing()
-		if active_gardener.is_connected("tree_exited",Callable(self,"set_gardener_edit_state")):
-			active_gardener.disconnect("tree_exited",Callable(self,"set_gardener_edit_state"))
-		if active_gardener.is_connected("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed")):
-			active_gardener.disconnect("greenhouse_prop_action_executed",Callable(self,"on_greenhouse_prop_action_executed"))
+		if active_gardener.tree_exited.is_connected(set_gardener_edit_state):
+			active_gardener.tree_exited.disconnect(set_gardener_edit_state)
+		if active_gardener.greenhouse_prop_action_executed.is_connected(on_greenhouse_prop_action_executed):
+			active_gardener.greenhouse_prop_action_executed.disconnect(on_greenhouse_prop_action_executed)
 		
 	active_gardener = null
 

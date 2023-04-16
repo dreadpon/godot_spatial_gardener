@@ -319,11 +319,9 @@ static func is_dir_valid(dir):
 
 
 static func remove_dir_recursive(path, keep_first:bool = false) -> bool:
-	var dir = Directory.new()
-	
-	var error = dir.open(path)
-	if error == OK:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+	var dir = DirAccess.open(path)
+	if dir:
+		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
 			if dir.current_is_dir():
@@ -347,13 +345,12 @@ static func iterate_files(dir_path: String, deep: bool, obj: Object, method_name
 	if !obj.has_method(method_name): 
 		assert('%s does not have a method named "%s"!' % [str(obj), method_name])
 		return
-	var dir = Directory.new()
 	
-	var error = dir.open(dir_path)
+	var dir = DirAccess.open(dir_path)
 	if dir_path.ends_with('/'):
 		dir_path = dir_path.trim_suffix('/')
-	if error == OK:
-		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
+	if dir:
+		dir.list_dir_begin()
 		var full_path = ''
 		var file_name = dir.get_next()
 		while file_name != '':

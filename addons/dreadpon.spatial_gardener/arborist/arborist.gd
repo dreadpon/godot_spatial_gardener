@@ -497,7 +497,7 @@ func import_instance_transforms(file_path: String, plant_idx: int):
 
 
 func export_instance_transforms(file_path: String, plant_idx: int):
-	Directory.new().make_dir_recursive(file_path.get_base_dir())
+	DirAccess.make_dir_recursive_absolute(file_path.get_base_dir())
 	var file := File.new()
 	var err = file.open(file_path, File.WRITE)
 	if err != OK:

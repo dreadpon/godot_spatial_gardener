@@ -21,9 +21,8 @@ class Base:
 		_context = __context
 		_log_filepath = __log_filepath
 		if !_log_filepath.is_empty():
-			var dir = Directory.new()
-			dir.make_dir_recursive(_log_filepath.get_base_dir())
-			if !dir.file_exists(_log_filepath):
+			DirAccess.make_dir_recursive_absolute(_log_filepath.get_base_dir())
+			if !FileAccess.file_exists(_log_filepath):
 				var file = File.new()
 				file.open(_log_filepath, File.WRITE)
 				file.close()

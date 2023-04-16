@@ -199,13 +199,12 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 	
 	logger.info('Found %d valid scenes for conversion' % [in_filepaths.size()])
 	
-	var backup_dir := Directory.new()
 	for in_filepath in in_filepaths:
 		if mk_backups:
 			var num = 0
-			while backup_dir.file_exists('%s.backup_%d' % [in_filepath, num]):
+			while FileAccess.file_exists('%s.backup_%d' % [in_filepath, num]):
 				num += 1
-			backup_dir.copy(in_filepath, '%s.backup_%d' % [in_filepath, num])
+			DirAccess.copy_absolute (in_filepath, '%s.backup_%d' % [in_filepath, num])
 		
 		var out_filepath = in_filepath
 		if !out_base_dir.is_empty():
