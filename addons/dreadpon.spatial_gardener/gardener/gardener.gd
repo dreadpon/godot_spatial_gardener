@@ -336,8 +336,8 @@ func pair_debug_viewer_arborist():
 		if !arborist: logger.warn("DebugViewer->Arborist: Arborist is not initialized!")
 		return
 	
-		if !arborist.req_debug_redraw.is_connected(debug_viewer.request_debug_redraw):
-			arborist.req_debug_redraw.connect(debug_viewer.request_debug_redraw)
+	if !arborist.req_debug_redraw.is_connected(debug_viewer.request_debug_redraw):
+		arborist.req_debug_redraw.connect(debug_viewer.request_debug_redraw)
 
 
 
@@ -376,6 +376,11 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo:Edit
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
+	
+#	await get_tree().process_frame
+#	var debug_scene = PackedScene.new()
+#	debug_scene.pack(_side_panel)
+#	ResourceSaver.save(debug_scene, "res://debug_side_panel.tscn")
 
 
 # Stop editing (painting) a scene
@@ -705,12 +710,12 @@ func _get_property_list():
 		{
 			"name": "plugin_version",
 			"type": TYPE_STRING,
-			"usage": PROPERTY_USAGE_NOEDITOR,
+			"usage": PROPERTY_USAGE_NO_EDITOR,
 		},
 		{
 			"name": "storage_version",
 			"type": TYPE_STRING,
-			"usage": PROPERTY_USAGE_NOEDITOR,
+			"usage": PROPERTY_USAGE_NO_EDITOR,
 		},
 	]
 

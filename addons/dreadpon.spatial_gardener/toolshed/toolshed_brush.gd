@@ -31,7 +31,10 @@ var behavior_no_settings_text: String = 'This brush has no additional settings'
 #-------------------------------------------------------------------------------
 
 
-func _init(__behavior_brush_type:int = BrushType.PAINT,__behavior_strength:float = 1.0,__shape_volume_size:float = 1.0,__shape_projection_size:float = 1.0,__behavior_passthrough: bool = false,__behavior_overlap_mode: int = OverlapMode.VOLUME):
+func _init(__behavior_brush_type:int = BrushType.PAINT, __behavior_strength:float = 1.0, __shape_volume_size:float = 1.0,
+	__shape_projection_size:float = 1.0, __behavior_passthrough: bool = false, __behavior_overlap_mode: int = OverlapMode.VOLUME):
+	
+	super()
 	set_meta("class", "Toolshed_Brush")
 	resource_name = "Toolshed_Brush"
 	

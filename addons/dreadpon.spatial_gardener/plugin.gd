@@ -45,6 +45,7 @@ var active_gardener = null
 var gardeners_in_tree:Array = []
 var folding_states: Dictionary = {}
 var scene_converter: SceneConverter = null
+var _editor_camera_cache: Camera3D = null
 
 var logger = null
 
@@ -89,7 +90,9 @@ func _enter_tree():
 	_resource_previewer = get_editor_interface().get_resource_previewer()
 	
 	adapt_editor_theme()
-	ProjectSettings.project_settings_changed.connect(_on_project_settings_changed)
+	# TODO: reimplement once functionality is merged in Godot 4.1
+	#		https://github.com/godotengine/godot/pull/62038
+#	ProjectSettings.project_settings_changed.connect(_on_project_settings_changed)
 	
 	scene_converter = SceneConverter.new()
 	scene_converter.setup(_base_control)
@@ -190,7 +193,8 @@ func handles(object):
 # Propagate editor camera
 # Forward input to Gardener if selected
 func _forward_3d_gui_input(camera, event):
-	propagate_camera(camera)
+	_editor_camera_cache = camera
+	propagate_camera()
 	
 	var handled = false
 	
@@ -213,10 +217,10 @@ func plugin_input(event):
 
 
 # A hack to propagate editor camera using _forward_3d_gui_input
-func propagate_camera(camera:Camera3D):
+func propagate_camera():
 	for gardener in gardeners_in_tree:
 		if is_instance_valid(gardener):
-			gardener.propagate_camera(camera)
+			gardener.propagate_camera(_editor_camera_cache)
 
 
 func on_debug_view_menu_id_pressed(id):
@@ -263,7 +267,7 @@ func restore_gardener_selection():
 
 func get_focus_painter_key():
 	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/focus_painter_key", KEY_Q)
-	return Globals.index_to_enum(key, Globals.KeyList)
+	return Globals.index_to_enum(key, Globals.KeyboardKey)
 
 
 
@@ -283,8 +287,7 @@ func adapt_editor_theme():
 	if !Engine.is_editor_hint(): return
 	
 	var editorTheme = ThemeAdapter.get_theme(get_editor_interface().get_inspector())
-	control_theme = editorTheme.duplicate()
-	ThemeAdapter.adapt_theme(control_theme)
+	control_theme = ThemeAdapter.adapt_theme(editorTheme, true)
 
 
 # Gather folding states from side panel
@@ -380,6 +383,7 @@ func start_gardener_edit(gardener):
 	toolbar.visible = true
 	active_gardener.up_to_date_debug_view_menu(debug_view_menu)
 	refresh_folding_state_for_greenhouse(active_gardener.greenhouse)
+	active_gardener.propagate_camera(_editor_camera_cache)
 
 
 func stop_gardener_edit():
@@ -414,7 +418,13 @@ func debug_dump_node_descendants(node:Node, intendation:int = 0):
 	var intend_str = ""
 	for i in range(0, intendation):
 		intend_str += "	"
-	var string = "%s%s" % [intend_str, str(node)]
+	var string = ""
+	
+	if is_instance_of(node, Control):
+		string = "%s%s %s" % [intend_str, str(node), str(node.size)]
+	else:
+		string = "%s%s" % [intend_str, str(node)]
+	
 	logger.info(string)
 	
 	intendation += 1
@@ -424,7 +434,7 @@ func debug_dump_node_descendants(node:Node, intendation:int = 0):
 
 func debug_get_dump_editor_tree_key():
 	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_editor_tree_key", 0)
-	return Globals.index_to_enum(key, Globals.KeyList)
+	return Globals.index_to_enum(key, Globals.KeyboardKey)
 
 
 func debug_toggle_console():

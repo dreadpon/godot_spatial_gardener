@@ -14,8 +14,8 @@ const Toolshed_Brush = preload("../toolshed/toolshed_brush.gd")
 const Globals = preload("../utility/globals.gd")
 
 
-enum ModifierKeyList {KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_TAB}
-enum BrushPrimaryKeyList {MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2}
+enum ModifierKeyboardKey {KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_TAB}
+enum BrushPrimaryKeyboardKey {MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_XBUTTON1, MOUSE_BUTTON_XBUTTON2}
 enum BrushPropEditFlag {MODIFIER, NONE, SIZE, STRENGTH}
 
 
@@ -221,18 +221,18 @@ func forwarded_input(camera:Camera3D, event):
 func get_property_edit_modifier():
 	# This convolution exists because a project setting with default value is not saved for some reason and load as "null"
 	# See https://github.com/godotengine/godot/issues/56598
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier", Globals.KeyList.KEY_SHIFT)
-	return Globals.index_to_enum(key, Globals.KeyList)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier", Globals.KeyboardKey.KEY_SHIFT)
+	return Globals.index_to_enum(key, Globals.KeyboardKey)
 
 
 func get_property_edit_button():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button", Globals.ButtonList.MOUSE_BUTTON_RIGHT)
-	return Globals.index_to_enum(key, Globals.ButtonList)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button", Globals.MouseButton.MOUSE_BUTTON_RIGHT)
+	return Globals.index_to_enum(key, Globals.MouseButton)
 
 
 func get_overlap_mode_key():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_overlap_mode_button", Globals.KeyList.KEY_QUOTELEFT)
-	return Globals.index_to_enum(key, Globals.KeyList)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_overlap_mode_button", Globals.KeyboardKey.KEY_QUOTELEFT)
+	return Globals.index_to_enum(key, Globals.KeyboardKey)
 
 
 
@@ -370,13 +370,13 @@ func brush_prop_edit_calc_val(mouse_pos):
 		Toolshed_Brush.OverlapMode.VOLUME:
 			match brush_prop_edit_flag:
 				BrushPropEditFlag.SIZE:
-					changed_active_brush_prop', 'shape/shape_volume_size.emit(brush_prop_edit_cur_val, false)
+					changed_active_brush_prop.emit("shape/shape_volume_size", brush_prop_edit_cur_val, false)
 				BrushPropEditFlag.STRENGTH:
-					changed_active_brush_prop', 'behavior/behavior_strength.emit(brush_prop_edit_cur_val, false)
+					changed_active_brush_prop.emit("behavior/behavior_strength", brush_prop_edit_cur_val, false)
 		Toolshed_Brush.OverlapMode.PROJECTION:
 			match brush_prop_edit_flag:
 				BrushPropEditFlag.SIZE:
-					changed_active_brush_prop', 'shape/shape_projection_size.emit(brush_prop_edit_cur_val, false)
+					changed_active_brush_prop.emit("shape/shape_projection_size", brush_prop_edit_cur_val, false)
 
 
 # Stop editing brush property and reset helper variables and mouse position
@@ -385,15 +385,16 @@ func finish_brush_prop_edit(camera:Camera3D):
 		Toolshed_Brush.OverlapMode.VOLUME:
 			match brush_prop_edit_flag:
 				BrushPropEditFlag.SIZE:
-					changed_active_brush_prop', 'shape/shape_volume_size.emit(brush_prop_edit_cur_val, true)
+					changed_active_brush_prop.emit("shape/shape_volume_size", brush_prop_edit_cur_val, true)
 				BrushPropEditFlag.STRENGTH:
-					changed_active_brush_prop', 'behavior/behavior_strength.emit(brush_prop_edit_cur_val, true)
+					changed_active_brush_prop.emit("behavior/behavior_strength", brush_prop_edit_cur_val, true)
 		Toolshed_Brush.OverlapMode.PROJECTION:
 			match brush_prop_edit_flag:
 				BrushPropEditFlag.SIZE:
-					changed_active_brush_prop', 'shape/shape_projection_size.emit(brush_prop_edit_cur_val, true)
+					changed_active_brush_prop.emit("shape/shape_projection_size", brush_prop_edit_cur_val, true)
 	
-	camera.get_viewport().warp_mouse(brush_prop_edit_start_pos)
+	Input.warp_mouse(brush_prop_edit_start_pos)
+#	camera.get_viewport().warp_mouse(brush_prop_edit_start_pos)
 	
 	brush_prop_edit_flag = BrushPropEditFlag.NONE
 	brush_prop_edit_start_pos = Vector2.ZERO
@@ -412,7 +413,7 @@ func cycle_overlap_modes():
 	active_brush_overlap_mode += 1
 	if active_brush_overlap_mode > Toolshed_Brush.OverlapMode.PROJECTION: 
 		active_brush_overlap_mode = Toolshed_Brush.OverlapMode.VOLUME
-	changed_active_brush_prop', 'behavior/behavior_overlap_mode.emit(active_brush_overlap_mode, true)
+	changed_active_brush_prop.emit("behavior/behavior_overlap_mode", active_brush_overlap_mode, true)
 
 
 

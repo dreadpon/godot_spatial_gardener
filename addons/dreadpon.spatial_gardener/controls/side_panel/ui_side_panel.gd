@@ -8,7 +8,6 @@ extends TabContainer
 
 
 const FunLib = preload("../../utility/fun_lib.gd")
-const ThemeAdapter = preload("../theme_adapter.gd")
 const FoldableSection = preload("ui_foldable_section.gd")
 
 const Greenhouse = preload("../../greenhouse/greenhouse.gd")
@@ -33,7 +32,7 @@ const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd"
 func _ready():
 	set_meta("class", "UI_SidePanel")
 	
-	ThemeAdapter.assign_node_type(panel_container_tools_nd, "InspectorPanelContainer")
+	panel_container_tools_nd.theme_type_variation = "InspectorPanelContainer"
 
 
 

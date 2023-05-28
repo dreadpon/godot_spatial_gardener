@@ -11,7 +11,10 @@ func _init():
 
 
 # Create all custom node types for this plugin
-static func adapt_theme(theme:Theme):
+static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
+	if duplicate_theme:
+		theme = theme.duplicate()
+	
 	var base_color = theme.get_color('base_color', 'Editor')
 	var dark_color_1 = theme.get_color('dark_color_1', 'Editor')
 	var dark_color_2 = theme.get_color('dark_color_2', 'Editor')
@@ -26,61 +29,96 @@ static func adapt_theme(theme:Theme):
 	var stylebox_content := theme.get_stylebox("Content", "EditorStyles")
 	var stylebox_background := theme.get_stylebox("Background", "EditorStyles")
 	var LineEdit_stylebox_normal := theme.get_stylebox("normal", "LineEdit")
+	var PanelContainer_stylebox_panel = theme.get_stylebox('panel', 'PanelContainer')
+	var Window_stylebox_panel = theme.get_stylebox('panel', 'Window')
+	var Button_stylebox_normal := theme.get_stylebox('normal', 'Button')
+	var Button_stylebox_hover := theme.get_stylebox('hover', 'Button')
+	var Button_stylebox_pressed := theme.get_stylebox('pressed', 'Button')
+	var Button_stylebox_focus := theme.get_stylebox('focus', 'Button')
 	
+	# NoMargin -> MarginContainer
 	theme.set_constant("offset_top", "NoMargin", 0)
 	theme.set_constant("offset_left", "NoMargin", 0)
 	theme.set_constant("offset_bottom", "NoMargin", 0)
 	theme.set_constant("offset_right", "NoMargin", 0)
-	
+	theme.set_type_variation("NoMargin", "MarginContainer")
+
+	# ExternalMargin -> MarginContainer
 	theme.set_constant("offset_top", "ExternalMargin", constant_background_margin)
 	theme.set_constant("offset_left", "ExternalMargin", constant_background_margin)
 	theme.set_constant("offset_bottom", "ExternalMargin", constant_background_margin)
 	theme.set_constant("offset_right", "ExternalMargin", constant_background_margin)
+	theme.set_type_variation("ExternalMargin", "MarginContainer")
 	
+	# MultiRangeValuePanel -> PanelContainer
 	var MultiRangeValuePanel_stylebox_panel := StyleBoxFlat.new()
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "MultiRangeValuePanel", MultiRangeValuePanel_stylebox_panel)
+	theme.set_type_variation("MultiRangeValuePanel", "PanelContainer")
 	
-	var IF_LineEdit_stylebox := theme.get_stylebox('normal', 'LineEdit').duplicate(true)
+	# IF_LineEdit -> LineEdit
+	var IF_LineEdit_stylebox := LineEdit_stylebox_normal.duplicate(true)
 	IF_LineEdit_stylebox.bg_color = dark_color_2
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "IF_LineEdit", IF_LineEdit_stylebox)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", IF_LineEdit_stylebox.duplicate(true))
+	theme.set_type_variation("IF_LineEdit", "LineEdit")
+
+	# MultiRangeValue -> LineEdit
+	var MultiRangeValue_stylebox := IF_LineEdit_stylebox.duplicate(true)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeValue", MultiRangeValue_stylebox)
+	theme.set_type_variation("MultiRangeValue", "LineEdit")
 	
+	# MultiRangePropLabel -> Label
 	var MultiRangePropLabel_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
 	MultiRangePropLabel_stylebox_panel.bg_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", MultiRangePropLabel_stylebox_panel)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", MultiRangePropLabel_stylebox_panel.duplicate(true))
+	theme.set_type_variation("MultiRangePropLabel", "Label")
+
+	# MultiRangeDashLabel -> Label
+	var MultiRangeDashLabel_stylebox_panel := MultiRangePropLabel_stylebox_panel.duplicate(true)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangeDashLabel", MultiRangeDashLabel_stylebox_panel)
+	theme.set_type_variation("MultiRangeDashLabel", "Label")
 	
+	# PlantTitleLineEdit -> LineEdit
 	var PlantTitleLineEdit_stylebox := StyleBoxFlat.new()
 	PlantTitleLineEdit_stylebox.bg_color = dark_color_3
 	PlantTitleLineEdit_stylebox.content_margin_left = 1
 	PlantTitleLineEdit_stylebox.content_margin_right = 1
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PlantTitleLineEdit", PlantTitleLineEdit_stylebox)
+	theme.set_type_variation("PlantTitleLineEdit", "LineEdit")
 	
-	var InspectorPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	# InspectorPanelContainer -> PanelContainer
+	var InspectorPanelContainer_stylebox := PanelContainer_stylebox_panel.duplicate(true)
 	InspectorPanelContainer_stylebox.draw_center = true
 	InspectorPanelContainer_stylebox.bg_color = dark_color_1
 	InspectorPanelContainer_stylebox.set_border_width_all(1)
 	InspectorPanelContainer_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorPanelContainer", InspectorPanelContainer_stylebox)
+	theme.set_type_variation("InspectorPanelContainer", "PanelContainer")
 	
-	var InspectorWindowDialog_stylebox := theme.get_stylebox('panel', 'Window').duplicate()
+	# InspectorWindowDialog -> Window
+	var InspectorWindowDialog_stylebox := Window_stylebox_panel.duplicate(true)
 	InspectorWindowDialog_stylebox.draw_center = true
 	InspectorWindowDialog_stylebox.bg_color = dark_color_1
 	InspectorWindowDialog_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorWindowDialog", InspectorWindowDialog_stylebox)
+	theme.set_type_variation("InspectorWindowDialog", "Window")
 	
-	var InspectorInnerPanelContainer_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	# InspectorInnerPanelContainer -> PanelContainer
+	var InspectorInnerPanelContainer_stylebox := PanelContainer_stylebox_panel.duplicate(true)
 	InspectorInnerPanelContainer_stylebox.draw_center = false
 	InspectorInnerPanelContainer_stylebox.set_border_width_all(1)
 	InspectorInnerPanelContainer_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorInnerPanelContainer", InspectorInnerPanelContainer_stylebox)
+	theme.set_type_variation("InspectorInnerPanelContainer", "PanelContainer")
 	
-	var PropertyCategory_stylebox := StyleBoxFlat.new()#theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	# PropertyCategory -> PanelContainer
+	var PropertyCategory_stylebox := StyleBoxFlat.new()
 	PropertyCategory_stylebox.draw_center = true
 	PropertyCategory_stylebox.bg_color = prop_category_color
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertyCategory", PropertyCategory_stylebox)
+	theme.set_type_variation("PropertyCategory", "PanelContainer")
 	
-	var PropertySection_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	# PropertySection -> PanelContainer
+	var PropertySection_stylebox := PanelContainer_stylebox_panel.duplicate(true)
 	PropertySection_stylebox.draw_center = true
 	PropertySection_stylebox.bg_color = prop_subsection_color
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertySection", PropertySection_stylebox)
@@ -88,8 +126,10 @@ static func adapt_theme(theme:Theme):
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "PropertySection", PropertySection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "PropertySection", PropertySection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "PropertySection", PropertySection_stylebox)
+	theme.set_type_variation("PropertySection", "PanelContainer")
 	
-	var PropertySubsection_stylebox := theme.get_stylebox('panel', 'PanelContainer').duplicate()
+	# PropertySubsection -> PanelContainer
+	var PropertySubsection_stylebox := PanelContainer_stylebox_panel.duplicate(true)
 	PropertySubsection_stylebox.draw_center = true
 	PropertySubsection_stylebox.bg_color = true_prop_subsection_color
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertySubsection", PropertySubsection_stylebox)
@@ -97,40 +137,60 @@ static func adapt_theme(theme:Theme):
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "PropertySubsection", PropertySubsection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "PropertySubsection", PropertySubsection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "PropertySubsection", PropertySubsection_stylebox)
+	theme.set_type_variation("PropertySubsection", "PanelContainer")
 	
-	var InspectorButton_stylebox_normal := theme.get_stylebox('normal', 'Button').duplicate()
-	var InspectorButton_stylebox_hover := theme.get_stylebox('hover', 'Button').duplicate()
-	var InspectorButton_stylebox_pressed := theme.get_stylebox('pressed', 'Button').duplicate()
-	var InspectorButton_stylebox_focus := theme.get_stylebox('focus', 'Button').duplicate()
+	# Buttons
+	var InspectorButton_stylebox_normal := Button_stylebox_normal.duplicate(true)
+	var InspectorButton_stylebox_hover := Button_stylebox_hover.duplicate(true)
+	var InspectorButton_stylebox_pressed := Button_stylebox_pressed.duplicate(true)
+	var InspectorButton_stylebox_focus := Button_stylebox_focus.duplicate(true)
 	InspectorButton_stylebox_normal.bg_color = dark_color_2
-	InspectorButton_stylebox_hover.bg_color = dark_color_2
+	InspectorButton_stylebox_hover.bg_color = dark_color_2 * 1.2
 	InspectorButton_stylebox_pressed.bg_color = dark_color_2
 	InspectorButton_stylebox_focus.bg_color = dark_color_2
+	
+	# ActionThumbnail_SelectionPanel -> Panel
+	var ActionThumbnail_SelectionPanel_stylebox := Button_stylebox_focus.duplicate(true)
+	ActionThumbnail_SelectionPanel_stylebox.bg_color = Color8(255, 255, 255, 51)
+	ActionThumbnail_SelectionPanel_stylebox.border_color = Color8(255, 255, 255, 255)
+	ActionThumbnail_SelectionPanel_stylebox.draw_center = true
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "ActionThumbnail_SelectionPanel", ActionThumbnail_SelectionPanel_stylebox)
+	theme.set_type_variation("ActionThumbnail_SelectionPanel", "PanelContainer")
+
+	# InspectorButton -> Button
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorButton", InspectorButton_stylebox_normal)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorButton", InspectorButton_stylebox_hover)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorButton", InspectorButton_stylebox_pressed)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorButton", InspectorButton_stylebox_focus)
+	theme.set_type_variation("InspectorButton", "Button")
+
+	# InspectorCheckBox -> CheckBox
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorCheckBox", InspectorButton_stylebox_normal)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorCheckBox", InspectorButton_stylebox_hover)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorCheckBox", InspectorButton_stylebox_pressed)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorCheckBox", InspectorButton_stylebox_focus)
+	theme.set_type_variation("InspectorCheckBox", "CheckBox")
+
+	# InspectorOptionButton -> OptionButton
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorOptionButton", InspectorButton_stylebox_normal)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorOptionButton", InspectorButton_stylebox_hover)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorOptionButton", InspectorButton_stylebox_pressed)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorOptionButton", InspectorButton_stylebox_focus)
+	theme.set_type_variation("InspectorOptionButton", "OptionButton")
+	
+	# InspectorMenuButton -> MenuButton
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorMenuButton", InspectorButton_stylebox_normal)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorMenuButton", InspectorButton_stylebox_hover)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorMenuButton", InspectorButton_stylebox_pressed)
+	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorMenuButton", InspectorButton_stylebox_focus)
+	theme.set_type_variation("InspectorMenuButton", "MenuButton")
+	
+	return theme
 
 
 # Iterate through controls and return the first found theme
 static func get_theme(node:Node) -> Theme:
 	return ThemeOverrider.get_theme(node)
-
-
-# "Assign" a theme node type
-# (Not supported by Godot AFAIK. For now - manually set all overrides from the given node type)
-static func assign_node_type(target_control:Control, node_type:String):
-	assert(target_control)
-	
-	if !target_control.is_inside_tree():
-		var theme_overrider := ThemeOverrider.new()
-		# We reference ThemeOverrider manually since connecting a signal doesn't
-		theme_overrider.reference()
-		# Our theme overrides can be assigned only after node enters the tree (usually)
-		target_control.tree_entered.connect(theme_overrider.set_overrides.bind(target_control, node_type))
-	else:
-		# No reference/dereference here since we don't need to keep this ThemeOverrider
-		ThemeOverrider.new().set_overrides(target_control, node_type)
 
 
 # Get styleboxes associated with nested objects
@@ -163,36 +223,6 @@ class ThemeOverrider extends RefCounted:
 	
 	func _init():
 		set_meta("class", "ThemeOverrider")
-	
-	
-	func set_overrides(target_control:Control, node_type:String):
-		var theme := get_theme(target_control)
-		
-		
-		for item_name in theme.get_color_list(node_type):
-			var item_value = theme.get_color(item_name, node_type)
-			target_control.add_theme_color_override(item_name, item_value)
-		
-		for item_name in theme.get_constant_list(node_type):
-			var item_value = theme.get_constant(item_name, node_type)
-			target_control.add_theme_constant_override(item_name, item_value)
-		
-		for item_name in theme.get_font_list(node_type):
-			var item_value = theme.get_font(item_name, node_type)
-			target_control.add_theme_font_override(item_name, item_value)
-		
-		for item_name in theme.get_icon_list(node_type):
-			var item_value = theme.get_icon(item_name, node_type)
-			target_control.add_theme_icon_override(item_name, item_value)
-		
-		for item_name in theme.get_stylebox_list(node_type):
-			var item_value = theme.get_stylebox(item_name, node_type)
-			target_control.add_theme_stylebox_override(item_name, item_value)
-		
-		# If ThemeOverrider was called from a signal - unreference to free it
-		if target_control.tree_entered.is_connected(set_overrides):
-			target_control.tree_entered.disconnect(set_overrides)
-			self.unreference()
 	
 	
 	# Iterate through controls and return the first found theme

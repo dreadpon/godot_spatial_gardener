@@ -5,7 +5,7 @@ extends "ui_input_field.gd"
 #-------------------------------------------------------------------------------
 # Shows a dialog with InputField controls when button is pressed
 # InputField controls will be set with PA_PropSet if dialog was confirmed
-# InputField controls will be reverted to initial values if dialog was cancelled
+# InputField controls will be reverted to initial values if dialog was canceled
 #-------------------------------------------------------------------------------
 
 
@@ -21,7 +21,7 @@ var final_values:Array = []
 
 
 signal applied_changes(initial_values, final_values)
-signal cancelled_changes
+signal canceled_changes
 
 
 
@@ -31,8 +31,8 @@ signal cancelled_changes
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}).(__init_val, __labelText, __prop_name, settings):
-	
+func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
+	super(__init_val, __labelText, __prop_name, settings)
 	set_meta("class", "UI_IF_ApplyChanges")
 	
 	button = Button.new()
@@ -45,17 +45,18 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	_base_control = settings._base_control
 	
 	apply_dialog = UI_Dialog_IF.instantiate()
-	apply_dialog.window_title = settings.button_text
+	apply_dialog.title = settings.button_text
 	apply_dialog.confirmed.connect(on_dialog_confirmed)
-	apply_dialog.cancelled.connect(on_dialog_cancelled)
-	apply_dialog.popup_hide.connect(on_dialog_hidden)
+	apply_dialog.canceled.connect(on_dialog_canceled)
+	apply_dialog.close_requested.connect(on_dialog_hidden)
 	
 	bound_input_fields = settings.bound_input_fields
 	
-	ThemeAdapter.assign_node_type(button, 'InspectorButton')
+	button.theme_type_variation = "InspectorButton"
 
 
 func _ready():
+	super()
 	value_container.add_child(button)
 	_base_control.add_child(apply_dialog)
 	for input_field in bound_input_fields:
@@ -95,14 +96,14 @@ func on_dialog_confirmed():
 	reset_dialog()
 
 
-func on_dialog_cancelled():
+func on_dialog_canceled():
 	set_values(initial_values)
-	cancelled_changes.emit()
+	canceled_changes.emit()
 	reset_dialog()
 
 
 func on_dialog_hidden():
-	on_dialog_cancelled()
+	on_dialog_canceled()
 
 
 

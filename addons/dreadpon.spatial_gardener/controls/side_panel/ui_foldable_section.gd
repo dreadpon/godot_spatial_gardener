@@ -2,7 +2,7 @@
 extends MarginContainer
 
 
-const ThemeAdapter = preload("../theme_adapter.gd")
+
 
 @export var arrow_down:Image = null
 @export var arrow_right:Image = null
@@ -60,6 +60,6 @@ func set_nesting_level(val):
 	if is_inside_tree():
 		match nesting_level:
 			0:
-				ThemeAdapter.assign_node_type($VBoxContainer_Main/Button_Fold, 'PropertySection')
+				$VBoxContainer_Main/Button_Fold.theme_type_variation = "PropertySection"
 			1:
-				ThemeAdapter.assign_node_type($VBoxContainer_Main/Button_Fold, 'PropertySubsection')
+				$VBoxContainer_Main/Button_Fold.theme_type_variation = "PropertySubsection"

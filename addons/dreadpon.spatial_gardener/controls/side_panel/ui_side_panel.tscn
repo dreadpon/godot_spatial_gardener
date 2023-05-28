@@ -11,14 +11,13 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 0.3
 tabs_visible = false
 script = ExtResource("3")
-__meta__ = {
-"class": "UI_SidePanel"
-}
+metadata/class = "UI_SidePanel"
 
 [node name="PanelContainer_Tools" type="PanelContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_type_variation = &"InspectorPanelContainer"
 
 [node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer_Tools"]
 layout_mode = 2

@@ -5,7 +5,7 @@ extends "ui_input_field.gd"
 #-------------------------------------------------------------------------------
 # Shows a dialog with InputField controls when button is pressed
 # InputField controls will be set with PA_PropSet if dialog was confirmed
-# InputField controls will be reverted to initial values if dialog was cancelled
+# InputField controls will be reverted to initial values if dialog was canceled
 #-------------------------------------------------------------------------------
 
 
@@ -44,13 +44,14 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 
 
 func _ready():
+	super()
 	margin_container.add_child(input_field_container)
 	value_container.add_child(margin_container)
 	
 	_init_ui()
 	
 	if tab_index > 0:
-		ThemeAdapter.assign_node_type(margin_container, 'PanelContainer')
+		margin_container.theme_type_variation = "PanelContainer"
 	else:
 		margin_container.add_theme_stylebox_override('panel', StyleBoxEmpty.new())
 

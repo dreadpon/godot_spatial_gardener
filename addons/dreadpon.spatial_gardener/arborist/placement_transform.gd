@@ -24,7 +24,7 @@ extends Resource
 
 
 
-func _init(_placement:Vector3 = Vector3(),_surface_normal:Vector3 = Vector3(),_transform:Transform3D = Transform3D(),_octree_octant:int = 0):
+func _init(_placement:Vector3 = Vector3(), _surface_normal:Vector3 = Vector3(), _transform:Transform3D = Transform3D(), _octree_octant:int = 0):
 	set_meta("class", "PlacementTransform")
 	resource_name = "PlacementTransform"
 	

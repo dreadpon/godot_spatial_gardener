@@ -8,6 +8,11 @@ signal dont_ask_again_toggled(state)
 
 
 
+
+func _init():
+	close_requested.connect(hide)
+
+
 func _ready():
 	$'%TreeScenes'.item_selected.connect(_on_tree_item_selected)
 
@@ -41,7 +46,7 @@ func get_selected_scenes() -> Array:
 
 
 func should_mk_backups():
-	return $'%ButtonBackup'.pressed
+	return $'%ButtonBackup'.button_pressed
 
 
 

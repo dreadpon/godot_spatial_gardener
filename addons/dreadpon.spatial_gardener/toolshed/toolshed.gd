@@ -9,7 +9,6 @@ extends "../utility/input_field_resource/input_field_resource.gd"
 
 
 const Toolshed_Brush = preload("toolshed_brush.gd")
-const ThemeAdapter = preload("../controls/theme_adapter.gd")
 const ui_category_brushes_SCN = preload("../controls/side_panel/ui_category_brushes.tscn")
 const ui_section_brush_SCN = preload("../controls/side_panel/ui_section_brush.tscn")
 
@@ -34,6 +33,7 @@ signal prop_action_executed_on_brush(prop_action, final_val, brush)
 
 
 func _init(__brushes:Array = []):
+	super()
 	set_meta("class", "Toolshed")
 	resource_name = "Toolshed"
 	
@@ -51,7 +51,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	tab_container_brushes_nd = ui_category_brushes_nd.find_child('TabContainer_Brushes')
 	panel_container_category_nd = ui_category_brushes_nd.find_child('PanelContainer_Category')
 	
-	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
+	panel_container_category_nd.theme_type_variation = "PropertyCategory"
 	
 	for brush in brushes:
 		var section_brush = ui_section_brush_SCN.instantiate()
@@ -62,7 +62,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 		for input_field in brush.create_input_fields(_base_control, _resource_previewer):
 			vbox_container_properties.add_child(input_field)
 		
-		ThemeAdapter.assign_node_type(section_brush, 'InspectorPanelContainer')
+		section_brush.theme_type_variation = "InspectorPanelContainer"
 	
 	if brushes.size() > 0:
 		tab_container_brushes_nd.current_tab = brushes.find(active_brush)

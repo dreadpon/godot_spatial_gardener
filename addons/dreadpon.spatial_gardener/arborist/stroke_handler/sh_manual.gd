@@ -9,8 +9,8 @@ extends "stroke_handler.gd"
 # Meant to be used from code to add or remove instances
 
 
-func _init().(
-	null, [], [], null, null, -1):
+func _init():
+	super(null, [], [], null, null, -1)
 	
 	set_meta("class", "SH_Manual")
 

@@ -17,7 +17,8 @@ var bool_check:CheckBox = null
 #-------------------------------------------------------------------------------
 
 
-func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settings:Dictionary = {},__init_val,__labelText,__prop_name,settings):
+func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
+	super(__init_val, __labelText, __prop_name, settings)
 	set_meta("class", "UI_IF_Bool")
 	
 	bool_check = CheckBox.new()
@@ -26,10 +27,11 @@ func _init(__init_val,__labelText:String = "NONE",__prop_name:String = "",settin
 	bool_check.size_flags_horizontal = SIZE_EXPAND_FILL
 	bool_check.size_flags_vertical = SIZE_SHRINK_CENTER
 	bool_check.toggled.connect(_request_prop_action.bind("PA_PropSet"))
-	ThemeAdapter.assign_node_type(bool_check, 'InspectorButton')
+	bool_check.theme_type_variation = "InspectorCheckBox"
 
 
 func _ready():
+	super()
 	value_container.add_child(bool_check)
 	_init_ui()
 

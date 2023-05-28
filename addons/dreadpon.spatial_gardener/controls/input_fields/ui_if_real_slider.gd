@@ -47,10 +47,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	# release_focus() is expected to be called when pressing enter and only then we commit the value
 	value_input.focus_exited.connect(focus_lost.bind(value_input))
 	value_input.gui_input.connect(on_node_received_input.bind(value_input))
-	ThemeAdapter.assign_node_type(value_input, 'IF_LineEdit')
+	value_input.theme_type_variation = "IF_LineEdit"
 
 
 func _ready():
+	super()
 	value_container.add_child(real_slider)
 	value_container.add_child(value_input)
 	_init_ui()

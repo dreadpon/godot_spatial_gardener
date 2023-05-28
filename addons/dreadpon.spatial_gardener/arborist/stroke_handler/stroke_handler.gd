@@ -46,7 +46,7 @@ var logger = null
 #-------------------------------------------------------------------------------
 
 
-func _init(_brush:Toolshed_Brush,_plant_states:Array,_octree_managers:Array,_space_state:PhysicsDirectSpaceState3D,_camera: Camera3D,_collision_mask:int):
+func _init(_brush:Toolshed_Brush, _plant_states:Array, _octree_managers:Array, _space_state:PhysicsDirectSpaceState3D, _camera: Camera3D, _collision_mask:int):
 	set_meta("class", "StrokeHandler")
 	
 	brush = _brush
@@ -171,7 +171,7 @@ func volume_get_stroke_update_changes(brush_data:Dictionary, plant:Greenhouse_Pl
 
 func proj_filter_placeforms_to_brush_circle(placeforms_data_in_frustum: Array, container_transform:Transform3D):
 	var brush_radius_squared: float = pow(brush.shape_projection_size * 0.5, 2.0)
-	var viewport_size := camera.get_viewport().size
+	var viewport_size: Vector2i = camera.get_viewport().size
 	
 	for i in range(placeforms_data_in_frustum.size() -1, -1, -1):
 		var placeform_data = placeforms_data_in_frustum[i]
@@ -238,7 +238,7 @@ func proj_get_stroke_update_changes(placeforms_in_brush: Array, plant:Greenhouse
 func proj_get_placeforms_data_in_frustum(frustum_planes: Array, placeforms_data_in_frustum: Array, octree_node: MMIOctreeNode, container_transform:Transform3D):
 	var octree_node_transform := Transform3D(container_transform.basis, container_transform * octree_node.center_pos)
 	var octree_node_extents := Vector3(octree_node.extent, octree_node.extent, octree_node.extent)
-	debug_draw_cube(octree_node_transform.origin, octree_node_extents, octree_node_transform.basis.get_rotation_quaternion(), octree_node_transform.basis)
+	debug_draw_cube(octree_node_transform.origin, octree_node_extents * 2.0, octree_node_transform.basis.get_rotation_quaternion(), octree_node_transform.basis)
 	
 	if is_box_intersecting_frustum(frustum_planes, octree_node_transform, octree_node_extents):
 		if octree_node.is_leaf:
@@ -379,7 +379,7 @@ func debug_print_lifecycle(string:String):
 
 
 func debug_mk_debug_draw():
-	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
+	var context = camera.get_tree().edited_scene_root#.find_child('Gardener').get_parent()
 	if !context.has_node('DebugDraw'):
 		var debug_draw := DebugDraw.new()
 		debug_draw.name = 'DebugDraw'
@@ -401,7 +401,7 @@ func debug_draw_point_array(points: Array, color: Color = Color.GREEN):
 func debug_draw_plane(draw_origin: Vector3, plane: Plane, color: Color = Color.RED):
 	if !debug_draw_enabled: return
 	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
-	context.get_node('DebugDraw').draw_plane(draw_origin, camera.far * 0.25, plane.normal, color, context, 2.0, camera.global_transform.basis.y, 10.0)
+	context.get_node('DebugDraw').draw_plane(draw_origin, camera.far * 0.5, plane.normal, color, context, 2.0, camera.global_transform.basis.y, 10.0)
 
 
 func debug_draw_point(draw_origin: Vector3, color: Color = Color.GREEN):

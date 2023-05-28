@@ -83,8 +83,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 		value_range_panel.add_child(value_range_row)
 		value_range_row.add_child(prop_label)
 		
-		ThemeAdapter.assign_node_type(value_range_panel, "MultiRangeValuePanel")
-		ThemeAdapter.assign_node_type(prop_label, "MultiRangePropLabel")
+		value_range_panel.theme_type_variation = "MultiRangeValuePanel"
+		prop_label.theme_type_variation = "MultiRangePropLabel"
 		
 		for range_index in range(0, 2 if is_range else 1):
 			var value_input = LineEdit.new()
@@ -99,7 +99,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 			
 			field_editable_controls[range_index].append(value_input)
 			value_range_row.add_child(value_input)
-			ThemeAdapter.assign_node_type(value_input, "MultiRangeValue")
+			value_input.theme_type_variation = "MultiRangeValue"
 			
 			if is_range && range_index == 0:
 				var dash_label := Label.new()
@@ -110,10 +110,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 				dash_label.add_theme_color_override("font_color", Color(prop_label_text_colors[value_index]))
 				
 				value_range_row.add_child(dash_label)
-				ThemeAdapter.assign_node_type(dash_label, "MultiRangeDashLabel")
+				dash_label.theme_type_variation = "MultiRangeDashLabel"
 
 
 func _ready():
+	super()
 	value_container.add_child(vertical_container)
 	_init_ui()
 
@@ -205,7 +206,7 @@ func _represented_to_actual(input):
 	var range_array := []
 	
 	if input is Array:
-		range_array = input.slice(0, 1 + 1) # REVIEW: check if index increment is justified
+		range_array = input.slice(0, 2)
 	else:
 		range_array.append(input)
 	
@@ -221,19 +222,19 @@ func _represented_to_actual(input):
 				if representation_type == RepresentationType.VECTOR && value_array is Vector2:
 					output_value_array = [value_array.x, value_array.y]
 				elif representation_type == RepresentationType.VALUE && value_array is Array:
-					output_value_array = value_array.slice(0, 1 + 1) # REVIEW: check if index increment is justified
+					output_value_array = value_array.slice(0, 2)
 				elif value_array is Array: # this enables correct output_array when passing array-based currentVal as an input
-					output_value_array = value_array.slice(0, 1 + 1) # REVIEW: check if index increment is justified
+					output_value_array = value_array.slice(0, 2) 
 			3:
-				if representation_type == RepresentationType.VECTOR && value_array, Vector3:
+				if representation_type == RepresentationType.VECTOR && value_array is Vector3:
 					output_value_array = [value_array.x, value_array.y, value_array.z]
 				elif representation_type == RepresentationType.VALUE && value_array is Array:
-					output_value_array = value_array.slice(0, 2 + 1) # REVIEW: check if index increment is justified
+					output_value_array = value_array.slice(0, 3) 
 				elif value_array is Array: # this enables correct output_array when passing array-based currentVal as an input
-					output_value_array = value_array.slice(0, 2 + 1) # REVIEW: check if index increment is justified
+					output_value_array = value_array.slice(0, 3) 
 			4:
 				if value_array is Array:
-					output_value_array = value_array.slice(0, 3 + 1) # REVIEW: check if index increment is justified
+					output_value_array = value_array.slice(0, 4) 
 		
 		output_array.append(output_value_array)
 	
@@ -252,15 +253,15 @@ func _actual_to_represented(range_array:Array):
 				if representation_type == RepresentationType.VECTOR:
 					output_value = Vector2(value_array[0], value_array[1])
 				elif representation_type == RepresentationType.VALUE:
-					output_value = value_array.slice(0, 1 + 1) # REVIEW: check if index increment is justified
+					output_value = value_array.slice(0, 1 + 1) 
 			3:
 				if representation_type == RepresentationType.VECTOR:
 					output_value = Vector3(value_array[0], value_array[1], value_array[2])
 				elif representation_type == RepresentationType.VALUE:
-					output_value = value_array.slice(0, 2 + 1) # REVIEW: check if index increment is justified
+					output_value = value_array.slice(0, 2 + 1) 
 			4:
 				if value_array is Array:
-					output_value = value_array.slice(0, 3 + 1) # REVIEW: check if index increment is justified
+					output_value = value_array.slice(0, 3 + 1) 
 		
 		output_array.append(output_value)
 	

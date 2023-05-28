@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/controls/input_fields/dialog_if/ui_dialog_if.gd" id="1"]
 
-[node name="UI_Dialog_IF" type="Window"]
+[node name="UI_Dialog_IF" type="ConfirmationDialog"]
+ok_button_text = "Apply"
 script = ExtResource("1")
 metadata/class = "UI_Dialog_IF"
 
@@ -10,10 +11,10 @@ metadata/class = "UI_Dialog_IF"
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
+offset_left = 8.0
 offset_top = 8.0
-offset_right = -4.0
-offset_bottom = -4.0
+offset_right = -8.0
+offset_bottom = -49.0
 
 [node name="PanelContainer_Fields" type="PanelContainer" parent="VBoxContainer_Main"]
 layout_mode = 2
@@ -21,22 +22,3 @@ size_flags_vertical = 3
 
 [node name="VBoxContainer_Fields" type="VBoxContainer" parent="VBoxContainer_Main/PanelContainer_Fields"]
 layout_mode = 2
-
-[node name="MarginContainer_Actions" type="MarginContainer" parent="VBoxContainer_Main"]
-layout_mode = 2
-
-[node name="HBoxContainer_Actions" type="HBoxContainer" parent="VBoxContainer_Main/MarginContainer_Actions"]
-layout_mode = 2
-size_flags_horizontal = 6
-
-[node name="Button_Apply" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
-layout_mode = 2
-text = "Apply"
-
-[node name="Button_Cancel" type="Button" parent="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions"]
-layout_mode = 2
-text = "Cancel"
-
-[connection signal="about_to_popup" from="." to="." method="_on_about_to_show"]
-[connection signal="pressed" from="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions/Button_Apply" to="." method="on_button_apply_pressed"]
-[connection signal="pressed" from="VBoxContainer_Main/MarginContainer_Actions/HBoxContainer_Actions/Button_Cancel" to="." method="on_button_cancel_pressed"]

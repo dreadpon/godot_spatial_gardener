@@ -17,9 +17,11 @@ const Logger = preload("../../utility/logger.gd")
 const Placeform = preload("../placeform.gd")
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 
+var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
+
 # An array for looking up placements conviniently
 # Since a member placement is practically it's ID
-var member_placeforms: Array[Placeform] = []
+var member_placeforms: Array[Array] = []
 # And these are for storage on disk
 @export var member_origin_offsets: PackedFloat32Array = PackedFloat32Array()
 @export var member_surface_normals: PackedVector3Array = PackedVector3Array()
@@ -165,6 +167,7 @@ func set_is_leaf(val):
 		MMI.multimesh = MultiMesh.new()
 		MMI.multimesh.resource_local_to_scene = true
 		MMI.multimesh.transform_format = 1
+		MMI.multimesh.mesh = DUMMY_MMI_MESH
 	elif !is_leaf:
 		if is_instance_valid(MMI) && is_instance_valid(MMI_container):
 			MMI_container.remove_child(MMI)
@@ -196,6 +199,8 @@ func set_LODs_to_active_index():
 		# We have LOD variants to choose from and an active_LOD_index is set
 		if shared_LOD_variants.size() > active_LOD_index && active_LOD_index >= 0:
 			var new_mesh = shared_LOD_variants[active_LOD_index].mesh
+			if !is_instance_valid(new_mesh):
+				new_mesh = DUMMY_MMI_MESH
 			# Our assigned mesh is different from the intended one
 			if MMI.multimesh.mesh != new_mesh:
 				# Assign the LOD variant mesh
@@ -276,13 +281,14 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	if is_leaf:
 		#print(MMI.multimesh)
 		MMI.multimesh.mesh = shared_LOD_variants[LOD_index].mesh
+		validate_MMI_mesh()
 		MMI.cast_shadow = shared_LOD_variants[LOD_index].cast_shadow
 		clear_and_spawn_all_member_spatials(last_LOD_index)
 
 
 # Reset MMIs and spawned spatials
 func clear_LOD_member_state():
-	MMI.multimesh.mesh = null
+	MMI.multimesh.mesh = DUMMY_MMI_MESH
 	clear_all_member_spatials()
 
 
@@ -476,6 +482,12 @@ func validate_MMI():
 		MMI = null
 		MMI_name = ""
 	set_is_leaf(is_leaf)
+	validate_MMI_mesh()
+
+
+func validate_MMI_mesh():
+	if MMI && !is_instance_valid(MMI.multimesh.mesh):
+		MMI.multimesh.mesh = DUMMY_MMI_MESH
 
 
 # Make sure all neccessary spawned spatials exist
@@ -761,7 +773,7 @@ func get_placeforms() -> Array:
 
 
 # Get an individual placeform
-func get_placeform(member_idx: int) -> RefCounted:
+func get_placeform(member_idx: int) -> Array:
 	return member_placeforms[member_idx]
 
 
@@ -789,12 +801,17 @@ func get_nested_member_count() -> int:
 
 # Recursively get a child by it's address (relative to the node of inception)
 func find_child_by_address(address:PackedByteArray) -> Resource:
+	return _find_child_by_address_impl(address.duplicate())
+
+
+# IMPLEMENTATION Recursively get a child by it's address (relative to the node of inception)
+func _find_child_by_address_impl(address:PackedByteArray) -> Resource:
 	if address.is_empty(): return self
 	if child_nodes.is_empty(): return null
 	
 	var child = child_nodes[address[0]]
 	address.remove_at(0)
-	return child.find_child_by_address(address)
+	return child._find_child_by_address_impl(address)
 
 
 # Recursively get a full address of this node

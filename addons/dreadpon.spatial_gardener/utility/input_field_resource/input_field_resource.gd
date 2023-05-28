@@ -562,7 +562,7 @@ func find_res_edit_by_res_prop(res_prop:String):
 
 func res_edit_update_interaction_features(res_prop:String):
 	var res_edit = find_res_edit_by_res_prop(res_prop)
-	if !res_edit: return
+	if res_edit == null || res_edit.is_empty(): return
 	
 	var array_val = get(res_edit.array_prop)
 	

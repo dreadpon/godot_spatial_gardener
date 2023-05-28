@@ -35,7 +35,7 @@ static func ensure_signal(_signal:Signal, callable: Callable, binds:Array = [], 
 
 static func disconnect_all(_signal: Signal):
 	for connection_data in _signal.get_connections():
-		connection_data.signal.disconnect(connection_data.callable)
+		connection_data["signal"].disconnect(connection_data.callable)
 
 
 
@@ -66,13 +66,13 @@ static func make_hint_string(array:Array):
 
 
 static func str_to_vec3(string: String) -> Vector3:
-	var split = string.trim_prefix('(').trim_suffix(')').split(', ')
+	var split = string.trim_prefix('(').trim_suffix(')').split_floats(', ')
 	return Vector3(split[0], split[1], split[2])
 
 
 static func str_to_transform(string: String) -> Transform3D:
 	string = string.replace(' - ', ', ')
-	var split = string.split(', ')
+	var split = string.split_floats(', ')
 	return Transform3D(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
 
 

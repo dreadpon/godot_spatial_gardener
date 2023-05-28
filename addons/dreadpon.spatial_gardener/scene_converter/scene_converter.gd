@@ -120,7 +120,7 @@ func _scan_for_outdated_scenes():
 	
 	if !_result_dialog:
 		_result_dialog = AcceptDialog.new()
-		_result_dialog.window_title = 'Node3D Gardener conversion finished'
+		_result_dialog.title = 'Node3D Gardener conversion finished'
 		
 	if _result_dialog.get_parent() != _base_control:
 		_base_control.add_child(_result_dialog)
@@ -154,7 +154,7 @@ func _get_candidate_scenes(root_dir: String, check_gardeners: bool = true) -> Ar
 	if !check_gardeners:
 		return scene_file_paths
 
-	var file = File.new()
+	var file = null
 	var text = ''
 	var gardener_regex = RegEx.new()
 	gardener_regex.compile('"class": "Gardener"')
@@ -162,7 +162,7 @@ func _get_candidate_scenes(root_dir: String, check_gardeners: bool = true) -> Ar
 	storage_regex.compile('storage_version = ([0-9])*?\n')
 	
 	for scene_file in scene_file_paths:
-		file.open(scene_file, File.READ)
+		file = FileAccess.open(scene_file, FileAccess.READ)
 		text = file.get_as_text()
 		file.close()
 		
@@ -215,8 +215,7 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 		
 		var in_size = 0
 		if run_mode == RunMode.CONVERT || run_mode == RunMode.RECREATE:
-			var file = File.new()
-			file.open(in_filepath, File.READ)
+			var file = FileAccess.open(in_filepath, FileAccess.READ)
 			in_size = file.get_length() * 0.000001
 			file.close()
 		
@@ -250,8 +249,7 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 		logger.info('Took: %.2fs' % [ time_took])
 		
 		if run_mode == RunMode.CONVERT || run_mode == RunMode.RECREATE:
-			var file = File.new()
-			file.open(out_filepath, File.READ)
+			var file = FileAccess.open(out_filepath, FileAccess.READ)
 			var out_size = file.get_length() * 0.000001
 			file.close()
 			
@@ -272,10 +270,9 @@ func get_vers(parsed_scene):
 
 
 func reconstruct_scene(parsed_scene: Array, out_path: String):
-	var file = File.new()
-	var err = file.open(out_path, File.WRITE)
-	if err != OK:
-		logger.error('Unable to write to file "%s", with error: %s' % [out_path, Globals.get_err_message(err)])
+	var file = FileAccess.open(out_path, FileAccess.WRITE)
+	if !file:
+		logger.error('Unable to write to file "%s", with error: %s' % [out_path, Globals.get_err_message(FileAccess.get_open_error())])
 	
 	var total_sections = float(parsed_scene.size())
 	var progress_milestone = 0
@@ -317,10 +314,9 @@ func reconstruct_scene(parsed_scene: Array, out_path: String):
 
 func parse_scene(filepath: String, ext_res: Dictionary = {}, sub_res: Dictionary = {}) -> Array:
 	var result := []
-	var file: File = File.new()
-	var err = file.open(filepath, File.READ)
-	if err != OK:
-		logger.error('Unable to open file "%s", with error: %s' % [filepath, Globals.get_err_message(err)])
+	var file: FileAccess = FileAccess.open(filepath, FileAccess.READ)
+	if !file:
+		logger.error('Unable to open file "%s", with error: %s' % [filepath, Globals.get_err_message(FileAccess.get_open_error())])
 	
 	var file_len = float(file.get_length())
 	var progress_milestone = 0
@@ -365,7 +361,7 @@ func parse_scene(filepath: String, ext_res: Dictionary = {}, sub_res: Dictionary
 			section = {'type': '', 'header': {}, 'props': {}}
 			sections_parts = Array(header_str.trim_prefix('[').trim_suffix(']').split(' '))
 			section.type = sections_parts.pop_front()
-			section.header = ' '.join(parse_resource(PackedStringArray(sections_parts)) + ' ', ' ')
+			section.header = parse_resource(" ".join(PackedStringArray(sections_parts)) + ' ', ' ')
 			result.append(section)
 			section_string = PackedStringArray()
 			
@@ -377,7 +373,7 @@ func parse_scene(filepath: String, ext_res: Dictionary = {}, sub_res: Dictionary
 			section_active = true
 		
 		elif section_active && line.strip_escapes().is_empty() && !result.is_empty():
-			result[-1].props = ''.join(parse_resource(section_string))
+			result[-1].props = parse_resource(''.join(section_string))
 			section_active = false
 		
 		elif !line.strip_escapes().is_empty():

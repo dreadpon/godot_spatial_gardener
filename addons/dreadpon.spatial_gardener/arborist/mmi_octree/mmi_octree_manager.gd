@@ -88,14 +88,20 @@ func connect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
 	FunLib.ensure_signal(octree_node.placeforms_rejected, grow_to_members)
 	FunLib.ensure_signal(octree_node.collapse_self_possible, collapse_root)
-	FunLib.ensure_signal(octree_node.req_debug_redraw, schedule_debug_redraw)
+	# Name of the method below is weird, as it was literally never present in the plugin
+	# I'm going to assume I meant request_debug_redraw
+#	FunLib.ensure_signal(octree_node.req_debug_redraw, schedule_debug_redraw)
+	FunLib.ensure_signal(octree_node.req_debug_redraw, request_debug_redraw)
 
 
 func disconnect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
 	octree_node.placeforms_rejected.disconnect(grow_to_members)
 	octree_node.collapse_self_possible.disconnect(collapse_root)
-	octree_node.req_debug_redraw.disconnect(schedule_debug_redraw)
+	# Name of the method below is weird, as it was literally never present in the plugin
+	# I'm going to assume I meant request_debug_redraw
+#	octree_node.req_debug_redraw.disconnect(schedule_debug_redraw)
+	octree_node.req_debug_redraw.disconnect(request_debug_redraw)
 
 
 func destroy():

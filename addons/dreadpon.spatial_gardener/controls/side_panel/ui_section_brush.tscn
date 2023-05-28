@@ -8,6 +8,8 @@ offset_left = 4.0
 offset_top = 31.0
 offset_right = -4.0
 offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="ScrollContainer_Properties" type="ScrollContainer" parent="."]
 layout_mode = 2

@@ -26,7 +26,7 @@ var element_display_size:int = 100
 var _base_control:Control = null
 var _resource_previewer = null
 
-var file_dialog:FileDialog = null
+var file_dialog:ConfirmationDialog = null
 
 
 signal requested_press
@@ -51,12 +51,16 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	element_interaction_flags = settings.element_interaction_flags
 	_resource_previewer = settings._resource_previewer
 	element_display_size = settings.element_display_size
-	file_dialog = FileDialog.new()
-	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+
+	if Engine.is_editor_hint():
+		file_dialog = EditorFileDialog.new()
+	else:
+		file_dialog = FileDialog.new()
+	file_dialog.file_mode = file_dialog.FILE_MODE_OPEN_FILE
 	add_file_dialog_filter()
 	file_dialog.current_dir = "res://"
 	file_dialog.current_path = "res://"
-	file_dialog.popup_hide.connect(file_dialog_hidden)
+	file_dialog.close_requested.connect(file_dialog_hidden)
 	
 	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL

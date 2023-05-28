@@ -13,18 +13,17 @@
 
 
 # A Base Logger type
-class Base:
+class Base extends RefCounted:
 	var _context := ""
 	var _log_filepath := ''
 	
-	func _init(__context:String,__log_filepath:String = ''):
+	func _init(__context:String, __log_filepath:String = ''):
 		_context = __context
 		_log_filepath = __log_filepath
 		if !_log_filepath.is_empty():
 			DirAccess.make_dir_recursive_absolute(_log_filepath.get_base_dir())
 			if !FileAccess.file_exists(_log_filepath):
-				var file = File.new()
-				file.open(_log_filepath, File.WRITE)
+				var file = FileAccess.open(_log_filepath, FileAccess.WRITE)
 				file.close()
 	
 #	func debug(msg:String):
@@ -57,11 +56,10 @@ class Base:
 		log_to_file(msg)
 	
 	# We need to route that through a logger manager of some kind, 
-	# So we won't have to reopen File each time
+	# So we won't have to reopen FileAccess each time
 	func log_to_file(msg: String):
 		if _log_filepath.is_empty(): return
-		var file = File.new()
-		file.open(_log_filepath, File.READ_WRITE)
+		var file = FileAccess.open(_log_filepath, FileAccess.READ_WRITE)
 		file.seek_end()
 		file.store_line(msg)
 		file.close()
@@ -71,8 +69,8 @@ class Base:
 # A Verbose Logger type
 # Meant to display verbose debug messages
 #class Verbose extends Base:
-#	func _init(__context:String,__context):
-#		pass
+#	func _init(__context:String):
+#		super(__context)
 #
 #	func debug(msg:String):
 #		print("DEBUG: {0}: {1}".format([_context, msg]))

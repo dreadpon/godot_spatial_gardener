@@ -160,7 +160,7 @@ class Discrepancy extends RefCounted:
 	var path:String = ""
 	
 	
-	func _init(_error:String = "",_path:String = ""):
+	func _init(_error:String = "", _path:String = ""):
 		error = _error
 		path = _path
 	

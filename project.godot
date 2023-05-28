@@ -14,6 +14,14 @@ config/name="Dreadpon's Spatial Gardener"
 config/features=PackedStringArray("4.0")
 config/icon="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.png"
 
+[dreadpons_spatial_gardener]
+
+debug/dump_editor_tree_key=156
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/dreadpon.spatial_gardener/plugin.cfg")
+
 [physics]
 
 common/enable_pause_aware_picking=true

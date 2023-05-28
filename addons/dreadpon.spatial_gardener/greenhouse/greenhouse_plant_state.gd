@@ -31,6 +31,7 @@ signal req_export_transforms(plant)
 
 
 func _init():
+	super()
 	set_meta("class", "Greenhouse_PlantState")
 	resource_name = "Greenhouse_PlantState"
 	# A workaround to trigger the initial creation of a plant

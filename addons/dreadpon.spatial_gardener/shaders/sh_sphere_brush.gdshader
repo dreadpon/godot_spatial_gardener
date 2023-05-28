@@ -45,10 +45,13 @@ void fragment() {
 		discard;
 	
 	// Proximity highlight to make brush bounds more visible in the scene
-	float depth_tex = textureLod(depth_texture,SCREEN_UV, 0.0).r;
-	vec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex * 2.0 - 1.0, 1.0);
-	world_pos.xyz /= world_pos.w;
-	float proximity = 1.0 - clamp(1.0 - smoothstep(world_pos.z + proximity_treshold * proximity_multiplier, world_pos.z, VERTEX.z), 0.0, 1.0);
+	float depth_tex = texture(depth_texture, SCREEN_UV).x;
+	// fix from https://www.reddit.com/r/godot/comments/wb0jw7/godot_4_alpha_12_depth_texture_not_working/
+	// depth texture in 4.0 is automaticaly within neccessary range
+	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, texture(depth_texture,SCREEN_UV).x);
+	vec4 view = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, depth_tex, 1.0);
+	view.xyz /= view.w;
+	float proximity = 1.0 - clamp(1.0 - smoothstep(view.z + proximity_treshold * proximity_multiplier, view.z, VERTEX.z), 0.0, 1.0);
 	
 	// Highlight pixels that are close to other geometry
 	ALBEDO = clamp(ALBEDO + vec3(proximity * 0.5), 0.0, 1.0);

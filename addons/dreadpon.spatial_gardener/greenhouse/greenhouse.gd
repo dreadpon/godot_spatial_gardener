@@ -9,7 +9,6 @@ extends "../utility/input_field_resource/input_field_resource.gd"
 
 
 const Greenhouse_PlantState = preload("greenhouse_plant_state.gd")
-const ThemeAdapter = preload("../controls/theme_adapter.gd")
 const ui_category_greenhouse_SCN = preload("../controls/side_panel/ui_category_greenhouse.tscn")
 
 # All the plants (plant states) we have
@@ -27,7 +26,7 @@ var grid_container_plant_thumbnails_nd:UI_IF_ThumbnailArray = null
 var vbox_container_properties_nd:Control = null
 var _base_control:Control = null
 var _resource_previewer = null
-var _file_dialog: FileDialog = null
+var _file_dialog: ConfirmationDialog = null
 
 
 signal prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
@@ -47,6 +46,7 @@ signal req_export_transforms(plant_idx, file)
 
 
 func _init():
+	super()
 	set_meta("class", "Greenhouse")
 	resource_name = "Greenhouse"
 	
@@ -65,8 +65,8 @@ func create_ui(__base_control:Control, __resource_previewer):
 	panel_container_properties_nd = ui_category_greenhouse.find_child('PanelContainer_PlantThumbnails')
 	panel_container_category_nd = ui_category_greenhouse.find_child('PanelContainer_Category')
 	
-	ThemeAdapter.assign_node_type(panel_container_category_nd, 'PropertyCategory')
-	ThemeAdapter.assign_node_type(panel_container_properties_nd, 'InspectorInnerPanelContainer')
+	panel_container_category_nd.theme_type_variation = "PropertyCategory"
+	panel_container_properties_nd.theme_type_variation = "InspectorInnerPanelContainer"
 	
 	var input_fields = create_input_fields(_base_control, _resource_previewer)
 	
@@ -83,8 +83,11 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_plant_thumbnails_nd.add_child(grid_container_plant_thumbnails_nd)
 	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
 	
-	_file_dialog = FileDialog.new()
-	_file_dialog.hidden.connect(on_file_dialog_hide)
+	if Engine.is_editor_hint():
+		_file_dialog = EditorFileDialog.new()
+	else:
+		_file_dialog = FileDialog.new()
+	_file_dialog.close_requested.connect(on_file_dialog_hide)
 	return ui_category_greenhouse
 
 

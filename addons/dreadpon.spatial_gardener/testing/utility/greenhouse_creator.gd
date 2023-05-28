@@ -121,7 +121,7 @@ func _save_backup(res:InputFieldResource, res_name:String, index:int = -1):
 		backup_path = save_path + "/%s.backup" % [res_name]
 	
 	FunLib.save_res(res, save_path, res_filename)
-	var err = dir.rename_absolute (full_path, backup_path)
+	var err = DirAccess.rename_absolute(full_path, backup_path)
 	if err != OK:
 		logger.error("Could not rename '%s' to '%s', error %s!" % [full_path, backup_path, Globals.get_err_message(err)])
 	res.take_over_path(backup_path)

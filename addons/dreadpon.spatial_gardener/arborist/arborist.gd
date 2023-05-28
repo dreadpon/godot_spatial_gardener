@@ -357,7 +357,7 @@ func on_stroke_finished():
 	active_painting_changes = null
 
 
-# A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
+# A wrapper for applying changes to avoid reaplying EditorUndoRedoManager actions on commit_action()
 func _action_apply_changes(changes):
 #	mutex_placement.lock()
 	apply_stroke_update_changes(changes)
@@ -465,10 +465,9 @@ func update_LODs():
 
 
 func import_instance_transforms(file_path: String, plant_idx: int):
-	var file := File.new()
-	var err = file.open(file_path, File.READ)
-	if err != OK:
-		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(err)])
+	var file := FileAccess.open(file_path, FileAccess.READ)
+	if !file:
+		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
 	
 	var test_json_conv = JSON.new()
 	test_json_conv.parse(file.get_as_text())
@@ -493,10 +492,9 @@ func import_instance_transforms(file_path: String, plant_idx: int):
 
 func export_instance_transforms(file_path: String, plant_idx: int):
 	DirAccess.make_dir_recursive_absolute(file_path.get_base_dir())
-	var file := File.new()
-	var err = file.open(file_path, File.WRITE)
-	if err != OK:
-		logger.error("Could not export '%s', error %s!" % [file_path, Globals.get_err_message(err)])
+	var file := FileAccess.open(file_path, FileAccess.WRITE)
+	if !file:
+		logger.error("Could not export '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
 	
 	var placeforms: Array = []
 	octree_managers[plant_idx].get_all_placeforms(placeforms)
@@ -635,7 +633,7 @@ func request_debug_redraw():
 
 func debug_get_dump_tree_key():
 	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/dump_all_octrees_key", 0)
-	return Globals.index_to_enum(key, Globals.KeyList)
+	return Globals.index_to_enum(key, Globals.KeyboardKey)
 
 
 func debug_print_lifecycle(string:String):

@@ -16,6 +16,11 @@ func _init():
 #-------------------------------------------------------------------------------
 
 
+func _set_default_textures():
+	super._set_default_textures()
+	$TextureRect.texture = new_texture
+
+
 func update_size_step2():
 	var button_rect = Vector2(button_size, button_size)
 	var to_margin = float(thumb_size - button_size) * 0.5

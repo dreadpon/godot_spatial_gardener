@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://002jc5dumt0w"]
 
-[ext_resource type="Shape3D" path="res://addons/dreadpon.spatial_gardener/testing/assets/suzanne/suzanne_collision.tres" id="1"]
+[ext_resource type="Shape3D" uid="uid://dgc0vtpn50fet" path="res://addons/dreadpon.spatial_gardener/testing/assets/suzanne/suzanne_collision.tres" id="1"]
 
 [node name="StaticBody3D" type="StaticBody3D"]
 collision_layer = 0

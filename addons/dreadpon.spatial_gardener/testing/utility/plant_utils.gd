@@ -175,12 +175,12 @@ static func perform_morph_actions(initial:Greenhouse, morph_actions:Array):
 
 
 
-class MorphAction:
+class MorphAction extends RefCounted:
 	var prop_address:Array = []
 	var prop_action:RefCounted = null
 	
 	
-	func _init(_prop_address:Array = [],_prop_action:RefCounted = null):
+	func _init(_prop_address:Array = [], _prop_action:RefCounted = null):
 		prop_address = _prop_address
 		prop_action = _prop_action
 	

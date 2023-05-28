@@ -1,9 +1,10 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://ldawlc0e5u8w"]
 
-[ext_resource path="res://addons/dreadpon.spatial_gardener/shaders/sh_sphere_brush.gdshader" type="Shader" id=1]
+[ext_resource type="Shader" path="res://addons/dreadpon.spatial_gardener/shaders/sh_sphere_brush.gdshader" id="1"]
 
 [resource]
-shader = ExtResource( 1 )
-shader_param/albedo = Color( 0.172549, 0.32549, 0.65098, 0.501961 )
-shader_param/proximity_multiplier = 1.0
-shader_param/proximity_treshold = 0.4
+render_priority = 0
+shader = ExtResource("1")
+shader_parameter/albedo = Color(0.172549, 0.32549, 0.65098, 0.501961)
+shader_parameter/proximity_multiplier = 1.0
+shader_parameter/proximity_treshold = 0.4

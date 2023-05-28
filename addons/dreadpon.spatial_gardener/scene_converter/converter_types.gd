@@ -96,7 +96,7 @@ static func to_bool(string: String):
 class TokenVal extends RefCounted:
 	var type: int = Tokens.NONE
 	var val = null
-	func _init(__type: int = Tokens.NONE,__val = null):
+	func _init(__type: int = Tokens.NONE, __val = null):
 		type = __type
 		val = __val
 	func _to_string():
@@ -116,14 +116,16 @@ class PropStruct extends RefCounted:
 
 
 class PS_Vector3 extends PropStruct:
-	func _init(__content = null,__content):
+	func _init(__content = null):
+		super(__content)
 	func variant():
 		var split = content.trim_prefix('Vector3( ').trim_suffix(' )').split(', ')
 		return Vector3(split[0], split[1], split[2])
 
 
 class PS_Transform extends PropStruct:
-	func _init(__content = null,__content):
+	func _init(__content = null):
+		super(__content)
 	func variant():
 		var split = content.trim_prefix('Transform3D( ').trim_suffix(' )').split(', ')
 		return Transform3D(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
@@ -139,6 +141,7 @@ class SubResource extends PropStruct:
 
 
 class ExtResource extends SubResource:
-	func _init(__id: int = -1,__id):
+	func _init(__id: int = -1):
+		super(__id)
 	func _to_string():
 		return 'ExtResource( %d )' % [id]

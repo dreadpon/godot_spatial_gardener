@@ -1,8 +1,8 @@
 <p align="center">
-    <img width="256px" src="https://i.postimg.cc/cCR75L44/logo.png" alt="Plugin logo" />
-    <h1 align="center">
-        A Godot plugin for painting foliage and props on any 3D surface
-    </h1>
+	<img width="256px" src="https://i.postimg.cc/cCR75L44/logo.png" alt="Plugin logo" />
+	<h1 align="center">
+		A Godot plugin for painting foliage and props on any 3D surface
+	</h1>
 </p>
 
 ![Animated cover](https://i.postimg.cc/tCq8TMBf/cover-gif-lossy.gif)

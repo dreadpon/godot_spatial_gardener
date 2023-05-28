@@ -56,6 +56,7 @@ func create_and_start_gardener_editing():
 	gardener.garden_work_directory = greenhouse_path
 	gardener.gardening_collision_mask = pow(2, 0)
 	
+	print("Setting props")
 	for plant_state in gardener.greenhouse.greenhouse_plant_states:
 		plant_state.request_prop_action(PA_PropSet.new("plant/plant_brush_active", true))
 	select_brush(0)
@@ -103,6 +104,9 @@ func _process(delta):
 	
 	if !painter_script.is_empty():
 		var painter_action = painter_script.pop_front()
+		print("execute_painter_action ", painter_action)
+		for octree_manager in gardener.arborist.octree_managers:
+			print(octree_manager.root_octree_node.debug_dump_tree())
 		GardenerScript.execute_painter_action(gardener.painter, painter_action)
 		finished_painter_action(painter_action)
 	else:

@@ -83,7 +83,7 @@ class Change extends RefCounted:
 	var old_val = null
 	
 	
-	func _init(_change_type:int = -1,_at_index:int = -1,_new_val = null,_old_val = null):
+	func _init(_change_type:int = -1, _at_index:int = -1, _new_val = null, _old_val = null):
 		change_type = _change_type
 		at_index = _at_index
 		new_val = _new_val

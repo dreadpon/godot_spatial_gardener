@@ -46,16 +46,16 @@ static func add_plugin_project_settings():
 		TYPE_FLOAT)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button",
-		Globals.ButtonList.MOUSE_BUTTON_RIGHT, Globals.ButtonList)
+		Globals.MouseButton.MOUSE_BUTTON_RIGHT, Globals.MouseButton)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier",
-		Globals.KeyList.KEY_SHIFT, Globals.KeyList)
+		Globals.KeyboardKey.KEY_SHIFT, Globals.KeyboardKey)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_overlap_mode_button",
-		Globals.KeyList.KEY_QUOTELEFT, Globals.KeyList)
+		Globals.KeyboardKey.KEY_QUOTELEFT, Globals.KeyboardKey)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/focus_painter_key",
-		Globals.KeyList.KEY_Q, Globals.KeyList)
+		Globals.KeyboardKey.KEY_Q, Globals.KeyboardKey)
 	add_project_setting(
 		"dreadpons_spatial_gardener/input_and_ui/brush_volume_size_slider_max_value",
 		100.0,
@@ -90,10 +90,10 @@ static func add_plugin_project_settings():
 	# Debug
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/debug/dump_editor_tree_key",
-		Globals.KeyList.KEY_UNSET, Globals.KeyList)
+		Globals.KeyboardKey.KEY_NONE, Globals.KeyboardKey)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/debug/dump_all_octrees_key",
-		Globals.KeyList.KEY_UNSET, Globals.KeyList)
+		Globals.KeyboardKey.KEY_NONE, Globals.KeyboardKey)
 	add_project_setting(
 		"dreadpons_spatial_gardener/debug/arborist_log_lifecycle",
 		false,

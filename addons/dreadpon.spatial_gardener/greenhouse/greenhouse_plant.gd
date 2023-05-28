@@ -113,6 +113,7 @@ signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 
 
 func _init():
+	super()
 	set_meta("class", "Greenhouse_Plant")
 	resource_name = "Greenhouse_Plant"
 	
@@ -164,7 +165,7 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			var settings := {"button_text": "Configure Octree", "_base_control": _base_control, "bound_input_fields": bound_input_fields}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
 			input_field.applied_changes.connect(on_dialog_if_applied_changes.bind(input_field))
-			input_field.cancelled_changes.connect(on_dialog_if_cancelled_changes.bind(input_field))
+			input_field.canceled_changes.connect(on_dialog_if_canceled_changes.bind(input_field))
 		"octree/octree_recenter_button":
 			var settings := {"button_text": "Recenter Octree"}
 			input_field = UI_IF_Button.new(octree_recenter_button, "Octree Centring", prop, settings)
@@ -314,8 +315,9 @@ func reconfigure_octree():
 func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant):
 	var index = mesh_LOD_variants.find(LOD_variant)
 	var update_thumbnail = prop_action.prop == "mesh"
+	
 	if update_thumbnail:
-		prop_action_executed", PA_ArraySet.new("mesh/mesh_LOD_variants.emit(LOD_variant, index), mesh_LOD_variants)
+		prop_action_executed.emit(PA_ArraySet.new("mesh/mesh_LOD_variants", LOD_variant, index), mesh_LOD_variants)
 	prop_action_executed_on_LOD_variant.emit(prop_action, final_val, LOD_variant)
 
 
@@ -338,8 +340,8 @@ func on_dialog_if_applied_changes(initial_values:Array, final_values:Array, inpu
 			_undo_redo.commit_action()
 
 
-# Handle changes cancelled by input field dialog
-func on_dialog_if_cancelled_changes(input_field:UI_InputField):
+# Handle changes canceled by input field dialog
+func on_dialog_if_canceled_changes(input_field:UI_InputField):
 	pass
 
 
@@ -437,7 +439,7 @@ func request_prop_action(prop_action:PropAction):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:UndoRedo):
+func set_undo_redo(val:EditorUndoRedoManager):
 	super.set_undo_redo(val)
 	for LOD_variant in mesh_LOD_variants:
 		LOD_variant.set_undo_redo(_undo_redo)

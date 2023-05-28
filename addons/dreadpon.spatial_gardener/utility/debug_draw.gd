@@ -62,7 +62,7 @@ func draw_line(start:Vector3, end:Vector3, color:Color, node_context:Node3D, wid
 
 # Draw a polygonal 3D line
 # Origin represents line's start position, not it's center
-static func static_draw_line(start:Vector3,end:Vector3,color:Color,node_context:Node3D) -> ImmediateMesh:
+static func static_draw_line(start:Vector3, end:Vector3, color:Color, node_context:Node3D, width:float = 0.1) -> MeshInstance3D:
 	if node_context == null: return null
 	
 	var geom = ImmediateMesh.new()
@@ -157,13 +157,13 @@ static func static_draw_line(start:Vector3,end:Vector3,color:Color,node_context:
 
 # Draw a line cube
 # And set it on a timer
-func draw_cube(pos:Vector3, extents:Vector3, rotation:Quaternion, color:Color, node_context:Node3D, lifetime := 0.0):
-	var geom = static_draw_cube(pos, extents, rotation, color, node_context)
+func draw_cube(pos:Vector3, size:Vector3, rotation:Quaternion, color:Color, node_context:Node3D, lifetime := 0.0):
+	var geom = static_draw_cube(pos, size, rotation, color, node_context)
 	cached_geometry.append({"geometry": geom, "lifetime": lifetime})
 
 
 # Draw a line cube
-static func static_draw_cube(pos:Vector3, extents:Vector3, rotation:Quaternion, color:Color, node_context:Node3D):
+static func static_draw_cube(pos:Vector3, size:Vector3, rotation:Quaternion, color:Color, node_context:Node3D):
 	if node_context == null: return
 	
 	var mesh_instance = MeshInstance3D.new()
@@ -171,16 +171,17 @@ static func static_draw_cube(pos:Vector3, extents:Vector3, rotation:Quaternion, 
 	mesh_instance.transform.origin = pos
 	node_context.add_child(mesh_instance)
 	
-	mesh_instance.mesh = generate_cube(extents, color)
+	mesh_instance.mesh = generate_cube(size, color)
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	
 	return mesh_instance
 
 
 # Generate a line cube's ArrayMesh
-static func generate_cube(extents:Vector3, color:Color):
+static func generate_cube(size:Vector3, color:Color):
 	var mesh := ArrayMesh.new()
-	
+	var extents = size * 0.5
+
 	var points := PackedVector3Array()
 	points.append_array([
 		Vector3(-extents.x, -extents.y, -extents.z),
@@ -230,13 +231,13 @@ static func generate_cube(extents:Vector3, color:Color):
 
 # Draw a line plane
 # And set it on a timer
-func draw_plane(pos:Vector3, extents:float, normal:Vector3, color:Color, node_context:Node3D, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP, lifetime := 0.0):
-	var geom = static_draw_plane(pos, extents, normal, color, node_context)
+func draw_plane(pos:Vector3, size:float, normal:Vector3, color:Color, node_context:Node3D, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP, lifetime := 0.0):
+	var geom = static_draw_plane(pos, size, normal, color, node_context)
 	cached_geometry.append({"geometry": geom, "lifetime": lifetime})
 
 
 # Draw a line cube
-static func static_draw_plane(pos:Vector3, extents:float, normal:Vector3, color:Color, node_context:Node3D, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP):
+static func static_draw_plane(pos:Vector3, size:float, normal:Vector3, color:Color, node_context:Node3D, normal_length: float = 1.0, up_vector: Vector3 = Vector3.UP):
 	if node_context == null: return
 	
 	normal = normal.normalized()
@@ -250,32 +251,33 @@ static func static_draw_plane(pos:Vector3, extents:float, normal:Vector3, color:
 	mesh_instance.transform.origin = pos
 	node_context.add_child(mesh_instance)
 	
-	mesh_instance.mesh = generate_plane(extents, color, normal_length)
+	mesh_instance.mesh = generate_plane(size, color, normal_length)
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	
 	return mesh_instance
 
 
 # Generate a line cube's ArrayMesh
-static func generate_plane(extents:float, color:Color, normal_length: float):
+static func generate_plane(size:float, color:Color, normal_length: float):
 	var mesh := ArrayMesh.new()
+	var extent = size * 0.5
 	
 	var points := PackedVector3Array()
 	points.append_array([
-		Vector3(-extents, -extents, 0),
-		Vector3(-extents, extents, 0),
-		Vector3(extents, extents, 0),
-		Vector3(extents, -extents, 0),
+		Vector3(-extent, -extent, 0),
+		Vector3(-extent, extent, 0),
+		Vector3(extent, extent, 0),
+		Vector3(extent, -extent, 0),
 		Vector3(0, 0, 0),
 		Vector3(0, 0, normal_length),
-		Vector3(-extents, -extents, 0),
-		Vector3(-extents, -extents, normal_length),
-		Vector3(-extents, extents, 0),
-		Vector3(-extents, extents, normal_length),
-		Vector3(extents, extents, 0),
-		Vector3(extents, extents, normal_length),
-		Vector3(extents, -extents, 0),
-		Vector3(extents, -extents, normal_length),
+		Vector3(-extent, -extent, 0),
+		Vector3(-extent, -extent, normal_length),
+		Vector3(-extent, extent, 0),
+		Vector3(-extent, extent, normal_length),
+		Vector3(extent, extent, 0),
+		Vector3(extent, extent, normal_length),
+		Vector3(extent, -extent, 0),
+		Vector3(extent, -extent, normal_length),
 	])
 	
 	var vertices := PackedVector3Array()

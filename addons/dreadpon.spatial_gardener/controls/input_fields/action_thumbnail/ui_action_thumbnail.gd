@@ -8,7 +8,6 @@ extends Control
 #-------------------------------------------------------------------------------
 
 
-const ThemeAdapter = preload("../../theme_adapter.gd")
 
 
 # These flags define what sort of signals and broadcast
@@ -16,10 +15,11 @@ enum InteractionFlags {DELETE, SET_DIALOG, SET_DRAG, PRESS, CHECK, CLEAR, SHOW_C
 const PRESET_ALL:Array = [	InteractionFlags.DELETE, InteractionFlags.SET_DIALOG, InteractionFlags.SET_DRAG, InteractionFlags.PRESS, 
 							InteractionFlags.CHECK, InteractionFlags.CLEAR, InteractionFlags.SHOW_COUNT, InteractionFlags.EDIT_LABEL]
 
+const ThemeAdapter = preload("../../../controls/theme_adapter.gd")
 
 var active_interaction_flags:Array = [] : set = set_active_interaction_flags
 @export var thumb_size:int = 100 : set = set_thumb_size
-@export var button_size:int = 32 : set = set_button_size
+@export var button_size:int = 26 : set = set_button_size
 
 var root_button_nd:Control = null
 var texture_rect_nd:Control = null
@@ -34,6 +34,8 @@ var alt_text_label_nd:Control = null
 
 @export var clear_texture: Texture2D = null
 @export var delete_texture: Texture2D = null
+@export var new_texture: Texture2D = null
+@export var options_texture: Texture2D = null
 
 var def_rect_size:Vector2 = Vector2(100.0, 100.0)
 var def_button_size:Vector2 = Vector2(24.0, 24.0)
@@ -66,18 +68,22 @@ func init(_thumb_size:int, _button_size:int, _active_interaction_flags:Array):
 # We have some conditional checks here
 # Because inheriting nodes might ditch some of the functionality
 func _ready():
+	var Label_font_size = get_theme_font_size("font_size", "Label")
+	_set_default_textures()
+	
 	if has_node("RootButton"):
 		root_button_nd = $RootButton
 		if root_button_nd.has_signal("dropped"):
 			root_button_nd.dropped.connect(on_set_drag)
 		root_button_nd.pressed.connect(on_set_dialog)
 		root_button_nd.pressed.connect(on_press)
-		ThemeAdapter.assign_node_type(root_button_nd, 'InspectorButton')
+		root_button_nd.theme_type_variation = "InspectorButton"
 	if has_node("TextureRect"):
 		texture_rect_nd = $TextureRect
 	if has_node("SelectionPanel"):
 		selection_panel_nd = $SelectionPanel
 		selection_panel_nd.visible = false
+		selection_panel_nd.theme_type_variation = "ActionThumbnail_SelectionPanel"
 	if has_node("CheckBox"):
 		check_box_nd = $CheckBox
 		check_box_nd.pressed.connect(on_check)
@@ -86,27 +92,38 @@ func _ready():
 		counter_container_nd = $CounterContainer
 		counter_label_nd = $CounterContainer/CounterLabel
 		counter_label_nd.resized.connect(counter_resized)
-		counter_label_nd.add_theme_font_override('font', get_theme_font("font", "Label").duplicate())
+		counter_label_nd.add_theme_font_size_override('font_size', Label_font_size)
 		counter_container_nd.visible = false
 	if has_node("AltTextMargin"):
 		alt_text_margin_nd = $AltTextMargin
 		alt_text_label_nd = $AltTextMargin/AltTextLabel
-		alt_text_label_nd.add_theme_font_override('font', get_theme_font("font", "Label").duplicate())
-		ThemeAdapter.assign_node_type(alt_text_margin_nd, "ExternalMargin")
+		alt_text_label_nd.add_theme_font_size_override('font_size', Label_font_size)
+		alt_text_margin_nd.theme_type_variation = "ExternalMargin"
 		alt_text_label_nd.visible = false
 	if has_node('LabelLineEdit'):
 		label_line_edit_nd = $LabelLineEdit
-		label_line_edit_nd.add_theme_font_override('font', get_theme_font("font", "Label").duplicate())
-		ThemeAdapter.assign_node_type(label_line_edit_nd, "PlantTitleLineEdit")
+		label_line_edit_nd.add_theme_font_size_override('font_size', Label_font_size)
+		label_line_edit_nd.theme_type_variation = "PlantTitleLineEdit"
 		label_line_edit_nd.text_changed.connect(on_label_edit)
 		label_line_edit_nd.visible = false
 	if has_node('MenuButton'):
 		menu_button_nd = $MenuButton
-		ThemeAdapter.assign_node_type(menu_button_nd, "Button")
+		menu_button_nd.theme_type_variation = "MenuButton"
 		menu_button_nd.get_popup().id_pressed.connect(on_popup_menu_press)
 	
 	update_size()
 	set_active_interaction_flags(active_interaction_flags)
+
+
+func _set_default_textures():
+	if !clear_texture || !delete_texture || !new_texture || !options_texture:
+		var editor_theme = ThemeAdapter.get_theme(self)
+		clear_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "Clear", "EditorIcons")
+		delete_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "ImportFail", "EditorIcons")
+		new_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "Add", "EditorIcons")
+		options_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "CodeFoldDownArrow", "EditorIcons")
+		if has_node("$MenuButton"):
+			$MenuButton.icon = options_texture
 
 
 
@@ -161,10 +178,9 @@ func update_size_step2():
 		selection_panel_nd.set_size(thumb_rect)
 	
 	if is_instance_valid(check_box_nd):
-		check_box_nd.get_theme_icon("checked").size = button_rect
-		check_box_nd.get_theme_icon("unchecked").size = button_rect
-		check_box_nd.set_size(button_rect)
-		check_box_nd.set_position(Vector2(short_button_margin, long_button_margin))
+		check_box_nd.offset_left = short_button_margin
+		check_box_nd.offset_bottom = short_button_margin
+#		check_box_nd.set_position(Vector2(0, thumb_size - button_size))
 	
 	if is_instance_valid(counter_container_nd):
 		counter_container_nd.set_size(button_rect)
@@ -184,7 +200,7 @@ func update_size_step2():
 		scale_font(label_line_edit_nd, font_scale * 0.9)
 	
 	if is_instance_valid(menu_button_nd):
-		var max_size = max(menu_button_nd.icon.size.x, menu_button_nd.icon.size.y)
+		var max_size = max(menu_button_nd.icon.get_size().x, menu_button_nd.icon.get_size().y)
 		var stylebox:StyleBoxFlat = menu_button_nd.get_theme_stylebox('normal', 'MenuButton')
 		var menu_button_rect = clamp_rect_to_stylebox_margins(button_rect, max_size, stylebox)
 		menu_button_nd.set_size(menu_button_rect)
@@ -206,13 +222,12 @@ func clamp_rect_to_stylebox_margins(rect, content_size, stylebox):
 
 
 func scale_font(node: Control, font_scale: float):
-	var font = node.get_theme_font('font')
-	if is_instance_of(font, FontFile):
-		font.size *= font_scale
+	var font_size = node.get_theme_font_size("font_size")
+	node.add_theme_font_size_override("font_size", font_size * font_scale)
 
 
 func set_counter_val(val:int):
-	if has_node("CounterContainer"):
+	if is_instance_valid(counter_label_nd):
 		counter_label_nd.text = str(val)
 
 
@@ -291,7 +306,7 @@ func on_press():
 
 func on_check():
 	if active_interaction_flags.has(InteractionFlags.CHECK):
-		requested_check.emit(check_box_nd.pressed)
+		requested_check.emit(check_box_nd.button_pressed)
 
 func on_label_edit(label_text: String):
 	if active_interaction_flags.has(InteractionFlags.EDIT_LABEL):
@@ -329,6 +344,7 @@ func set_thumbnail(texture:Texture2D):
 
 
 func set_alt_text(alt_text:String):
+	if !is_instance_valid(alt_text_label_nd) || !is_instance_valid(texture_rect_nd): return
 	alt_text_label_nd.visible = true
 	texture_rect_nd.visible = false
 	
