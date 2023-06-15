@@ -37,8 +37,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _ready():
 	super()
 	value_container.add_child(button)
-	
-	_init_ui()
 
 
 

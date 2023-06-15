@@ -94,12 +94,20 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	set_tooltip(tooltip)
 
 
+func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
+	init_val = __init_val
+
+
 func _ready():
 	add_child(container_box)
 	container_box.add_child(tab_spacer)
 	container_box.add_child(label)
 	container_box.add_child(value_container)
 	_set_tab(tab_index)
+
+
+func _enter_tree():
+	_init_ui()
 
 
 # Set tabulation offset and color
@@ -155,7 +163,7 @@ func on_prop_list_changed(prop_dict: Dictionary):
 	if visibility_forced >= 0:
 		visible = true if visibility_forced == 1 else false
 	else:
-		visible =  prop_dict[prop_name].usage & PROPERTY_USAGE_EDITOR
+		visible = prop_dict[prop_name].usage & PROPERTY_USAGE_EDITOR
 
 
 # Actually respond to different PropActions

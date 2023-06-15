@@ -19,11 +19,18 @@ enum TimeTrimMode {NONE, EXACT, EXTRA_ONE, KEEP_ONE, KEEP_TWO, KEEP_THREE}
 
 
 # Remove all children from node and free them
-static func clear_children(node):
+static func free_children(node):
 	if !is_instance_valid(node): return
 	for child in node.get_children().duplicate():
 		node.remove_child(child)
 		child.queue_free()
+
+
+# Remove all children from node
+static func remove_children(node):
+	if !is_instance_valid(node): return
+	for child in node.get_children().duplicate():
+		node.remove_child(child)
 
 
 # A shorthand for checking/connecting a signal

@@ -161,9 +161,10 @@ func _get_prop_dictionary():
 		}
 
 
-func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
+func prepare_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
 	if plant:
-		return plant.create_input_fields(_base_control, _resource_previewer, whitelist)
+		return plant.prepare_input_fields(_base_control, _resource_previewer, whitelist)
+	return []
 
 
 func _fix_duplicate_signals(copy):

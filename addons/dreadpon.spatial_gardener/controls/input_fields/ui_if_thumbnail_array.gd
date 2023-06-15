@@ -45,7 +45,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _ready():
 	super()
 	value_container.add_child(scroll_intermediary)
-	_init_ui()
 
 
 
@@ -67,7 +66,7 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 
 func _update_ui_to_val(val):
-	FunLib.clear_children(flex_grid)
+	FunLib.free_children(flex_grid)
 	
 	if add_create_inst_button:
 		_add_thumb_create_inst()

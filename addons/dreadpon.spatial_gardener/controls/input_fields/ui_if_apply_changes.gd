@@ -42,8 +42,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.text = settings.button_text
 	button.pressed.connect(on_pressed)
 	
-	_base_control = settings._base_control
-	
 	apply_dialog = UI_Dialog_IF.instantiate()
 	apply_dialog.title = settings.button_text
 	apply_dialog.confirmed.connect(on_dialog_confirmed)
@@ -55,6 +53,13 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.theme_type_variation = "InspectorButton"
 
 
+func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
+	super(__init_val, __base_control, __resource_previewer)
+	_base_control = __base_control
+	for input_field in bound_input_fields:
+		input_field.prepare_input_field(__init_val, __base_control, __resource_previewer)
+
+
 func _ready():
 	super()
 	value_container.add_child(button)
@@ -62,8 +67,6 @@ func _ready():
 	for input_field in bound_input_fields:
 		input_field.disable_history = true
 		apply_dialog.fields.add_child(input_field)
-	
-	_init_ui()
 
 
 func _exit_tree():

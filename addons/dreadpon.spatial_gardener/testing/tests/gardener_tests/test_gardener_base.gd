@@ -44,7 +44,7 @@ const PRESET_COVERAGE_MODES_5_CLEAR = [
 
 
 func create_and_start_gardener_editing():
-	FunLib.clear_children(self)
+	FunLib.free_children(self)
 	
 	gardener = Gardener.new()
 	add_child(gardener)
@@ -63,11 +63,11 @@ func create_and_start_gardener_editing():
 
 
 func _enter_tree():
-	FunLib.clear_children(self)
+	FunLib.free_children(self)
 
 
 func _exit_tree():
-	FunLib.clear_children(self)
+	FunLib.free_children(self)
 
 
 func set_editor_selection(val):

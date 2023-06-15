@@ -54,7 +54,6 @@ func _ready():
 	super()
 	value_container.add_child(real_slider)
 	value_container.add_child(value_input)
-	_init_ui()
 
 
 

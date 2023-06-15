@@ -566,7 +566,7 @@ func clear_and_spawn_all_member_spatials(last_LOD_index:int = -1):
 
 
 func clear_all_member_spatials():
-	FunLib.clear_children(MMI)
+	FunLib.free_children(MMI)
 
 
 func spawn_all_member_spatials():

@@ -52,7 +52,7 @@ var input_field_blacklist:Array = []
 var res_edit_data:Array = []
 # All properties that are affected by other properties
 var prop_dependency_data:Array = []
-var owned_input_fields: Array = []
+var owned_input_fields: Dictionary = {}
 
 var logger = null
 
@@ -74,16 +74,18 @@ func _init():
 	resource_name = "InputFieldResource"
 	logger = Logger.get_for(self)
 	FunLib.ensure_signal(self.prop_action_executed, _on_prop_action_executed)
+	owned_input_fields = _create_input_fields()
 
 
-#func _notification(what):
-#	match what:
+func _notification(what):
+	match what:
 #		NOTIFICATION_POSTINITIALIZE:
-#			owned_input_fields = create_input_fields()
-#		NOTIFICATION_PREDELETE:
-#			for input_field in owned_input_fields:
-#				if is_instance_valid(input_field):
-#					input_field.queue_free()
+#			owned_input_fields = _create_input_fields()
+		NOTIFICATION_PREDELETE:
+			for input_field in owned_input_fields.values():
+				if is_instance_valid(input_field):
+					input_field.queue_free()
+			owned_input_fields = {}
 
 
 func set_undo_redo(val:EditorUndoRedoManager):
@@ -373,20 +375,18 @@ func _emit_property_list_changed_notify():
 
 
 # Create all the UI input fields
-# Optionally specify a whitelist to use instead of an object-wide blacklist
-# They both allow to conditionally hide/show input fields
-func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
+# input_field_blacklist is responsible for excluding certain props
+func _create_input_fields(whitelist:Array = []) -> Dictionary:
 	var prop_names = _get_prop_dictionary().keys()
-	var input_fields = []
+	var input_fields = {}
 	
 	for prop in prop_names:
-		# Conditional rejection of a property
 		if whitelist.is_empty():
 			if input_field_blacklist.has(prop): continue
 		else:
 			if !whitelist.has(prop): continue
 		
-		var input_field:UI_InputField = _create_input_field(_base_control, _resource_previewer, prop)
+		var input_field:UI_InputField = _create_input_field(prop)
 		
 		if input_field:
 			input_field.name = prop
@@ -402,15 +402,40 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 				input_field.requested_press.connect(on_if_thumbnail_array_press.bind(input_field))
 				req_change_interaction_feature.connect(input_field.on_changed_interaction_feature)
 			
-			input_fields.append(input_field)
+			input_fields[prop] = input_field
 	
 	return input_fields
 
 
 # Creates a specified input field
 # To be overridden
-func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
+func _create_input_field(prop:String) -> UI_InputField:
 	return null
+
+
+
+# Prepare all the UI input fields to be added into the scene
+# Optionally specify a whitelist to conditionally hide/show input fields
+func prepare_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []) -> Array:
+	var prop_names = _get_prop_dictionary().keys()
+	var input_fields = []
+	
+	for prop in prop_names:
+		# Conditional rejection of a property
+		if !whitelist.is_empty() && !whitelist.has(prop): continue
+		
+		var input_field:UI_InputField = owned_input_fields.get(prop, null) 
+		
+		if input_field:
+			if is_instance_valid(input_field.get_parent()):
+				input_field.get_parent().remove_child(input_field)
+			input_field.prepare_input_field(_get(prop), _base_control, _resource_previewer)
+#			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
+			input_fields.append(input_field)
+	
+	return input_fields
+
+
 
 
 # Do something with an input field when it's _ready()

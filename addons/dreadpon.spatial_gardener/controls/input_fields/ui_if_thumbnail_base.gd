@@ -46,10 +46,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	super(__init_val, __labelText, __prop_name, settings)
 	set_meta("class", "UI_IF_ThumbnailArray")
 	
-	_base_control = settings._base_control
 	accepted_classes = settings.accepted_classes
 	element_interaction_flags = settings.element_interaction_flags
-	_resource_previewer = settings._resource_previewer
 	element_display_size = settings.element_display_size
 
 	if Engine.is_editor_hint():
@@ -67,7 +65,14 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_container.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 
+func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
+	super(__init_val, __base_control, __resource_previewer)
+	_base_control = __base_control
+	_resource_previewer = __resource_previewer
+
+
 func _enter_tree():
+	super()
 	if _base_control:
 		_base_control.add_child(file_dialog)
 

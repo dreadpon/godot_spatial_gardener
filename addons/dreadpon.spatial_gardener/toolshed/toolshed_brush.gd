@@ -47,7 +47,7 @@ func _init(__behavior_brush_type:int = BrushType.PAINT, __behavior_strength:floa
 	behavior_overlap_mode = __behavior_overlap_mode
 
 
-func _create_input_field(_base_control:Control, _resource_previewer, prop:String):
+func _create_input_field(prop:String):
 	var input_field:UI_InputField = null
 	
 	match prop:

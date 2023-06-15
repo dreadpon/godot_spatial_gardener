@@ -1,28 +1,12 @@
-[gd_scene load_steps=22 format=3 uid="uid://c7aqphasby0ip"]
+[gd_scene load_steps=13 format=3 uid="uid://c7aqphasby0ip"]
 
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/gardener/gardener.gd" id="1_jkcog"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/arborist/arborist.gd" id="2_cwstn"]
-[ext_resource type="CylinderMesh" uid="uid://ciogmujt32kfk" path="res://work_dir/new_cylinder_mesh.tres" id="3_mxg6i"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="4_ettum"]
 [ext_resource type="BoxMesh" uid="uid://dh3m5dnktrfj4" path="res://work_dir/new_box_mesh.tres" id="5_1i6hj"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/arborist/mmi_octree/mmi_octree_node.gd" id="6_h4k3n"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/arborist/mmi_octree/mmi_octree_manager.gd" id="7_vn2o1"]
 
-[sub_resource type="Resource" id="Resource_774r5"]
-resource_name = "Greenhouse_LODVariant"
-script = ExtResource("4_ettum")
-mesh = ExtResource("3_mxg6i")
-cast_shadow = 1
-metadata/class = "Greenhouse_LODVariant"
-
-[sub_resource type="Resource" id="Resource_cec7d"]
-resource_name = "Greenhouse_LODVariant"
-script = ExtResource("4_ettum")
-mesh = ExtResource("5_1i6hj")
-cast_shadow = 1
-metadata/class = "Greenhouse_LODVariant"
-
-[sub_resource type="Resource" id="Resource_unl10"]
+[sub_resource type="Resource" id="Resource_fxq48"]
 resource_local_to_scene = true
 resource_name = "MMIOctreeNode"
 script = ExtResource("6_h4k3n")
@@ -39,58 +23,21 @@ extent = 1.0
 bounds = AABB(-1, -1, -1, 2, 2, 2)
 max_bounds_to_center_dist = 1.73205
 min_bounds_to_center_dist = 1.0
-active_LOD_index = 1
+active_LOD_index = -1
 MMI_name = "MultiMeshInstance3D"
 metadata/class = "MMIOctreeNode"
 
-[sub_resource type="Resource" id="Resource_3u6b6"]
+[sub_resource type="Resource" id="Resource_78iyh"]
 resource_local_to_scene = true
 resource_name = "MMIOctreeManager"
 script = ExtResource("7_vn2o1")
-root_octree_node = SubResource("Resource_unl10")
-LOD_variants = Array[ExtResource("4_ettum")]([SubResource("Resource_774r5"), SubResource("Resource_cec7d")])
-LOD_max_distance = 10.0
-LOD_kill_distance = -1.0
+root_octree_node = SubResource("Resource_fxq48")
+LOD_variants = Array[Resource("res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd")]([])
+LOD_max_distance = 760.68
+LOD_kill_distance = 1461.89
 metadata/class = "MMIOctreeManager"
 
-[sub_resource type="Resource" id="Resource_p58vm"]
-resource_name = "Greenhouse_LODVariant"
-script = ExtResource("4_ettum")
-cast_shadow = 1
-metadata/class = "Greenhouse_LODVariant"
-
-[sub_resource type="Resource" id="Resource_emgnf"]
-resource_local_to_scene = true
-resource_name = "MMIOctreeNode"
-script = ExtResource("6_h4k3n")
-member_origin_offsets = PackedFloat32Array()
-member_surface_normals = PackedVector3Array()
-member_octants = PackedByteArray()
-child_nodes = []
-max_members = 75
-min_leaf_extent = 1.0
-octant = -1
-is_leaf = true
-center_pos = Vector3(0, 0, 0)
-extent = 1.0
-bounds = AABB(-1, -1, -1, 2, 2, 2)
-max_bounds_to_center_dist = 1.73205
-min_bounds_to_center_dist = 1.0
-active_LOD_index = 0
-MMI_name = "MultiMeshInstance3D2"
-metadata/class = "MMIOctreeNode"
-
-[sub_resource type="Resource" id="Resource_2a18p"]
-resource_local_to_scene = true
-resource_name = "MMIOctreeManager"
-script = ExtResource("7_vn2o1")
-root_octree_node = SubResource("Resource_emgnf")
-LOD_variants = Array[ExtResource("4_ettum")]([SubResource("Resource_p58vm")])
-LOD_max_distance = 10.0
-LOD_kill_distance = -1.0
-metadata/class = "MMIOctreeManager"
-
-[sub_resource type="Resource" id="Resource_kree6"]
+[sub_resource type="Resource" id="Resource_icbhl"]
 resource_local_to_scene = true
 resource_name = "MMIOctreeNode"
 script = ExtResource("6_h4k3n")
@@ -111,12 +58,12 @@ active_LOD_index = -1
 MMI_name = "MultiMeshInstance3D3"
 metadata/class = "MMIOctreeNode"
 
-[sub_resource type="Resource" id="Resource_66hjk"]
+[sub_resource type="Resource" id="Resource_2mk76"]
 resource_local_to_scene = true
 resource_name = "MMIOctreeManager"
 script = ExtResource("7_vn2o1")
-root_octree_node = SubResource("Resource_kree6")
-LOD_variants = Array[ExtResource("4_ettum")]([])
+root_octree_node = SubResource("Resource_icbhl")
+LOD_variants = Array[Resource("res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd")]([])
 LOD_max_distance = 10.0
 LOD_kill_distance = -1.0
 metadata/class = "MMIOctreeManager"
@@ -125,13 +72,6 @@ metadata/class = "MMIOctreeManager"
 resource_local_to_scene = true
 transform_format = 1
 mesh = ExtResource("5_1i6hj")
-
-[sub_resource type="ArrayMesh" id="ArrayMesh_e3h6s"]
-
-[sub_resource type="MultiMesh" id="MultiMesh_0stqy"]
-resource_local_to_scene = true
-transform_format = 1
-mesh = SubResource("ArrayMesh_e3h6s")
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_pyxc0"]
 
@@ -152,16 +92,13 @@ metadata/class = "Gardener"
 
 [node name="Arborist" type="Node3D" parent="Gardener"]
 script = ExtResource("2_cwstn")
-octree_managers = [SubResource("Resource_3u6b6"), SubResource("Resource_2a18p"), SubResource("Resource_66hjk")]
+octree_managers = [SubResource("Resource_78iyh"), SubResource("Resource_2mk76")]
 metadata/class = "Arborist"
 
 [node name="MMI_container" type="Node3D" parent="Gardener/Arborist"]
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Gardener/Arborist/MMI_container"]
 multimesh = SubResource("MultiMesh_7o5aj")
-
-[node name="MultiMeshInstance3D2" type="MultiMeshInstance3D" parent="Gardener/Arborist/MMI_container"]
-multimesh = SubResource("MultiMesh_0stqy")
 
 [node name="MultiMeshInstance3D3" type="MultiMeshInstance3D" parent="Gardener/Arborist/MMI_container"]
 multimesh = SubResource("MultiMesh_sqn73")

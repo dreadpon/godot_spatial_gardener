@@ -97,7 +97,7 @@ func _ready():
 		remove_child(MMI_container)
 		MMI_container = null
 	if !MMI_container:
-		FunLib.clear_children(self)
+		FunLib.free_children(self)
 		MMI_container = Node3D.new()
 		MMI_container.name = "MMI_container"
 		add_child(MMI_container)

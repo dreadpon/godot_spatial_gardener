@@ -20,10 +20,10 @@ tabs_visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+split_offset = 150
 
 [node name="ScrollContainer_PlantThumbnails" type="ScrollContainer" parent="TabContainer/VSplitContainer"]
 layout_mode = 2
-size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/VSplitContainer"]

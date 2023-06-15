@@ -28,7 +28,6 @@ func _ready():
 	super()
 	_thumb = _generate_thumbnail()
 	value_container.add_child(_thumb)
-	_init_ui()
 
 
 

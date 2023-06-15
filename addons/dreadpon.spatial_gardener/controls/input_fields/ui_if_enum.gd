@@ -36,7 +36,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _ready():
 	super()
 	value_container.add_child(enum_selector)
-	_init_ui()
 
 
 

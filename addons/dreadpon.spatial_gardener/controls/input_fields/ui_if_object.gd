@@ -39,17 +39,18 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
-	
-	_base_control = settings._base_control
-	_resource_previewer = settings._resource_previewer
+
+
+func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
+	super(__init_val, __base_control, __resource_previewer)
+	_base_control = __base_control
+	_resource_previewer = __resource_previewer
 
 
 func _ready():
 	super()
 	margin_container.add_child(input_field_container)
 	value_container.add_child(margin_container)
-	
-	_init_ui()
 	
 	if tab_index > 0:
 		margin_container.theme_type_variation = "PanelContainer"
@@ -59,13 +60,13 @@ func _ready():
 
 func rebuild_object_input_fields(object:Object):
 	print(Time.get_ticks_msec(), " rebuild_object_input_fields 1")
-	FunLib.clear_children(input_field_container)
+	FunLib.remove_children(input_field_container)
 	print(Time.get_ticks_msec(), " rebuild_object_input_fields 2")
 	if is_instance_valid(object):
 		
 		var property_sections := {}
 		
-		var input_fields = object.create_input_fields(_base_control, _resource_previewer)
+		var input_fields = object.prepare_input_fields(_base_control, _resource_previewer)
 		print(Time.get_ticks_msec(), " rebuild_object_input_fields 3")
 		for input_field in input_fields:
 #			print(Time.get_ticks_msec(), " rebuild_object_input_fields 4")

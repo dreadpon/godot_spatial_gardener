@@ -92,8 +92,6 @@ var import_export_export_button:bool = false
 
 
 var total_instances_in_gardener:int = 0
-var _base_control = null
-var _resource_previewer = null
 var select_container = null
 var settings_container = null
 
@@ -123,10 +121,7 @@ func _init():
 	_add_res_edit_source_array("mesh/mesh_LOD_variants", "mesh/selected_for_edit_resource")
 
 
-func _create_input_field(__base_control:Control, __resource_previewer, prop:String) -> UI_InputField:
-	_base_control = __base_control
-	_resource_previewer = __resource_previewer
-	
+func _create_input_field(prop:String) -> UI_InputField:
 	var input_field:UI_InputField = null
 	match prop:
 		"mesh/mesh_LOD_variants":
@@ -134,15 +129,20 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			accepted_classes.append_array(Globals.MESH_CLASSES)
 			var settings := {
 				"add_create_inst_button": true,
-				"_base_control": _base_control,
+#				"_base_control": _base_control,
 				"accepted_classes": accepted_classes,
 				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_LOD_VARIANT,
-				"_resource_previewer": _resource_previewer,
+#				"_resource_previewer": _resource_previewer,
 				}
 			input_field = UI_IF_ThumbnailArray.new(mesh_LOD_variants, "LOD Variants", prop, settings)
 		"mesh/selected_for_edit_resource":
-			var settings := {"_base_control": _base_control, "_resource_previewer": _resource_previewer, "label_visibility": false, "tab": 1}
+			var settings := {
+#				"_base_control": _base_control, 
+#				"_resource_previewer": _resource_previewer, 
+				"label_visibility": false, 
+				"tab": 1
+				}
 			input_field = UI_IF_Object.new(selected_for_edit_resource, "LOD Variant", prop, settings)
 		"mesh/mesh_LOD_max_distance":
 			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/plant_max_distance_slider_max_value", 1000.0)
@@ -160,9 +160,12 @@ func _create_input_field(__base_control:Control, __resource_previewer, prop:Stri
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_min_size, "Min node size", prop, settings)
 		"octree/octree_reconfigure_button":
-			var bound_input_fields:Array = create_input_fields(
-				_base_control, _resource_previewer, ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"])
-			var settings := {"button_text": "Configure Octree", "_base_control": _base_control, "bound_input_fields": bound_input_fields}
+			var bound_input_fields:Array = _create_input_fields(["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]).values()
+			var settings := {
+				"button_text": "Configure Octree", 
+#				"_base_control": _base_control, 
+				"bound_input_fields": bound_input_fields
+				}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
 			input_field.applied_changes.connect(on_dialog_if_applied_changes.bind(input_field))
 			input_field.canceled_changes.connect(on_dialog_if_canceled_changes.bind(input_field))
