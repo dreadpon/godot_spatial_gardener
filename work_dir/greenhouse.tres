@@ -26,7 +26,7 @@ resource_name = "Greenhouse_Plant"
 script = ExtResource("1_aixx2")
 mesh/mesh_LOD_variants = [SubResource("Resource_774r5"), SubResource("Resource_cec7d")]
 mesh/selected_for_edit_resource = SubResource("Resource_774r5")
-mesh/mesh_LOD_max_distance = 10.0
+mesh/mesh_LOD_max_distance = 10.01
 mesh/mesh_LOD_kill_distance = -1.0
 mesh/mesh_LOD_max_capacity = 100
 mesh/mesh_LOD_min_size = 1.0
@@ -58,7 +58,7 @@ metadata/class = "Greenhouse_Plant"
 [sub_resource type="Resource" id="Resource_tm67c"]
 resource_name = "Greenhouse_PlantState"
 script = ExtResource("2_h5qji")
-plant/plant_brush_active = true
+plant/plant_brush_active = false
 plant/plant_label = ""
 plant/plant = SubResource("Resource_leitv")
 metadata/class = "Greenhouse_PlantState"
@@ -105,8 +105,8 @@ metadata/class = "Greenhouse_Plant"
 [sub_resource type="Resource" id="Resource_lpl00"]
 resource_name = "Greenhouse_PlantState"
 script = ExtResource("2_h5qji")
-plant/plant_brush_active = false
-plant/plant_label = ""
+plant/plant_brush_active = true
+plant/plant_label = "Tree"
 plant/plant = SubResource("Resource_1cbs0")
 metadata/class = "Greenhouse_PlantState"
 
@@ -147,7 +147,7 @@ metadata/class = "Greenhouse_Plant"
 resource_name = "Greenhouse_PlantState"
 script = ExtResource("2_h5qji")
 plant/plant_brush_active = true
-plant/plant_label = ""
+plant/plant_label = "Grass"
 plant/plant = SubResource("Resource_451u3")
 metadata/class = "Greenhouse_PlantState"
 
@@ -155,5 +155,5 @@ metadata/class = "Greenhouse_PlantState"
 resource_name = "Greenhouse"
 script = ExtResource("1_1f0k3")
 plant_types/greenhouse_plant_states = [SubResource("Resource_tm67c"), SubResource("Resource_lpl00"), SubResource("Resource_u0jmv")]
-plant_types/selected_for_edit_resource = SubResource("Resource_lpl00")
+plant_types/selected_for_edit_resource = SubResource("Resource_tm67c")
 metadata/class = "Greenhouse"

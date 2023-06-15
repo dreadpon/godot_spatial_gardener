@@ -5,35 +5,33 @@ offset_top = 120.0
 offset_right = 348.0
 offset_bottom = 582.0
 
-[node name="PanelContainer_Category" type="PanelContainer" parent="."]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="Label_Category" type="Label" parent="PanelContainer_Category"]
+[node name="Label_Category_Plants" type="Label" parent="."]
 layout_mode = 2
 text = "Plants"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="VSplitContainer" type="VSplitContainer" parent="."]
+[node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="PanelContainer_PlantThumbnails" type="PanelContainer" parent="VSplitContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.3
-
-[node name="ScrollContainer_PlantThumbnails" type="ScrollContainer" parent="VSplitContainer/PanelContainer_PlantThumbnails"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="TabContainer_Properties" type="TabContainer" parent="VSplitContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
 tabs_visible = false
 
-[node name="ScrollContainer_Properties" type="ScrollContainer" parent="VSplitContainer/TabContainer_Properties"]
+[node name="VSplitContainer" type="VSplitContainer" parent="TabContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="ScrollContainer_PlantThumbnails" type="ScrollContainer" parent="TabContainer/VSplitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/VSplitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer_Properties" type="ScrollContainer" parent="TabContainer/VSplitContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0

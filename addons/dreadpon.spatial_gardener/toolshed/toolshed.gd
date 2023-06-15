@@ -49,8 +49,9 @@ func create_ui(__base_control:Control, __resource_previewer):
 	
 	ui_category_brushes_nd = ui_category_brushes_SCN.instantiate()
 	tab_container_brushes_nd = ui_category_brushes_nd.find_child('TabContainer_Brushes')
-	panel_container_category_nd = ui_category_brushes_nd.find_child('PanelContainer_Category')
+	panel_container_category_nd = ui_category_brushes_nd.find_child('Label_Category')
 	
+	ui_category_brushes_nd.theme_type_variation = "InspectorPanelContainer"
 	panel_container_category_nd.theme_type_variation = "PropertyCategory"
 	
 	for brush in brushes:

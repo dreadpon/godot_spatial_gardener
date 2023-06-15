@@ -35,6 +35,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	input_field_container = VBoxContainer.new()
 	input_field_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	input_field_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	input_field_container.add_theme_constant_override("separation", 0)
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
@@ -57,12 +58,17 @@ func _ready():
 
 
 func rebuild_object_input_fields(object:Object):
+	print(Time.get_ticks_msec(), " rebuild_object_input_fields 1")
 	FunLib.clear_children(input_field_container)
+	print(Time.get_ticks_msec(), " rebuild_object_input_fields 2")
 	if is_instance_valid(object):
 		
 		var property_sections := {}
 		
-		for input_field in object.create_input_fields(_base_control, _resource_previewer):
+		var input_fields = object.create_input_fields(_base_control, _resource_previewer)
+		print(Time.get_ticks_msec(), " rebuild_object_input_fields 3")
+		for input_field in input_fields:
+#			print(Time.get_ticks_msec(), " rebuild_object_input_fields 4")
 			var nesting := (input_field.prop_name as String).split('/')
 			if nesting.size() >= 2:
 				if !property_sections.has(nesting[0]): 
@@ -85,6 +91,7 @@ func rebuild_object_input_fields(object:Object):
 					property_sections[nesting[0]].section.add_prop_node(input_field)
 			else:
 				input_field_container.add_child(input_field)
+	print(Time.get_ticks_msec(), " rebuild_object_input_fields 5")
 
 
 

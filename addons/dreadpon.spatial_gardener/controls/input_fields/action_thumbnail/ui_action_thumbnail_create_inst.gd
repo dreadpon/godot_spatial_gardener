@@ -11,6 +11,8 @@ func _init():
 	set_meta("class", "UI_ActionThumbnailCreateInst")
 
 
+
+
 #-------------------------------------------------------------------------------
 # Resizing
 #-------------------------------------------------------------------------------
@@ -18,17 +20,7 @@ func _init():
 
 func _set_default_textures():
 	super._set_default_textures()
-	$TextureRect.texture = new_texture
-
-
-func update_size_step2():
-	var button_rect = Vector2(button_size, button_size)
-	var to_margin = float(thumb_size - button_size) * 0.5
-	
-	super.update_size_step2()
-	
-	texture_rect_nd.set_size(button_rect)
-	texture_rect_nd.set_position(Vector2(to_margin, to_margin))
+	%TextureRect.texture = new_texture
 
 
 

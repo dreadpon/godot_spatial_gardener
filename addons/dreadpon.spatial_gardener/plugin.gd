@@ -411,7 +411,8 @@ func stop_gardener_edit():
 
 # Dump the whole editor tree to console
 func debug_dump_editor_tree():
-	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
+	debug_save_node_descendants(get_editor_interface().get_inspector(), get_editor_interface().get_inspector())
+#	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
 
 
 func debug_dump_node_descendants(node:Node, intendation:int = 0):
@@ -430,6 +431,19 @@ func debug_dump_node_descendants(node:Node, intendation:int = 0):
 	intendation += 1
 	for child in node.get_children():
 		debug_dump_node_descendants(child, intendation)
+
+
+func debug_save_node_descendants(node:Node, owner_node: Node):
+	print("Adding %s" % [str(node)])
+	for child in node.get_children():
+		child.owner = owner_node
+		debug_save_node_descendants(child, owner_node)
+	
+	if node == owner_node:
+		print("Saving dump...")
+		var packed_editor := PackedScene.new()
+		packed_editor.pack(node)
+		ResourceSaver.save(packed_editor, "res://packed_editor.tscn")
 
 
 func debug_get_dump_editor_tree_key():

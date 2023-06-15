@@ -19,7 +19,7 @@ var selected_for_edit_resource:Resource = null
 var ui_category_greenhouse: Control = null
 var scroll_container_plant_thumbnails_nd:Control = null
 var scroll_container_properties_nd: Control = null
-var panel_container_properties_nd: Control = null
+#var panel_container_properties_nd: Control = null
 var panel_container_category_nd:Control = null
 
 var grid_container_plant_thumbnails_nd:UI_IF_ThumbnailArray = null
@@ -62,11 +62,12 @@ func create_ui(__base_control:Control, __resource_previewer):
 	ui_category_greenhouse = ui_category_greenhouse_SCN.instantiate()
 	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_child('ScrollContainer_PlantThumbnails')
 	scroll_container_properties_nd = ui_category_greenhouse.find_child('ScrollContainer_Properties')
-	panel_container_properties_nd = ui_category_greenhouse.find_child('PanelContainer_PlantThumbnails')
-	panel_container_category_nd = ui_category_greenhouse.find_child('PanelContainer_Category')
+	panel_container_category_nd = ui_category_greenhouse.find_child('Label_Category_Plants')
 	
 	panel_container_category_nd.theme_type_variation = "PropertyCategory"
-	panel_container_properties_nd.theme_type_variation = "InspectorInnerPanelContainer"
+	scroll_container_plant_thumbnails_nd.theme_type_variation = "InspectorPanelContainer"
+	scroll_container_properties_nd.theme_type_variation = "InspectorPanelContainer"
+	ui_category_greenhouse.theme_type_variation = "InspectorPanelContainer"
 	
 	var input_fields = create_input_fields(_base_control, _resource_previewer)
 	
@@ -201,6 +202,7 @@ func on_req_export_transforms(plant, plant_state):
 
 func on_req_import_export_file(file_path: String, signal_obj: Signal, plant_idx: int):
 	signal_obj.emit(file_path, plant_idx)
+
 
 
 

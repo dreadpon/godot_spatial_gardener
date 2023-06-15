@@ -52,6 +52,7 @@ var input_field_blacklist:Array = []
 var res_edit_data:Array = []
 # All properties that are affected by other properties
 var prop_dependency_data:Array = []
+var owned_input_fields: Array = []
 
 var logger = null
 
@@ -73,6 +74,16 @@ func _init():
 	resource_name = "InputFieldResource"
 	logger = Logger.get_for(self)
 	FunLib.ensure_signal(self.prop_action_executed, _on_prop_action_executed)
+
+
+#func _notification(what):
+#	match what:
+#		NOTIFICATION_POSTINITIALIZE:
+#			owned_input_fields = create_input_fields()
+#		NOTIFICATION_PREDELETE:
+#			for input_field in owned_input_fields:
+#				if is_instance_valid(input_field):
+#					input_field.queue_free()
 
 
 func set_undo_redo(val:EditorUndoRedoManager):
@@ -111,7 +122,7 @@ func duplicate_ifr(subresources:bool = false, ifr_subresources:bool = false) -> 
 							elif subresources:
 								prop_val[key] = element.duplicate(subresources)
 			
-			# Script check makes sure we don't try to suplicate Script properties
+			# Script check makes sure we don't try to duplicate Script properties
 			# This... shouldn't be happening normally
 			# TODO the whole InputFieldResource is kind of a mess, would be great if we could fit that into existing inspector workflow
 			elif is_instance_of(prop_val, Resource) && !is_instance_of(prop_val, Script):
@@ -155,14 +166,19 @@ func on_prop_action_requested(prop_action:PropAction):
 	debug_print_prop_action("Requested prop action: %s..." % [str(prop_action)])
 	
 	if _undo_redo && _can_prop_action_create_history(prop_action):
+		print(Time.get_ticks_msec(), " on_prop_action_requested 1")
 		var prop_action_class = prop_action.get_meta("class")
 		_undo_redo.create_action("%s: on '%s'" % [prop_action_class, prop_action.prop], 0, self)
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.BEFORE_DO)
+		print(Time.get_ticks_msec(), " on_prop_action_requested 2")
 		_undo_redo.add_do_method(self, "_perform_prop_action", prop_action)
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.AFTER_DO)
+		print(Time.get_ticks_msec(), " on_prop_action_requested 3")
 		_undo_redo.add_undo_method(self, "_perform_prop_action", _get_opposite_prop_action(prop_action))
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.AFTER_UNDO)
+		print(Time.get_ticks_msec(), " on_prop_action_requested 4")
 		_undo_redo.commit_action()
+		print(Time.get_ticks_msec(), " on_prop_action_requested 5")
 	# But we don't *have* to use EditorUndoRedoManager system
 	else:
 		_prop_action_request_lifecycle(prop_action, PropActionLifecycle.BEFORE_DO)
@@ -172,9 +188,13 @@ func on_prop_action_requested(prop_action:PropAction):
 
 # A wrapper for prop_action_request_lifecycle() with default logic
 func _prop_action_request_lifecycle(prop_action:PropAction, lifecycle_stage:int):
+	print(Time.get_ticks_msec(), " _prop_action_request_lifecycle 1")
 	_handle_res_edit_prop_action_lifecycle(prop_action, lifecycle_stage)
+	print(Time.get_ticks_msec(), " _prop_action_request_lifecycle 2")
 	_handle_dependency_prop_action_lifecycle(prop_action, lifecycle_stage)
+	print(Time.get_ticks_msec(), " _prop_action_request_lifecycle 3")
 	prop_action_request_lifecycle(prop_action, lifecycle_stage)
+	print(Time.get_ticks_msec(), " _prop_action_request_lifecycle 4")
 
 
 # Custom logic after a PropAction was requested/done/undone
@@ -459,7 +479,7 @@ func _handle_dependency_prop_action_lifecycle(prop_action:PropAction, lifecycle_
 
 
 # Register a property array with resources that can be individually shown for property editing
-# Since new ones are added as 'null' and initialized in _modify_prop(), so they WILL NOT be equal to cached ones in UndoReEditorUndoRedoManagerdo actions
+# Since new ones are added as 'null' and initialized in _modify_prop(), so they WILL NOT be equal to cached ones in EditorUndoRedoManager actions
 func _add_res_edit_source_array(array_prop:String, res_prop:String):
 	res_edit_data.append({"array_prop": array_prop, "res_prop": res_prop})
 
@@ -502,6 +522,7 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 
 # Requests a prop action that updates the needed property
 func _res_edit_select(array_prop:String, new_res_array:Array, create_history:bool = false):
+	print(Time.get_ticks_msec(), " _res_edit_select")
 	var res_edit = find_res_edit_by_array_prop(array_prop)
 	if res_edit:
 		var array_val = get(res_edit.array_prop)
@@ -512,8 +533,11 @@ func _res_edit_select(array_prop:String, new_res_array:Array, create_history:boo
 		
 		var prop_action = PA_PropSet.new(res_edit.res_prop, new_res_val)
 		prop_action.can_create_history = create_history
+		print(Time.get_ticks_msec(), " _res_edit_select 2")
 		request_prop_action(prop_action)
+		print(Time.get_ticks_msec(), " _res_edit_select 3")
 		res_edit_update_interaction_features(prop_action.prop)
+		print(Time.get_ticks_msec(), " _res_edit_select 4")
 
 
 

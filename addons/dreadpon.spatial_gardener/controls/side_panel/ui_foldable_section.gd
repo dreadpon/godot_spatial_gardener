@@ -4,8 +4,8 @@ extends MarginContainer
 
 
 
-@export var arrow_down:Image = null
-@export var arrow_right:Image = null
+@export var arrow_down:ImageTexture = null
+@export var arrow_right:ImageTexture = null
 
 var folded: bool = false : set = set_folded
 var button_text: String = 'Section' : set = set_button_text
@@ -23,9 +23,9 @@ func _ready():
 	set_button_text(button_text)
 	set_nesting_level(nesting_level)
 	
-	if is_instance_of(get_parent(), BoxContainer):
-		var separation = get_parent().get_theme_constant('separation')
-		add_theme_constant_override('offset_bottom', -separation)
+#	if is_instance_of(get_parent(), BoxContainer):
+#		var separation = get_parent().get_theme_constant('separation')
+#		add_theme_constant_override('offset_bottom', -separation)
 
 
 func toggle_folded():
@@ -36,7 +36,7 @@ func set_folded(val):
 	folded = val
 	if is_inside_tree():
 		$VBoxContainer_Main/HBoxContainer_Offset.visible = !folded
-		$VBoxContainer_Main/Button_Fold.icon.image = arrow_right if folded else arrow_down
+		$VBoxContainer_Main/Button_Fold.icon = arrow_right if folded else arrow_down
 	folding_state_changed.emit(folded)
 
 

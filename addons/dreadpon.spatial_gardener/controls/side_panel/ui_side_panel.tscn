@@ -13,17 +13,14 @@ tabs_visible = false
 script = ExtResource("3")
 metadata/class = "UI_SidePanel"
 
-[node name="PanelContainer_Tools" type="PanelContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_type_variation = &"InspectorPanelContainer"
 
-[node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer_Tools"]
+[node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer"]
 layout_mode = 2
 split_offset = 100
 
-[node name="Label_Error" type="Label" parent="."]
+[node name="Label_Error" type="Label" parent="PanelContainer"]
 visible = false
 layout_mode = 2
 text = "To begin, set the Gardener's Work Directory in the Inspector"

@@ -245,6 +245,8 @@ func _queue_thumbnail(res:Resource, thumb):
 		thumb.set_thumbnail(null)
 		if res:
 			thumb.set_alt_text(res.resource_name)
+		else:
+			thumb.set_alt_text("None")
 	else:
 		_resource_previewer.queue_resource_preview(resource_path, self, "try_assign_to_thumbnail", 
 			{'thumb': thumb, 'thumb_res': res})

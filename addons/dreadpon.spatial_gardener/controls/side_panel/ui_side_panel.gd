@@ -17,9 +17,9 @@ const PA_ArrayInsert = preload("../../utility/input_field_resource/pa_array_inse
 const PA_ArrayRemove = preload("../../utility/input_field_resource/pa_array_remove.gd")
 const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd")
 
-@onready var panel_container_tools_nd = $PanelContainer_Tools
-@onready var panel_container_tools_split_nd = $PanelContainer_Tools/PanelContainer_Tools_Split
-@onready var label_error_nd = $Label_Error
+@onready var panel_container_tools_nd = $PanelContainer
+@onready var panel_container_tools_split_nd = $PanelContainer/PanelContainer_Tools_Split
+@onready var label_error_nd = $PanelContainer/Label_Error
 
 
 
@@ -102,10 +102,12 @@ func refresh_folding_states_for_greenhouse(folding_states:Dictionary, greenhouse
 
 # Restore folding states
 func set_folding_states(states: Dictionary):
+	print(Time.get_ticks_msec(), " set_folding_states 1")
 	for path in states:
 		var abs_path = str(get_path()) + '/' + str(path)
 		if has_node(abs_path):
 			get_node(abs_path).folded = states[path]
+	print(Time.get_ticks_msec(), " set_folding_states 2")
 
 
 # Bind foldable ui elements to update the relevant folding states
