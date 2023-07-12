@@ -129,7 +129,6 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	var PropertySection_stylebox_bg_color = EditorInspectorCategory_stylebox_bg.bg_color
 	PropertySection_stylebox_bg_color.a *= 0.4
 	var PropertySection_stylebox_normal := StyleBoxFlat.new()
-	print(PropertySection_stylebox_bg_color)
 	PropertySection_stylebox_normal.bg_color = PropertySection_stylebox_bg_color
 	PropertySection_stylebox_normal.set_content_margin_all(Tree_v_separation * 0.5)
 	var PropertySection_stylebox_hover := PropertySection_stylebox_normal.duplicate(true)

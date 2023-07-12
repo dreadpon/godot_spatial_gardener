@@ -118,6 +118,15 @@ func _ready():
 	value_container.add_child(vertical_container)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(vertical_container):
+		vertical_container.free()
+	for node in field_editable_controls:
+		if is_instance_valid(node):
+			node.free()
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -150,6 +159,7 @@ func _string_to_val(string) -> float:
 	elif string is float:
 		return string
 	else:
+#		print(string)
 		logger.warn("Passed variable is not a string!")
 	return 0.0
 

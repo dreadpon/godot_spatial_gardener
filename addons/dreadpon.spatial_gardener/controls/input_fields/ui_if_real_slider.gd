@@ -56,6 +56,14 @@ func _ready():
 	value_container.add_child(value_input)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(real_slider):
+		real_slider.free()
+	if is_instance_valid(value_input):
+		value_input.free()
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -98,6 +106,7 @@ func _string_to_val(string) -> float:
 	elif string is float:
 		return string
 	else:
+#		print(string)
 		logger.warn("Passed variable is not a string!")
 	return 0.0
 

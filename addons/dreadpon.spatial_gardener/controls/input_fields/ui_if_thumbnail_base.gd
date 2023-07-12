@@ -51,7 +51,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	element_display_size = settings.element_display_size
 
 	if Engine.is_editor_hint():
-		file_dialog = EditorFileDialog.new()
+		# https://github.com/godotengine/godot/issues/73525
+		file_dialog = (EditorFileDialog as Variant).new()
 	else:
 		file_dialog = FileDialog.new()
 	file_dialog.file_mode = file_dialog.FILE_MODE_OPEN_FILE
@@ -81,6 +82,13 @@ func _exit_tree():
 	if _base_control:
 		if _base_control.get_children().has(file_dialog):
 			_base_control.remove_child(file_dialog)
+			file_dialog.free()
+
+
+func _cleanup():
+	super()
+	if is_instance_valid(file_dialog):
+		file_dialog.free()
 
 
 # Add filters for all accepted classes
@@ -243,8 +251,9 @@ func set_res_for_thumbnail(res:Resource, thumb):
 
 
 # Queue a resource for preview generation in a resource previewer
-func _queue_thumbnail(res:Resource, thumb):
-	if !is_inside_tree(): return
+func _queue_thumbnail(res:Resource, thumb: Node):
+	if !is_node_ready() || !is_instance_valid(thumb): return
+#	print("_queue_thumbnail")
 	var resource_path = _get_resource_path_for_resource(res)
 	if resource_path == "":
 		thumb.set_thumbnail(null)
@@ -275,7 +284,7 @@ func _get_resource_path_for_resource(resource:Resource):
 
 # Callback to assign a thumbnail after it was generated
 func try_assign_to_thumbnail(path:String, preview:Texture2D, thumbnail_preview:Texture2D, userdata: Dictionary):
-	if !is_inside_tree(): return
+	if !is_node_ready(): return
 	if preview:
 		userdata.thumb.set_thumbnail(preview)
 	else:

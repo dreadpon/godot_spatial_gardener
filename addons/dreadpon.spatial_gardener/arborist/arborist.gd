@@ -22,6 +22,7 @@ const Greenhouse_Plant = preload("../greenhouse/greenhouse_plant.gd")
 const Toolshed_Brush = preload("../toolshed/toolshed_brush.gd")
 const PaintingChanges = preload("painting_changes.gd")
 const MMIOctreeManager = preload("mmi_octree/mmi_octree_manager.gd")
+const UndoRedoInterface = preload("../utility/undo_redo_interface.gd")
 
 const StrokeHandler = preload("stroke_handler/stroke_handler.gd")
 const SH_Paint = preload("stroke_handler/sh_paint.gd")
@@ -50,7 +51,7 @@ var active_painting_changes:PaintingChanges = null
 #var exit_instance_placement:bool
 #var done_instance_placement:bool
 
-var _undo_redo:EditorUndoRedoManager = null
+var _undo_redo = null
 
 var debug_redraw_requested_managers:Array = []
 
@@ -339,17 +340,17 @@ func on_stroke_updated(brush_data:Dictionary):
 	debug_print_lifecycle("Total stroke %s update took: %s" % [active_stroke_handler.get_meta("class"), FunLib.msec_to_time(msec_end - msec_start)])
 
 
-# Use collected PaintingChanges to add EditorUndoRedoManager actions
+# Use collected PaintingChanges to add UndoRedo actions
 func on_stroke_finished():
 	assert(active_stroke_handler)
 	assert(active_painting_changes)
 	
-	_undo_redo.create_action("Apply Arborist MMI changes", 0, self)
-	_undo_redo.add_do_method(self, "_action_apply_changes", active_painting_changes)
-	_undo_redo.add_undo_method(self, "_action_apply_changes", active_painting_changes.pop_opposite())
+	UndoRedoInterface.create_action(_undo_redo, "Apply Arborist MMI changes", 0, false, self)
+	UndoRedoInterface.add_do_method(_undo_redo, _action_apply_changes.bind(active_painting_changes))
+	UndoRedoInterface.add_undo_method(_undo_redo, _action_apply_changes.bind(active_painting_changes.pop_opposite()))
 	
 	# We toggle this flag to avoid reapplying already commited changes all over again
-	_undo_redo.commit_action(false)
+	UndoRedoInterface.commit_action(_undo_redo, false)
 	
 	debug_print_lifecycle("Stroke %s finished, total changes made: %d" % [active_stroke_handler.get_meta("class"), active_painting_changes.changes.size()])
 	
@@ -357,7 +358,7 @@ func on_stroke_finished():
 	active_painting_changes = null
 
 
-# A wrapper for applying changes to avoid reaplying EditorUndoRedoManager actions on commit_action()
+# A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
 func _action_apply_changes(changes):
 #	mutex_placement.lock()
 	apply_stroke_update_changes(changes)
@@ -464,53 +465,15 @@ func update_LODs():
 			octree_manager.update_LODs_no_camera()
 
 
-func import_instance_transforms(file_path: String, plant_idx: int):
-	var file := FileAccess.open(file_path, FileAccess.READ)
-	if !file:
-		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
-	
-	var test_json_conv = JSON.new()
-	test_json_conv.parse(file.get_as_text())
-	var json_result = test_json_conv.get_data()
-	if json_result.error != OK:
-		logger.error("Could not parse json at '%s', error %s!" % [file_path, Globals.get_err_message(json_result.error)])
-	var placeform_dicts = json_result.result
-	file.close()
-	
+func batch_add_instances(placeforms: Array, plant_idx: int):
 	active_painting_changes = PaintingChanges.new()
 	active_stroke_handler = SH_Manual.new()
 	
-	for placeform_dict in placeform_dicts:
-		active_stroke_handler.add_instance(
-			FunLib.str_to_vec3(placeform_dict.placement), FunLib.str_to_vec3(placeform_dict.surface_normal), 
-			FunLib.str_to_transform(placeform_dict.transform), plant_idx, active_painting_changes)
+	for placeform in placeforms:
+		active_stroke_handler.add_instance_placeform(placeform, plant_idx, active_painting_changes)
 	
 	apply_stroke_update_changes(active_painting_changes)
 	on_stroke_finished()
-	logger.info("Successfully imported %d Placeform(s) from '%s' to index %d" % [placeform_dicts.size(), file_path, plant_idx])
-
-
-func export_instance_transforms(file_path: String, plant_idx: int):
-	DirAccess.make_dir_recursive_absolute(file_path.get_base_dir())
-	var file := FileAccess.open(file_path, FileAccess.WRITE)
-	if !file:
-		logger.error("Could not export '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
-	
-	var placeforms: Array = []
-	octree_managers[plant_idx].get_all_placeforms(placeforms)
-	var placeform_dicts := []
-	for placeform in placeforms:
-		placeform_dicts.append({
-			'placement': placeform[0],
-			'surface_normal': placeform[1],
-			'transform': placeform[2],
-			'octree_octant': placeform[3],
-		})
-	
-	var json_string = JSON.stringify(placeform_dicts)
-	file.store_string(json_string)
-	file.close()
-	logger.info("Successfully exported %d Placeform(s) to '%s' at index %d" % [placeform_dicts.size(), file_path, plant_idx])
 
 
 

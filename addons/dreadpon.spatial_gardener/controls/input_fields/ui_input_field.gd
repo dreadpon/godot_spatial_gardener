@@ -19,6 +19,7 @@ const PA_PropEdit = preload("../../utility/input_field_resource/pa_prop_edit.gd"
 const PA_ArrayInsert = preload("../../utility/input_field_resource/pa_array_insert.gd")
 const PA_ArrayRemove = preload("../../utility/input_field_resource/pa_array_remove.gd")
 const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd")
+const UndoRedoInterface = preload("../../utility/undo_redo_interface.gd")
 
 
 const tab_size:float = 5.0
@@ -52,7 +53,7 @@ var visibility_forced:int = -1
 #var visibility_tracked_properties:Array = []
 #var visibility_is_tracked:bool = false : set = set_visibility_is_tracked
 
-var _undo_redo:EditorUndoRedoManager = null
+var _undo_redo = null
 var disable_history:bool = false
 
 var logger = null
@@ -92,6 +93,23 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	set_stylebox(get_theme_stylebox('panel', 'PanelContainer'))
 	
 	set_tooltip(tooltip)
+
+
+func _notification(what):
+	match what:
+		NOTIFICATION_PREDELETE:
+			_cleanup()
+
+
+func _cleanup():
+	if is_instance_valid(container_box):
+		container_box.free()
+	if is_instance_valid(tab_spacer):
+		tab_spacer.free()
+	if is_instance_valid(label):
+		label.free()
+	if is_instance_valid(value_container):
+		value_container.free()
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
@@ -155,6 +173,7 @@ func set_stylebox(stylebox:StyleBox):
 # Update the UI
 func on_prop_action_executed(prop_action:PropAction, final_val):
 	if prop_action.prop == prop_name:
+#		print("on_prop_action_executed ", prop_action, " ", self)
 		_update_ui_to_prop_action(prop_action, final_val)
 #	on_tracked_property_changed(prop_action.prop, final_val)
 

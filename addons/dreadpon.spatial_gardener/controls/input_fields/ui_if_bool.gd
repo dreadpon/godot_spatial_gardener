@@ -35,6 +35,12 @@ func _ready():
 	value_container.add_child(bool_check)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(bool_check):
+		bool_check.free()
+
+
 
 
 #-------------------------------------------------------------------------------

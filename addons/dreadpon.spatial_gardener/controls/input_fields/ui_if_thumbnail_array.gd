@@ -47,6 +47,17 @@ func _ready():
 	value_container.add_child(scroll_intermediary)
 
 
+func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
+	super(__init_val, __base_control, __resource_previewer)
+
+
+func _cleanup():
+	super()
+	if is_instance_valid(scroll_intermediary):
+		scroll_intermediary.free()
+	if is_instance_valid(flex_grid):
+		flex_grid.free()
+
 
 
 #-------------------------------------------------------------------------------
@@ -72,14 +83,15 @@ func _update_ui_to_val(val):
 		_add_thumb_create_inst()
 	
 	for i in range(0, val.size()):
-		_add_thumb()
+		var thumb = _add_thumb()
 		
 		var element = val[i]
 		if is_instance_of(element, Resource):
-			var thumb = flex_grid.get_child(i)
-			_queue_thumbnail(element, thumb)
+#			var thumb = flex_grid.get_child(i)
+			call_deferred("_queue_thumbnail", element, thumb)
 		else:
-			flex_grid.get_child(i).set_thumbnail(null)
+			thumb.call_deferred("set_thumbnail", null)
+#			flex_grid.get_child(i).set_thumbnail(null)
 	
 	super._update_ui_to_val(val.duplicate())
 
@@ -108,14 +120,20 @@ func _add_thumb_create_inst():
 
 # Add a regular action thumbnail
 func _add_thumb(index:int = -1):
+	if !is_node_ready(): return
 	var thumb = _generate_thumbnail()
 	flex_grid.add_child(thumb)
 	
+	print("_add_thumb, ", index)
+	if index >= flex_grid.get_child_count():
+		logger.warn("_add_thumb index %d is beyond maximum of %d. Clamping..." % [index, flex_grid.get_child_count() - 1])
+		index = flex_grid.get_child_count() - 1
 	if add_create_inst_button:
 		if index < 0:
 			flex_grid.move_child(thumb, flex_grid.get_child_count() - 2)
 		else:
 			flex_grid.move_child(thumb, index)
+	return thumb
 
 
 # Remove a regular action thumbnail
@@ -125,6 +143,7 @@ func _remove_thumb(index:int):
 	
 	var thumb = flex_grid.get_child(index)
 	flex_grid.remove_child(thumb)
+	thumb.free()
 
 
 
@@ -204,7 +223,7 @@ func set_res_for_thumbnail(res:Resource, thumb):
 
 
 func _update_thumbnail(res, index:int):
-	if !is_inside_tree(): return
+	if !is_node_ready(): return
 	if index >= flex_grid.get_child_count(): return
 	if index < 0: return
 	

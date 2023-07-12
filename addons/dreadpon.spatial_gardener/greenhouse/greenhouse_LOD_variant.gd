@@ -29,6 +29,7 @@ func _init(__mesh:Mesh = null, __spawned_spatial:PackedScene = null):
 	
 	mesh = __mesh
 	spawned_spatial = __spawned_spatial
+#	print("init ", resource_name, " ", self)
 
 
 func _create_input_field(prop:String) -> UI_InputField:

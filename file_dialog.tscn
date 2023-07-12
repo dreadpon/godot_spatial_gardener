@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://beygc23qy3wq"]
+
+[node name="FileDialog" type="FileDialog"]
+size = Vector2i(312, 157)

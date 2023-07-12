@@ -1,0 +1,21 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://mgdxrv58deq4"
+path="res://.godot/imported/foliage_tool_test_landscape_LOD_2.obj-b3e86780c6503bbe13b6aa938d3c83e1.mesh"
+
+[deps]
+
+files=["res://.godot/imported/foliage_tool_test_landscape_LOD_2.obj-b3e86780c6503bbe13b6aa938d3c83e1.mesh"]
+
+source_file="res://testing/assets/landscape/foliage_tool_test_landscape_LOD_2.obj"
+dest_files=["res://.godot/imported/foliage_tool_test_landscape_LOD_2.obj-b3e86780c6503bbe13b6aa938d3c83e1.mesh", "res://.godot/imported/foliage_tool_test_landscape_LOD_2.obj-b3e86780c6503bbe13b6aa938d3c83e1.mesh"]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+optimize_mesh=true

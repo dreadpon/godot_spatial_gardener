@@ -85,10 +85,14 @@ var rotation_random_z:float = 0.0
 # "Sloped" in relation to the chosen primary up vector
 var slope_allowed_range:Array = [0.0, 180.0]
 
-# A dummy variable to export plant instance transforms
-var import_export_import_button:bool = false
-# A dummy variable to import plant instance transforms
-var import_export_export_button:bool = false
+# A dummy variable to export plant data
+var import_export_import_plant_data_button:bool = false
+# A dummy variable to import plant data
+var import_export_export_plant_data_button:bool = false
+# A dummy variable to export greenhouse data
+var import_export_import_greenhouse_data_button:bool = false
+# A dummy variable to import greenhouse data
+var import_export_export_greenhouse_data_button:bool = false
 
 
 var total_instances_in_gardener:int = 0
@@ -96,11 +100,13 @@ var select_container = null
 var settings_container = null
 
 
+signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 signal req_octree_reconfigure
 signal req_octree_recenter
-signal req_import_transforms
-signal req_export_transforms
-signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
+signal req_import_plant_data
+signal req_export_plant_data
+signal req_import_greenhouse_data
+signal req_export_greenhouse_data
 
 
 
@@ -111,14 +117,16 @@ signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 
 
 func _init():
+	input_field_blacklist = ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]
+	
 	super()
 	set_meta("class", "Greenhouse_Plant")
 	resource_name = "Greenhouse_Plant"
 	
-	input_field_blacklist = ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]
 	_add_prop_dependency("mesh/mesh_LOD_kill_distance", ["mesh/mesh_LOD_max_distance"])
 	_add_prop_dependency("scale/scale_range", ["scale/scale_scaling_type"])
 	_add_res_edit_source_array("mesh/mesh_LOD_variants", "mesh/selected_for_edit_resource")
+#	print("init ", resource_name, " ", self)
 
 
 func _create_input_field(prop:String) -> UI_InputField:
@@ -160,7 +168,7 @@ func _create_input_field(prop:String) -> UI_InputField:
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_min_size, "Min node size", prop, settings)
 		"octree/octree_reconfigure_button":
-			var bound_input_fields:Array = _create_input_fields(["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]).values()
+			var bound_input_fields:Array = _mk_input_fields(["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]).values()
 			var settings := {
 				"button_text": "Configure Octree", 
 #				"_base_control": _base_control, 
@@ -278,15 +286,32 @@ func _create_input_field(prop:String) -> UI_InputField:
 				}
 			input_field = UI_IF_MultiRange.new(slope_allowed_range, "Allowed Slope Range", prop, settings)
 		#======================================================
-		"import_export/import_button":
+		"import_export/import_plant_data_button":
 			var settings := {"button_text": "Import"}
-			input_field = UI_IF_Button.new(import_export_import_button, "Import Transforms", prop, settings)
+			input_field = UI_IF_Button.new(import_export_import_plant_data_button, "Import Plant Data", prop, settings)
 			input_field.pressed.connect(on_if_button.bind(input_field))
-		"import_export/export_button":
+		"import_export/export_plant_data_button":
 			var settings := {"button_text": "Export"}
-			input_field = UI_IF_Button.new(import_export_export_button, "Export Transforms", prop, settings)
+			input_field = UI_IF_Button.new(import_export_export_plant_data_button, "Export Plant Data", prop, settings)
+			input_field.pressed.connect(on_if_button.bind(input_field))
+		"import_export/import_greenhouse_data_button":
+			var settings := {"button_text": "Import"}
+			input_field = UI_IF_Button.new(import_export_import_greenhouse_data_button, "Import Greenhouse Data", prop, settings)
+			input_field.pressed.connect(on_if_button.bind(input_field))
+		"import_export/export_greenhouse_data_button":
+			var settings := {"button_text": "Export"}
+			input_field = UI_IF_Button.new(import_export_export_greenhouse_data_button, "Export Greenhouse Data", prop, settings)
 			input_field.pressed.connect(on_if_button.bind(input_field))
 	
+	return input_field
+
+
+func _prepare_input_field(_base_control:Control, _resource_previewer, prop: String):
+	var input_field:UI_InputField = super(_base_control, _resource_previewer, prop)
+	match prop:
+		"octree/octree_reconfigure_button":
+			for sub_input_field in input_field.bound_input_fields:
+				sub_input_field.prepare_input_field(get(sub_input_field.prop_name), _base_control, _resource_previewer)
 	return input_field
 
 
@@ -335,12 +360,12 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant)
 func on_dialog_if_applied_changes(initial_values:Array, final_values:Array, input_field:UI_InputField):
 	match input_field.prop_name:
 		"octree/octree_reconfigure_button":
-			_undo_redo.create_action("Reconfigure Octree", 0, self)
-			_undo_redo.add_do_method(input_field, "set_values", final_values)
-			_undo_redo.add_do_method(self, "reconfigure_octree")
-			_undo_redo.add_undo_method(input_field, "set_values", initial_values)
-			_undo_redo.add_undo_method(self, "reconfigure_octree")
-			_undo_redo.commit_action()
+			UndoRedoInterface.create_action(_undo_redo, "Reconfigure Octree", 0, false, self)
+			UndoRedoInterface.add_do_method(_undo_redo, input_field.set_values.bind(final_values))
+			UndoRedoInterface.add_do_method(_undo_redo, self.reconfigure_octree)
+			UndoRedoInterface.add_undo_method(_undo_redo, input_field.set_values.bind(initial_values))
+			UndoRedoInterface.add_undo_method(_undo_redo, self.reconfigure_octree)
+			UndoRedoInterface.commit_action(_undo_redo, true)
 
 
 # Handle changes canceled by input field dialog
@@ -353,10 +378,14 @@ func on_if_button(input_field:UI_InputField):
 	match input_field.prop_name:
 		"octree/octree_recenter_button":
 			req_octree_recenter.emit()
-		"import_export/import_button":
-			req_import_transforms.emit()
-		"import_export/export_button":
-			req_export_transforms.emit()
+		"import_export/import_plant_data_button":
+			req_import_plant_data.emit()
+		"import_export/export_plant_data_button":
+			req_export_plant_data.emit()
+		"import_export/import_greenhouse_data_button":
+			req_import_greenhouse_data.emit()
+		"import_export/export_greenhouse_data_button":
+			req_export_greenhouse_data.emit()
 
 
 
@@ -442,7 +471,7 @@ func request_prop_action(prop_action:PropAction):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:EditorUndoRedoManager):
+func set_undo_redo(val):
 	super.set_undo_redo(val)
 	for LOD_variant in mesh_LOD_variants:
 		LOD_variant.set_undo_redo(_undo_redo)
@@ -520,10 +549,14 @@ func _set(prop, val):
 		"slope/slope_allowed_range":
 			slope_allowed_range = val
 		
-		"import_export/import_button":
-			import_export_import_button = val
-		"import_export/export_button":
-			import_export_export_button = val
+		"import_export/import_plant_data_button":
+			import_export_import_plant_data_button = val
+		"import_export/export_plant_data_button":
+			import_export_export_plant_data_button = val
+		"import_export/import_greenhouse_data_button":
+			import_export_import_greenhouse_data_button = val
+		"import_export/export_greenhouse_data_button":
+			import_export_export_greenhouse_data_button = val
 		_:
 			return_val = false
 	
@@ -596,10 +629,14 @@ func _get(property):
 		"slope/slope_allowed_range":
 			return slope_allowed_range
 		
-		"import_export/import_button":
-			return import_export_import_button
-		"import_export/export_button":
-			return import_export_export_button
+		"import_export/import_plant_data_button":
+			return import_export_import_plant_data_button
+		"import_export/export_plant_data_button":
+			return import_export_export_plant_data_button
+		"import_export/import_greenhouse_data_button":
+			return import_export_import_greenhouse_data_button
+		"import_export/export_greenhouse_data_button":
+			return import_export_export_greenhouse_data_button
 	
 	return null
 
@@ -836,16 +873,30 @@ func _get_prop_dictionary():
 			"hint": PROPERTY_HINT_NONE
 		},
 		#======================================================
-		"import_export/import_button":
+		"import_export/import_plant_data_button":
 		{
-			"name": "import_export/export_button",
+			"name": "import_export/import_plant_data_button",
 			"type": TYPE_BOOL,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
 		},
-		"import_export/export_button":
+		"import_export/export_plant_data_button":
 		{
-			"name": "import_export/export_button",
+			"name": "import_export/export_plant_data_button",
+			"type": TYPE_BOOL,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_NONE
+		},
+		"import_export/import_greenhouse_data_button":
+		{
+			"name": "import_export/import_greenhouse_data_button",
+			"type": TYPE_BOOL,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_NONE
+		},
+		"import_export/export_greenhouse_data_button":
+		{
+			"name": "import_export/export_greenhouse_data_button",
 			"type": TYPE_BOOL,
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE
@@ -964,17 +1015,34 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "If you wish to align your plant to Surface Normal and use the slope\n" \
 				+ "Set Primary Up Vector to World Y, secondary to Normal and just blend all the way to the secondary vector (blend = 1.0)" 
 		
-		"import_export/import_button":
-			return "The button to import instance transforms for the current plant inside a current Gardener\n" \
-				+ "To then import them to a different scene\n" \
-				+ "Or when switching between plugin versions (whenever necessary)\n" \
+		"import_export/import_plant_data_button":
+			return "The button to import plant settings and transforms\n" \
+				+ "For the current plant inside a current Gardener\n" \
 				+ "Instances are ADDED to the existing ones; to replace you'll need to manually erase the old instances first\n" \
 				+ "\n" \
 				+ "NOTE: import recreates your octree nodes anew and they won't be the same\n" \
 				+ "(but they were killed already by an export operation to begin with)\n" \
 				+ "Most of the time this can be ignored since you likely Rebuild/Recenter your octrees on a regular basis anyway"
-		"import_export/export_button":
-			return "The button to export all instance transforms of current plant inside a current Gardener\n" \
+		"import_export/export_plant_data_button":
+			return "The button to export plant settings and transforms\n" \
+				+ "Of current plant inside a current Gardener\n" \
+				+ "To import them to a different scene\n" \
+				+ "Or when switching between plugin versions (whenever necessary)\n" \
+				+ "\n" \
+				+ "NOTE: export kills whatever octree nodes you have\n" \
+				+ "(and import recreates them anew but they won't be the same)\n" \
+				+ "Most of the time this can be ignored since you likely Rebuild/Recenter your octrees on a regular basis anyway"
+		"import_export/import_greenhouse_data_button":
+			return "The button to import all greenhouse plant settings and transforms\n" \
+				+ "Inside a current Gardener\n" \
+				+ "Instances are ADDED to the existing ones; to replace you'll need to manually erase the old instances first\n" \
+				+ "\n" \
+				+ "NOTE: import recreates your octree nodes anew and they won't be the same\n" \
+				+ "(but they were killed already by an export operation to begin with)\n" \
+				+ "Most of the time this can be ignored since you likely Rebuild/Recenter your octrees on a regular basis anyway"
+		"import_export/export_greenhouse_data_button":
+			return "The button to export all greenhouse plant settings and transforms\n" \
+				+ "Inside a current Gardener\n" \
 				+ "To import them to a different scene\n" \
 				+ "Or when switching between plugin versions (whenever necessary)\n" \
 				+ "\n" \

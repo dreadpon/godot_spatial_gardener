@@ -48,6 +48,7 @@ var scene_converter: SceneConverter = null
 var _editor_camera_cache: Camera3D = null
 
 var logger = null
+var undo_redo = null
 
 
 
@@ -68,6 +69,11 @@ func _ready():
 	if !Engine.is_editor_hint(): return
 	
 	logger = Logger.get_for(self)
+
+	if Engine.is_editor_hint():
+		undo_redo = get_undo_redo()
+	else:
+		undo_redo = UndoRedo.new()
 	
 	# Using selection to start/stop editing of chosen Gardener
 	get_editor_interface().get_selection().selection_changed.connect(selection_changed)
@@ -151,7 +157,7 @@ func on_tree_node_added(node:Node):
 		gardeners_in_tree.append(node)
 	
 	if node.has_method("set_undo_redo"):
-		node.set_undo_redo(get_undo_redo())
+		node.set_undo_redo(undo_redo)
 	if node.has_method("set_editor_selection"):
 		node.set_editor_selection(get_editor_interface().get_selection())
 
@@ -291,13 +297,13 @@ func adapt_editor_theme():
 
 
 # Gather folding states from side panel
-func get_state() -> Dictionary:
+func _get_state() -> Dictionary:
 	_side_panel.cleanup_folding_states(folding_states)
 	return {'folding_states': folding_states}
 
 
 # Restore folding states for side panel
-func set_state(state: Dictionary):
+func _set_state(state: Dictionary):
 	folding_states = state.folding_states
 
 
@@ -378,7 +384,7 @@ func start_gardener_edit(gardener):
 	
 	active_gardener.tree_exited.connect(set_gardener_edit_state.bind(null))
 	active_gardener.greenhouse_prop_action_executed.connect(on_greenhouse_prop_action_executed)
-	active_gardener.start_editing(_base_control, _resource_previewer, get_undo_redo(), _side_panel)
+	active_gardener.start_editing(_base_control, _resource_previewer, undo_redo, _side_panel)
 	_side_panel.visible = true
 	toolbar.visible = true
 	active_gardener.up_to_date_debug_view_menu(debug_view_menu)
@@ -387,7 +393,7 @@ func start_gardener_edit(gardener):
 
 
 func stop_gardener_edit():
-	get_state()
+	_get_state()
 
 	_side_panel.visible = false
 	toolbar.visible = false
@@ -411,8 +417,8 @@ func stop_gardener_edit():
 
 # Dump the whole editor tree to console
 func debug_dump_editor_tree():
-	debug_save_node_descendants(get_editor_interface().get_inspector(), get_editor_interface().get_inspector())
-#	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
+#	debug_save_node_descendants(get_editor_interface().get_inspector(), get_editor_interface().get_inspector())
+	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
 
 
 func debug_dump_node_descendants(node:Node, intendation:int = 0):

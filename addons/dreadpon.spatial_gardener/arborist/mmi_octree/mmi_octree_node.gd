@@ -165,8 +165,8 @@ func set_is_leaf(val):
 		MMI.owner = MMI_container.owner
 		MMI_name = MMI.name
 		MMI.multimesh = MultiMesh.new()
-		MMI.multimesh.resource_local_to_scene = true
 		MMI.multimesh.transform_format = 1
+		MMI.multimesh.resource_local_to_scene = true
 		MMI.multimesh.mesh = DUMMY_MMI_MESH
 	elif !is_leaf:
 		if is_instance_valid(MMI) && is_instance_valid(MMI_container):

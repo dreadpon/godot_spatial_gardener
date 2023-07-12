@@ -11,12 +11,8 @@ config_version=5
 [application]
 
 config/name="Dreadpon's Spatial Gardener"
-config/features=PackedStringArray("4.0")
+config/features=PackedStringArray("4.1")
 config/icon="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.png"
-
-[dreadpons_spatial_gardener]
-
-debug/dump_editor_tree_key=156
 
 [editor_plugins]
 

@@ -26,8 +26,15 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 
 func _ready():
 	super()
+#	print("ready")
 	_thumb = _generate_thumbnail()
 	value_container.add_child(_thumb)
+
+
+func _cleanup():
+	super()
+	if is_instance_valid(_thumb):
+		_thumb.free()
 
 
 
@@ -38,12 +45,21 @@ func _ready():
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
+#	print("_update_ui_to_prop_action")
 	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 		_update_ui_to_val(final_val)
 
 
 func _update_ui_to_val(val):
+#	print("object _update_ui_to_val _queue_thumbnail")
+	if !_thumb || !_thumb.is_node_ready():
+#		print("AWAIT object _queue_thumbnail ", _thumb)
+		await ready
+#		print("CONTINUE object _queue_thumbnail ", _thumb)
+#	else:
+#		print("object _queue_thumbnail ", _thumb)
 	_queue_thumbnail(val, _thumb)
+	super(val)
 
 
 func set_thumb_interaction_feature_with_data(interaction_flag:int, val, data:Dictionary):

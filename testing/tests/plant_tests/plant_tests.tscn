@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://5l6smpfuqk1o"]
+
+[ext_resource type="Script" path="res://testing/tests/plant_tests/test_greenhouse_create_edit.gd" id="1"]
+[ext_resource type="Script" path="res://testing/tests/plant_tests/test_greenhouse_save_load.gd" id="2"]
+[ext_resource type="Script" path="res://testing/tests/plant_tests/test_greenhouse_undo_redo.gd" id="3"]
+[ext_resource type="Script" path="res://testing/tests/test_run_all.gd" id="4"]
+
+[node name="PlantTests" type="Node"]
+script = ExtResource("4")
+
+[node name="TestGreenhouseCreateEdit" type="Node" parent="."]
+script = ExtResource("1")
+save_path = "res://testing/tests/plant_tests/greenhouse_intervals"
+
+[node name="TestGreenhouseSaveLoad" type="Node" parent="."]
+script = ExtResource("2")
+test_save_load_path = "res://testing/tests/plant_tests/test_greenhouse_save_load_dir"
+save_path = "res://testing/tests/plant_tests/greenhouse_intervals"
+
+[node name="TestGreenhouseUndoRedo" type="Node" parent="."]
+script = ExtResource("3")
+save_path = "res://testing/tests/plant_tests/greenhouse_intervals"

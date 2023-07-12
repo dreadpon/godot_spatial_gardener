@@ -72,15 +72,52 @@ static func make_hint_string(array:Array):
 	return string
 
 
-static func str_to_vec3(string: String) -> Vector3:
-	var split = string.trim_prefix('(').trim_suffix(')').split_floats(', ')
-	return Vector3(split[0], split[1], split[2])
+static func vec3_to_str(val: Vector3) -> String:
+	return "%f, %f, %f" % [val.x, val.y, val.z]
 
 
-static func str_to_transform(string: String) -> Transform3D:
-	string = string.replace(' - ', ', ')
-	var split = string.split_floats(', ')
-	return Transform3D(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
+static func transform3d_to_str(val: Transform3D) -> String:
+	return "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f" % [
+		val.basis.x.x, val.basis.x.y, val.basis.x.z,
+		val.basis.y.x, val.basis.y.y, val.basis.y.z,
+		val.basis.z.x, val.basis.z.y, val.basis.z.z,
+		val.origin.x, val.origin.y, val.origin.z
+		]
+
+
+static func str_to_vec3(string: String, str_version: int) -> Vector3:
+	match str_version:
+		0:
+			var split = string.trim_prefix('(').trim_suffix(')').split_floats(', ')
+			return Vector3(split[0], split[1], split[2])
+		1:
+			var split = string.split_floats(', ')
+			return Vector3(split[0], split[1], split[2])
+		_:
+			push_error("Unsupported str version: %d" % [str_version])
+			return Vector3.ZERO
+
+
+static func str_to_transform3d(string: String, str_version: int) -> Transform3D:
+	match str_version:
+		0:
+			string = string.replace(' - ', ', ')
+			var split = string.split_floats(', ')
+			return Transform3D(
+				Vector3(split[0], split[3], split[6]), 
+				Vector3(split[1], split[4], split[7]), 
+				Vector3(split[2], split[5], split[8]), 
+				Vector3(split[9], split[10], split[11]))
+		1:
+			var split = string.split_floats(', ')
+			return Transform3D(
+				Vector3(split[0], split[3], split[6]), 
+				Vector3(split[1], split[4], split[7]), 
+				Vector3(split[2], split[5], split[8]), 
+				Vector3(split[9], split[10], split[11]))
+		_:
+			push_error("Unsupported str version: %d" % [str_version])
+			return Transform3D()
 
 
 
@@ -264,11 +301,13 @@ static func save_res(res:Resource, dir:String, res_name:String):
 	assert(res)
 	var logger = Logger.get_for_string("FunLib")
 	var full_path = combine_dir_and_file(dir, res_name)
-	
+	if !is_dir_valid(dir): 
+		logger.warn("Unable to save '%s', directory is invalid!" % [full_path])
+		return 
 	# Abort explicit saving if our resource and an existing one are the same instance
 	# Since it will be saved on 'Ctrl+S' implicitly by the editor
 	# And allows reverting resource by exiting the editor
-	var loaded_res = load_res(dir, res_name, null, false)
+	var loaded_res = load_res(dir, res_name, false, true)
 	if res == loaded_res:
 		return
 	
@@ -286,36 +325,41 @@ static func save_res(res:Resource, dir:String, res_name:String):
 
 # Passing 'true' as 'no_cache' is important to bypass this cache
 # We use it by default, but want to allow loading a cache to check if resource exists at path
-static func load_res(dir:String, res_name:String, default_res:Resource = null, no_cache: bool = true) -> Resource:
+static func load_res(dir:String, res_name:String, no_cache: bool = true, silent: bool = false) -> Resource:
 	var full_path = combine_dir_and_file(dir, res_name)
 	var res = null
 	var logger = Logger.get_for_string("FunLib")
 	
 	if ResourceLoader.exists(full_path):
 		res = ResourceLoader.load(full_path, "", ResourceLoader.CacheMode.CACHE_MODE_REPLACE if no_cache else ResourceLoader.CacheMode.CACHE_MODE_REUSE)
-	elif is_instance_valid(default_res):
-		res = default_res.duplicate(true)
-		logger.info("Path3D '%s', doesn't exist. Using default resource." % [full_path])
 	else:
-		logger.warn("Path3D '%s', doesn't exist. No default resource exists either!" % [full_path])
+		if !silent: logger.warn("Path '%s', doesn't exist!" % [full_path])
 	
 	if !res:
 		if !is_dir_valid(dir) || res_name == "":
-			logger.warn("Could not load '%s', error %s!" % [full_path, Globals.get_err_message(ERR_FILE_BAD_PATH)])
+			if !silent: logger.warn("Could not load '%s', error %s!" % [full_path, Globals.get_err_message(ERR_FILE_BAD_PATH)])
 		else:
-			logger.warn("Could not load '%s'!" % [full_path])
-	
+			if !silent: logger.warn("Could not load '%s'!" % [full_path])
 	return res
 
 
+static func remove_res(dir:String, res_name:String):
+	var full_path = combine_dir_and_file(dir, res_name)
+	var abs_path = ProjectSettings.globalize_path(full_path)
+	var err = DirAccess.remove_absolute(abs_path)
+	var logger = Logger.get_for_string("FunLib")
+	if err != OK:
+		logger.error("Could not remove '%s', error %s!" % [abs_path, Globals.get_err_message(err)])
+
+
 static func combine_dir_and_file(dir_path: String, file_name: String):
-	if !dir_path.ends_with("/"):
+	if !dir_path.is_empty() && !dir_path.ends_with("/"):
 		dir_path += "/"
 	return "%s%s" % [dir_path, file_name]
 
 
 static func is_dir_valid(dir):
-	return dir != "" && dir != "/" && DirAccess.dir_exists_absolute(dir)
+	return !dir.is_empty() && dir != "/" && DirAccess.dir_exists_absolute(dir)
 
 
 

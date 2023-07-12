@@ -3,6 +3,10 @@ extends Node
 
 
 #-------------------------------------------------------------------------------
+# NOTE: automatic conversion from Godot 3.5 to Godot 4.0 will not be supported
+#		instead, open the original project in Godot 3.5, export transforms to JSON for each plant
+#		rectreate plants in Godot 4.0 and import transforms one by one for each plant
+#
 # To use this converter:
 # 1. Make sure the plugin is updated to the most recent version
 # 2. Copy your scenes to addons/dreadpon.spatial_gardener/scene_converter/input_scenes folder.

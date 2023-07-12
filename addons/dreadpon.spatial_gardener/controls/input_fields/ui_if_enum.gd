@@ -38,6 +38,12 @@ func _ready():
 	value_container.add_child(enum_selector)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(enum_selector):
+		enum_selector.free()
+
+
 
 
 #-------------------------------------------------------------------------------

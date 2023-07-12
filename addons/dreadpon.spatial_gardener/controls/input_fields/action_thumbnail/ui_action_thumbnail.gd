@@ -140,7 +140,7 @@ func set_thumb_size(val:int):
 
 
 func update_size():
-	if !is_inside_tree(): return
+	if !is_node_ready(): return
 	
 	var thumb_rect = Vector2(thumb_size, thumb_size)
 	custom_minimum_size = thumb_rect
@@ -202,7 +202,7 @@ func set_interaction_flag(flag:int, state:bool):
 
 
 func enable_features_to_flag(flag:int, state:bool):
-	if is_inside_tree():
+	if is_node_ready():
 		match flag:
 			InteractionFlags.CHECK:
 				check_box_nd.visible = state
@@ -221,7 +221,7 @@ func enable_features_to_flag(flag:int, state:bool):
 
 
 func set_features_val_to_flag(flag:int, val):
-	if is_inside_tree():
+	if is_node_ready():
 		match flag:
 			InteractionFlags.PRESS:
 				selection_panel_nd.visible = val
@@ -255,9 +255,9 @@ func on_label_edit(label_text: String):
 func on_popup_menu_press(id: int):
 	match id:
 		0:
-			on_clear()
+			call_deferred("on_clear")
 		1:
-			on_delete()
+			call_deferred("on_delete")
 
 func on_clear():
 	if active_interaction_flags.has(InteractionFlags.CLEAR):

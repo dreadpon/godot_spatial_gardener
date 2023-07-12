@@ -39,6 +39,12 @@ func _ready():
 	value_container.add_child(button)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(button):
+		button.free()
+
+
 
 
 

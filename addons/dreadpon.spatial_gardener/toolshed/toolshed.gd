@@ -38,6 +38,8 @@ func _init(__brushes:Array = []):
 	resource_name = "Toolshed"
 	
 	brushes = __brushes
+	if brushes.size() > 0:
+		active_brush = brushes[0]
 	_add_prop_dependency("brush/active_brush", ["brush/brushes"])
 
 
@@ -141,7 +143,7 @@ func on_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:EditorUndoRedoManager):
+func set_undo_redo(val):
 	super.set_undo_redo(val)
 	for brush in brushes:
 		brush.set_undo_redo(_undo_redo)

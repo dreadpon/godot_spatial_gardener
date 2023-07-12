@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://c7bsb71wx5x4v"]
+
+[ext_resource type="Script" path="res://testing/tests/gardener_tests/test_gardener_painting.gd" id="1"]
+[ext_resource type="Script" path="res://testing/tests/gardener_tests/test_gardener_undo_redo_painting.gd" id="2"]
+[ext_resource type="Script" path="res://testing/tests/test_run_all.gd" id="4"]
+[ext_resource type="Script" path="res://testing/tests/gardener_tests/test_gardener_save_load_painting.gd" id="12"]
+
+[node name="GardenerTests" type="Node"]
+script = ExtResource("4")
+
+[node name="TestGardenerPainting" type="Node" parent="."]
+script = ExtResource("1")
+greenhouse_path = "res://testing/tests/gardener_tests/work_directory"
+
+[node name="TestGardenerSaveLoadPainting" type="Node" parent="."]
+script = ExtResource("12")
+greenhouse_path = "res://testing/tests/gardener_tests/work_directory"
+
+[node name="TestGardenerUndoRedoPainting" type="Node" parent="."]
+script = ExtResource("2")
+greenhouse_path = "res://testing/tests/gardener_tests/work_directory"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.146447, 0.853553, -0.5, -0.5, 0.5, 0.707107, 0.853553, 0.146447, 0.5, 0, 25.1513, 0)
+light_energy = 0.8
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.917755, 0.397148, 0, -0.397148, 0.917755, 0, 65, 225)
+current = true

@@ -34,8 +34,10 @@ signal prop_action_executed_on_plant_state_plant(prop_action, final_val, plant, 
 signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant, plant_stat)
 signal req_octree_reconfigure(plant, plant_state)
 signal req_octree_recenter(plant, plant_state)
-signal req_import_transforms(plant_idx, file)
-signal req_export_transforms(plant_idx, file)
+signal req_import_plant_data(plant_idx, file)
+signal req_export_plant_data(plant_idx, file)
+signal req_import_greenhouse_data(file)
+signal req_export_greenhouse_data(file)
 
 
 
@@ -52,6 +54,25 @@ func _init():
 	
 	_add_res_edit_source_array("plant_types/greenhouse_plant_states", "plant_types/selected_for_edit_resource")
 	
+	if Engine.is_editor_hint():
+		# https://github.com/godotengine/godot/issues/73525
+		_file_dialog = (EditorFileDialog as Variant).new()
+	else:
+		_file_dialog = FileDialog.new()
+	self_str = str(self)
+#	print("new filedialog ", self_str)
+#	print("init ", resource_name, " ", self)
+
+
+var self_str
+func _notification(what):
+	match what:
+		NOTIFICATION_PREDELETE:
+			_file_dialog.free()
+#			print("cleanup filedialog ", self_str)
+
+func create_input_fields():
+	super()
 	grid_container_plant_thumbnails_nd = owned_input_fields["plant_types/greenhouse_plant_states"]
 	grid_container_plant_thumbnails_nd.label.visible = false
 	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
@@ -84,11 +105,6 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_plant_thumbnails_nd.add_child(grid_container_plant_thumbnails_nd)
 	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
 	
-	if Engine.is_editor_hint():
-		_file_dialog = EditorFileDialog.new()
-	else:
-		_file_dialog = FileDialog.new()
-	_file_dialog.close_requested.connect(on_file_dialog_hide)
 	return ui_category_greenhouse
 
 
@@ -114,6 +130,16 @@ func _create_input_field(prop:String):
 			input_field = UI_IF_Object.new(selected_for_edit_resource, "Plant State", prop, settings)
 	
 	return input_field
+
+
+func add_plant_from_dict(plant_data: Dictionary, str_version: int = 1) -> int:
+	var new_idx = greenhouse_plant_states.size()
+	request_prop_action(PA_ArrayInsert.new(
+		"plant_types/greenhouse_plant_states", 
+		Greenhouse_PlantState.new().ifr_from_dict(plant_data, true, str_version), 
+		new_idx
+	))
+	return new_idx
 
 
 
@@ -147,8 +173,8 @@ func set_plant_state_label(index:int, label_text:String):
 		grid_container_plant_thumbnails_nd.set_thumb_interaction_feature_with_data(UI_ActionThumbnail_GD.InteractionFlags.EDIT_LABEL, label_text, {"index": index})
 
 
-func on_if_ready(input_field:UI_InputField):
-	super.on_if_ready(input_field)
+func on_if_tree_entered(input_field:UI_InputField):
+	super.on_if_tree_entered(input_field)
 	
 	if input_field.prop_name == "plant_types/greenhouse_plant_states":
 		for i in range(0, greenhouse_plant_states.size()):
@@ -162,8 +188,9 @@ func plant_count_updated(plant_index, new_count):
 
 
 func show_transform_import(type: String):
-	_base_control.add_child(_file_dialog)
-	_file_dialog.popup_centered(Vector2(500, 400))
+	if _file_dialog.get_parent() != _base_control:
+		_base_control.add_child(_file_dialog)
+	_file_dialog.popup_centered_ratio(0.5)
 	_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_file_dialog.filters = PackedStringArray(['*.json ; JSON'])
 	match type:
@@ -171,11 +198,6 @@ func show_transform_import(type: String):
 			_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		'export':
 			_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
-
-
-func on_file_dialog_hide():
-	FunLib.disconnect_all(_file_dialog.file_selected)
-	_base_control.remove_child(_file_dialog)
 
 
 
@@ -194,18 +216,33 @@ func on_req_octree_reconfigure(plant, plant_state):
 func on_req_octree_recenter(plant, plant_state):
 	req_octree_recenter.emit(plant, plant_state)
 
-func on_req_import_transforms(plant, plant_state):
+func on_req_import_plant_data(plant, plant_state):
 	show_transform_import('import')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.file_selected.connect(on_req_import_export_file.bind(req_import_transforms, plant_idx))
+	FunLib.disconnect_all(_file_dialog.file_selected)
+	_file_dialog.file_selected.connect(on_req_import_export_plant_data_file.bind(req_import_plant_data, plant_idx))
 
-func on_req_export_transforms(plant, plant_state):
+func on_req_export_plant_data(plant, plant_state):
 	show_transform_import('export')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
-	_file_dialog.file_selected.connect(on_req_import_export_file.bind(req_export_transforms, plant_idx))
+	FunLib.disconnect_all(_file_dialog.file_selected)
+	_file_dialog.file_selected.connect(on_req_import_export_plant_data_file.bind(req_export_plant_data, plant_idx))
 
-func on_req_import_export_file(file_path: String, signal_obj: Signal, plant_idx: int):
+func on_req_import_greenhouse_data():
+	show_transform_import('import')
+	FunLib.disconnect_all(_file_dialog.file_selected)
+	_file_dialog.file_selected.connect(on_req_import_export_greenhouse_data_file.bind(req_import_greenhouse_data))
+
+func on_req_export_greenhouse_data():
+	show_transform_import('export')
+	FunLib.disconnect_all(_file_dialog.file_selected)
+	_file_dialog.file_selected.connect(on_req_import_export_greenhouse_data_file.bind(req_export_greenhouse_data))
+
+func on_req_import_export_plant_data_file(file_path: String, signal_obj: Signal, plant_idx: int):
 	signal_obj.emit(file_path, plant_idx)
+
+func on_req_import_export_greenhouse_data_file(file_path: String, signal_obj: Signal):
+	signal_obj.emit(file_path)
 
 
 
@@ -263,7 +300,7 @@ func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant,
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:EditorUndoRedoManager):
+func set_undo_redo(val):
 	super.set_undo_redo(val)
 	for plant_state in greenhouse_plant_states:
 		plant_state.set_undo_redo(_undo_redo)
@@ -292,8 +329,10 @@ func _modify_prop(prop:String, val):
 				FunLib.ensure_signal(val[i].prop_action_executed_on_LOD_variant, on_prop_action_executed_on_LOD_variant, [val[i]])
 				FunLib.ensure_signal(val[i].req_octree_reconfigure, on_req_octree_reconfigure, [val[i]])
 				FunLib.ensure_signal(val[i].req_octree_recenter, on_req_octree_recenter, [val[i]])
-				FunLib.ensure_signal(val[i].req_import_transforms, on_req_import_transforms, [val[i]])
-				FunLib.ensure_signal(val[i].req_export_transforms, on_req_export_transforms, [val[i]])
+				FunLib.ensure_signal(val[i].req_import_plant_data, on_req_import_plant_data, [val[i]])
+				FunLib.ensure_signal(val[i].req_export_plant_data, on_req_export_plant_data, [val[i]])
+				FunLib.ensure_signal(val[i].req_import_greenhouse_data, on_req_import_greenhouse_data)
+				FunLib.ensure_signal(val[i].req_export_greenhouse_data, on_req_export_greenhouse_data)
 				
 				if val[i]._undo_redo != _undo_redo:
 					val[i].set_undo_redo(_undo_redo)

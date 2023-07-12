@@ -1,0 +1,485 @@
+[gd_resource type="Resource" load_steps=34 format=3 uid="uid://c6q1so1uum8k4"]
+
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="1"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
+[ext_resource type="PackedScene" path="res://testing/assets/suzanne/suzanne_body.tscn" id="5"]
+[ext_resource type="ArrayMesh" uid="uid://ceosyi1ekunku" path="res://testing/assets/suzanne/suzanne_LOD1_suzanne_LOD1.mesh" id="7"]
+[ext_resource type="ArrayMesh" uid="uid://cw1iq0wir1bs5" path="res://testing/assets/suzanne/suzanne_LOD2_suzanne_LOD2.mesh" id="8"]
+
+[sub_resource type="Resource" id="16"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+mesh = ExtResource("8")
+spawned_spatial = ExtResource("5")
+cast_shadow = 1
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="17"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+mesh = ExtResource("7")
+spawned_spatial = ExtResource("5")
+cast_shadow = 2
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="18"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = [SubResource("16"), SubResource("17")]
+mesh/mesh_LOD_max_distance = 12.0
+mesh/mesh_LOD_kill_distance = 45.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 1
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 2
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 2
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [34.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.154
+rotation/rotation_random_z = 114.295
+slope/slope_allowed_range = [180.0, 56.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="19"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label4"
+plant/plant = SubResource("18")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="20"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="21"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label5"
+plant/plant = SubResource("20")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="22"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+cast_shadow = 2
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="23"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+cast_shadow = 0
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="24"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+cast_shadow = 3
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="25"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2")
+cast_shadow = 1
+metadata/class = "Greenhouse_LODVariant"
+
+[sub_resource type="Resource" id="26"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = [SubResource("22"), SubResource("23"), SubResource("24"), SubResource("25")]
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="27"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label6"
+plant/plant = SubResource("26")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="28"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="29"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label7"
+plant/plant = SubResource("28")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="30"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="31"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label8"
+plant/plant = SubResource("30")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="32"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="33"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label9"
+plant/plant = SubResource("32")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="34"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="35"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label10"
+plant/plant = SubResource("34")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="36"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="37"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label11"
+plant/plant = SubResource("36")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="38"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="39"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label12"
+plant/plant = SubResource("38")
+metadata/class = "Greenhouse_PlantState"
+
+[sub_resource type="Resource" id="40"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("1")
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_units = 100.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
+up_vector/up_vector_primary_type = 0
+up_vector/up_vector_primary = Vector3(0, 0, 0)
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
+up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
+
+[sub_resource type="Resource" id="41"]
+resource_name = "Greenhouse_PlantState"
+script = ExtResource("3")
+plant/plant_brush_active = false
+plant/plant_label = "Label13"
+plant/plant = SubResource("40")
+metadata/class = "Greenhouse_PlantState"
+
+[resource]
+resource_name = "Greenhouse"
+script = ExtResource("4")
+plant_types/greenhouse_plant_states = [SubResource("19"), SubResource("21"), SubResource("27"), SubResource("29"), SubResource("31"), SubResource("33"), SubResource("35"), SubResource("37"), SubResource("39"), SubResource("41")]
+metadata/class = "Greenhouse"

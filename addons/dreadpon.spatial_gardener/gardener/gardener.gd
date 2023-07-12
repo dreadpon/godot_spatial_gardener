@@ -24,6 +24,7 @@ const DebugViewer = preload("debug_viewer.gd")
 const UI_SidePanel_SCN = preload("../controls/side_panel/ui_side_panel.tscn")
 const UI_SidePanel = preload("../controls/side_panel/ui_side_panel.gd")
 const Globals = preload("../utility/globals.gd")
+const DataImportExport = preload("data_import_export.gd")
 
 const PropAction = preload("../utility/input_field_resource/prop_action.gd")
 const PA_PropSet = preload("../utility/input_field_resource/pa_prop_set.gd")
@@ -55,7 +56,7 @@ var debug_viewer:DebugViewer = null
 
 var _resource_previewer = null
 var _base_control:Control = null
-var _undo_redo:EditorUndoRedoManager = null
+var _undo_redo = null
 
 var _side_panel:UI_SidePanel = null
 var ui_category_brushes:Control = null
@@ -147,6 +148,7 @@ func _process(delta):
 
 func _apply_changes():
 	if !Engine.is_editor_hint(): return
+	if !FunLib.is_dir_valid(garden_work_directory): return
 	
 	save_toolshed()
 	save_greenhouse()
@@ -255,14 +257,16 @@ func reload_resources():
 	var last_toolshed = toolshed
 	var last_greenhouse = greenhouse
 	
-	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", Defaults.DEFAULT_TOOLSHED(), false) as Toolshed
-	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres", null, false)
+	var created_new_toolshed := false
+	var created_new_greenhouse := false
+	toolshed = FunLib.load_res(garden_work_directory, "toolshed.tres", false)
+	greenhouse = FunLib.load_res(garden_work_directory, "greenhouse.tres", false)
 	if !toolshed: 
-		toolshed = Toolshed.new()
-#		save_toolshed()
+		toolshed = Defaults.DEFAULT_TOOLSHED()
+		created_new_toolshed = true
 	if !greenhouse: 
 		greenhouse = Greenhouse.new()
-#		save_greenhouse()
+		created_new_greenhouse = true
 	
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
@@ -280,16 +284,20 @@ func reload_resources():
 		last_greenhouse.prop_action_executed_on_LOD_variant.disconnect(on_greenhouse_prop_action_executed_on_LOD_variant)
 		last_greenhouse.req_octree_reconfigure.disconnect(on_greenhouse_req_octree_reconfigure)
 		last_greenhouse.req_octree_recenter.disconnect(on_greenhouse_req_octree_recenter)
-		last_greenhouse.req_import_transforms.disconnect(on_greenhouse_req_import_transforms)
-		last_greenhouse.req_export_transforms.disconnect(on_greenhouse_req_export_transforms)
+		last_greenhouse.req_import_plant_data.disconnect(on_greenhouse_req_import_plant_data)
+		last_greenhouse.req_export_plant_data.disconnect(on_greenhouse_req_export_plant_data)
+		last_greenhouse.req_import_greenhouse_data.disconnect(on_greenhouse_req_import_greenhouse_data)
+		last_greenhouse.req_export_greenhouse_data.disconnect(on_greenhouse_req_export_greenhouse_data)
 	FunLib.ensure_signal(greenhouse.prop_action_executed, on_greenhouse_prop_action_executed)
 	FunLib.ensure_signal(greenhouse.prop_action_executed_on_plant_state, on_greenhouse_prop_action_executed_on_plant_state)
 	FunLib.ensure_signal(greenhouse.prop_action_executed_on_plant_state_plant, on_greenhouse_prop_action_executed_on_plant_state_plant)
 	FunLib.ensure_signal(greenhouse.prop_action_executed_on_LOD_variant, on_greenhouse_prop_action_executed_on_LOD_variant)
 	FunLib.ensure_signal(greenhouse.req_octree_reconfigure, on_greenhouse_req_octree_reconfigure)
 	FunLib.ensure_signal(greenhouse.req_octree_recenter, on_greenhouse_req_octree_recenter)
-	FunLib.ensure_signal(greenhouse.req_import_transforms, on_greenhouse_req_import_transforms)
-	FunLib.ensure_signal(greenhouse.req_export_transforms, on_greenhouse_req_export_transforms)
+	FunLib.ensure_signal(greenhouse.req_import_plant_data, on_greenhouse_req_import_plant_data)
+	FunLib.ensure_signal(greenhouse.req_export_plant_data, on_greenhouse_req_export_plant_data)
+	FunLib.ensure_signal(greenhouse.req_import_greenhouse_data, on_greenhouse_req_import_greenhouse_data)
+	FunLib.ensure_signal(greenhouse.req_export_greenhouse_data, on_greenhouse_req_export_greenhouse_data)
 	
 	if arborist:
 		pair_arborist_greenhouse()
@@ -304,6 +312,12 @@ func reload_resources():
 	if arborist:
 		for i in range(0, arborist.octree_managers.size()):
 			arborist.emit_member_count(i)
+	
+	if created_new_toolshed:
+		save_toolshed()
+	if created_new_greenhouse:
+		save_greenhouse()
+	
 
 
 # It's possible we load a different Greenhouse while an Arborist is already initialized
@@ -348,7 +362,7 @@ func pair_debug_viewer_arborist():
 
 
 # Start editing (painting) a scene
-func start_editing(__base_control:Control, __resource_previewer, __undoRedo:EditorUndoRedoManager, __side_panel:UI_SidePanel):
+func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __side_panel:UI_SidePanel):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	_undo_redo = __undoRedo
@@ -435,7 +449,7 @@ func set_gardening_collision_mask(val):
 
 
 func set_garden_work_directory(val):
-	if !val.ends_with("/"):
+	if !val.is_empty() && !val.ends_with("/"):
 		val += "/"
 	
 	var changed = garden_work_directory != val
@@ -540,18 +554,6 @@ func on_greenhouse_req_octree_recenter(plant, plant_state):
 	arborist.recenter_octree(plant_state, plant_index)
 
 
-# A request to import plant transforms
-func on_greenhouse_req_import_transforms(file_path: String, plant_idx: int):
-	if !is_edited: return
-	arborist.import_instance_transforms(file_path, plant_idx)
-
-
-# A request to export plant transforms
-func on_greenhouse_req_export_transforms(file_path: String, plant_idx: int):
-	if !is_edited: return
-	arborist.export_instance_transforms(file_path, plant_idx)
-
-
 # Update brush active indexes for DebugViewer
 func reinit_debug_draw_brush_active():
 	debug_viewer.reset_brush_active_plants()
@@ -559,6 +561,41 @@ func reinit_debug_draw_brush_active():
 		var plant_state = greenhouse.greenhouse_plant_states[plant_index]
 		debug_viewer.set_brush_active_plant(plant_state.plant_brush_active, plant_index)
 	debug_viewer.request_debug_redraw(arborist.octree_managers)
+
+
+
+
+#-------------------------------------------------------------------------------
+# Importing/exporting data
+#-------------------------------------------------------------------------------
+
+
+# A request to import plant data
+func on_greenhouse_req_import_plant_data(file_path: String, plant_idx: int):
+	if !is_edited: return
+	var import_export = DataImportExport.new(arborist, greenhouse)
+	import_export.import_plant_data(file_path, plant_idx)
+
+
+# A request to export plant data
+func on_greenhouse_req_export_plant_data(file_path: String, plant_idx: int):
+	if !is_edited: return
+	var import_export = DataImportExport.new(arborist, greenhouse)
+	import_export.export_plant_data(file_path, plant_idx)
+
+
+# A request to import entire greenhouse data
+func on_greenhouse_req_import_greenhouse_data(file_path: String):
+	if !is_edited: return
+	var import_export = DataImportExport.new(arborist, greenhouse)
+	import_export.import_greenhouse_data(file_path)
+
+
+# A request to export entire greenhouse data
+func on_greenhouse_req_export_greenhouse_data(file_path: String):
+	if !is_edited: return
+	var import_export = DataImportExport.new(arborist, greenhouse)
+	import_export.export_greenhouse_data(file_path)
 
 
 
@@ -591,6 +628,7 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 # Changed active brush from Toolshed. Update the painter
 func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 	assert(painter)
+	if prop_action.prop != "brush/active_brush": return
 	if !(is_instance_of(prop_action, PA_PropSet)) && !(is_instance_of(prop_action, PA_PropEdit)): return
 	if final_val != toolshed.active_brush:
 		logger.error("Passed final_val is not equal to toolshed.active_brush!")
@@ -648,11 +686,13 @@ func on_toolshed_prop_action_executed_on_brush(prop_action:PropAction, final_val
 
 
 func save_toolshed():
-	FunLib.save_res(toolshed, garden_work_directory, "toolshed.tres")
+	if FunLib.is_dir_valid(garden_work_directory):
+		FunLib.save_res(toolshed, garden_work_directory, "toolshed.tres")
 
 
 func save_greenhouse():
-	FunLib.save_res(greenhouse, garden_work_directory, "greenhouse.tres")
+	if FunLib.is_dir_valid(garden_work_directory):
+		FunLib.save_res(greenhouse, garden_work_directory, "greenhouse.tres")
 
 
 

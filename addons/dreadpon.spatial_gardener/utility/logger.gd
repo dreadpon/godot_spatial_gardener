@@ -37,15 +37,15 @@ class Base extends RefCounted:
 	func warn(msg):
 		msg = "{0}: {1}".format([_context, str(msg)])
 		push_warning(msg)
-		msg = 'WARNING: ' + msg
-		print(msg)
+#		msg = 'WARNING: ' + msg
+#		print(msg)
 		log_to_file(msg)
 	
 	func error(msg):
 		msg = "{0}: {1}".format([_context, str(msg)])
 		push_error(msg)
-		msg = 'ERROR: ' + msg
-		printerr(msg)
+#		msg = 'ERROR: ' + msg
+#		printerr(msg)
 		log_to_file(msg)
 	
 	func assert_error(msg):

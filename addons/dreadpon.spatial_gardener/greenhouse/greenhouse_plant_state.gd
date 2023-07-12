@@ -19,8 +19,11 @@ signal prop_action_executed_on_plant(prop_action, final_val, plant)
 signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant)
 signal req_octree_reconfigure(plant)
 signal req_octree_recenter(plant)
-signal req_import_transforms(plant)
-signal req_export_transforms(plant)
+signal req_import_plant_data(plant)
+signal req_export_plant_data(plant)
+signal req_import_greenhouse_data()
+signal req_export_greenhouse_data()
+
 
 
 
@@ -36,6 +39,7 @@ func _init():
 	resource_name = "Greenhouse_PlantState"
 	# A workaround to trigger the initial creation of a plant
 	_set("plant/plant", plant)
+#	print("init ", resource_name, " ", self)
 
 
 
@@ -57,11 +61,17 @@ func on_req_octree_reconfigure(plant):
 func on_req_octree_recenter(plant):
 	req_octree_recenter.emit(plant)
 
-func on_req_import_transforms(plant):
-	req_import_transforms.emit(plant)
+func on_req_import_plant_data(plant):
+	req_import_plant_data.emit(plant)
 
-func on_req_export_transforms(plant):
-	req_export_transforms.emit(plant)
+func on_req_export_plant_data(plant):
+	req_export_plant_data.emit(plant)
+
+func on_req_import_greenhouse_data():
+	req_import_greenhouse_data.emit()
+
+func on_req_export_greenhouse_data():
+	req_export_greenhouse_data.emit()
 
 func on_prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant):
 	prop_action_executed_on_LOD_variant.emit(prop_action, final_val, LOD_variant, plant)
@@ -84,8 +94,10 @@ func _modify_prop(prop:String, val):
 			FunLib.ensure_signal(val.prop_action_executed_on_LOD_variant, on_prop_action_executed_on_LOD_variant, [val])
 			FunLib.ensure_signal(val.req_octree_reconfigure, on_req_octree_reconfigure, [val])
 			FunLib.ensure_signal(val.req_octree_recenter, on_req_octree_recenter, [val])
-			FunLib.ensure_signal(val.req_import_transforms, on_req_import_transforms, [val])
-			FunLib.ensure_signal(val.req_export_transforms, on_req_export_transforms, [val])
+			FunLib.ensure_signal(val.req_import_plant_data, on_req_import_plant_data, [val])
+			FunLib.ensure_signal(val.req_export_plant_data, on_req_export_plant_data, [val])
+			FunLib.ensure_signal(val.req_import_greenhouse_data, on_req_import_greenhouse_data)
+			FunLib.ensure_signal(val.req_export_greenhouse_data, on_req_export_greenhouse_data)
 			
 			if val._undo_redo != _undo_redo:
 				val.set_undo_redo(_undo_redo)
@@ -99,7 +111,7 @@ func _modify_prop(prop:String, val):
 #-------------------------------------------------------------------------------
 
 
-func set_undo_redo(val:EditorUndoRedoManager):
+func set_undo_redo(val):
 	super.set_undo_redo(val)
 	plant.set_undo_redo(_undo_redo)
 

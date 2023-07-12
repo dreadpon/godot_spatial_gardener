@@ -35,6 +35,11 @@ func _ready():
 	value_container.add_child(displayed_label)
 
 
+func _cleanup():
+	super()
+	if is_instance_valid(displayed_label):
+		displayed_label.free()
+
 
 
 #-------------------------------------------------------------------------------

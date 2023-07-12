@@ -56,22 +56,33 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
 	super(__init_val, __base_control, __resource_previewer)
 	_base_control = __base_control
-	for input_field in bound_input_fields:
-		input_field.prepare_input_field(__init_val, __base_control, __resource_previewer)
 
 
 func _ready():
 	super()
 	value_container.add_child(button)
-	_base_control.add_child(apply_dialog)
 	for input_field in bound_input_fields:
 		input_field.disable_history = true
 		apply_dialog.fields.add_child(input_field)
 
 
+func _enter_tree():
+	if _base_control:
+		_base_control.add_child(apply_dialog)
+
+
 func _exit_tree():
 	if _base_control && _base_control.get_children().has(apply_dialog):
 		_base_control.remove_child(apply_dialog)
+		apply_dialog.free()
+
+
+func _cleanup():
+	super()
+	if is_instance_valid(button):
+		button.free()
+	if is_instance_valid(apply_dialog):
+		apply_dialog.free()
 
 
 func reset_dialog():

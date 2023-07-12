@@ -9,6 +9,7 @@ extends TabContainer
 
 const FunLib = preload("../../utility/fun_lib.gd")
 const FoldableSection = preload("ui_foldable_section.gd")
+const UI_IF_Object = preload("../input_fields/ui_if_object.gd")
 
 const Greenhouse = preload("../../greenhouse/greenhouse.gd")
 const PropAction = preload('../../utility/input_field_resource/prop_action.gd')
@@ -19,7 +20,7 @@ const PA_ArraySet = preload("../../utility/input_field_resource/pa_array_set.gd"
 
 @onready var panel_container_tools_nd = $PanelContainer
 @onready var panel_container_tools_split_nd = $PanelContainer/PanelContainer_Tools_Split
-@onready var label_error_nd = $PanelContainer/Label_Error
+@onready var label_error_nd = $MarginContainer/Label_Error
 
 
 
@@ -50,6 +51,7 @@ func set_tool_ui(control:Control, index:int):
 	
 	panel_container_tools_split_nd.add_child(control)
 	if panel_container_tools_split_nd.get_child_count() > index:
+		print("set_tool_ui")
 		panel_container_tools_split_nd.move_child(control, index)
 
 
@@ -65,7 +67,9 @@ func set_main_control_state(state):
 #-------------------------------------------------------------------------------
 
 # Not a fan of how brute-force it is
-# TODO if there's a ui/input_field_resource refactor in the future, optimize folding as well
+# TODO: this WILL NOT WORK with nested foldables or in any slightly-different configuration
+#		in the future, we need to associated foldables directly with their input_field_resource
+#		and bake that associateion into foldable states
 
 # Remove states that represent deleted resources
 func cleanup_folding_states(folding_states:Dictionary):
@@ -82,12 +86,7 @@ func cleanup_folding_states(folding_states:Dictionary):
 # Selected a new plant for edit. Update it's folding and bind foldables
 func on_greenhouse_prop_action_executed(folding_states:Dictionary, greenhouse:Greenhouse, prop_action: PropAction, final_val):
 	if is_instance_of(prop_action, PA_PropSet) && prop_action.prop == 'plant_types/selected_for_edit_resource':
-		if greenhouse.selected_for_edit_resource:
-			var greenhouse_id = get_res_name_or_path(folding_states, greenhouse)
-			var plant_id = get_res_name_or_path(folding_states[greenhouse_id], greenhouse.selected_for_edit_resource)
-			if folding_states.has(greenhouse_id) && folding_states[greenhouse_id].has(plant_id):
-				call_deferred('set_folding_states', folding_states[greenhouse_id][plant_id])
-			call_deferred('bind_foldables', self, folding_states, greenhouse_id, plant_id)
+		refresh_folding_states_for_greenhouse(folding_states, greenhouse)
 
 
 # Something caused a folding update (typically a gardener selected for edit)
@@ -96,32 +95,44 @@ func refresh_folding_states_for_greenhouse(folding_states:Dictionary, greenhouse
 	var greenhouse_id = get_res_name_or_path(folding_states, greenhouse)
 	var plant_id = get_res_name_or_path(folding_states[greenhouse_id], greenhouse.selected_for_edit_resource)
 	if folding_states.has(greenhouse_id) && folding_states[greenhouse_id].has(plant_id):
-		call_deferred('set_folding_states', folding_states[greenhouse_id][plant_id])
+		call_deferred('set_folding_states', self, folding_states[greenhouse_id][plant_id])
 	call_deferred('bind_foldables', self, folding_states, greenhouse_id, plant_id)
 
 
 # Restore folding states
-func set_folding_states(states: Dictionary):
-	print(Time.get_ticks_msec(), " set_folding_states 1")
-	for path in states:
-		var abs_path = str(get_path()) + '/' + str(path)
-		if has_node(abs_path):
-			get_node(abs_path).folded = states[path]
-	print(Time.get_ticks_msec(), " set_folding_states 2")
+func set_folding_states(node:Node, states: Dictionary):
+	if is_instance_of(node, UI_IF_Object):
+		var section_node = null
+		for section_name in node.property_sections:
+			section_node = node.property_sections[section_name].section
+			section_node.folded = states.get(section_name, false)
+	for child in node.get_children():
+		set_folding_states(child, states)
+#	for path in states:
+#		var abs_path = str(get_path()) + '/' + str(path)
+#		if has_node(abs_path):
+#			print(abs_path, " restored to ", states[path])
+#			get_node(abs_path).folded = states[path]
 
 
 # Bind foldable ui elements to update the relevant folding states
 func bind_foldables(node:Node, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
-	if is_instance_of(node, FoldableSection):
-		node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(node, folding_states, greenhouse_id, plant_id))
-		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
+	if is_instance_of(node, UI_IF_Object):
+		var section_node = null
+		for section_name in node.property_sections:
+			section_node = node.property_sections[section_name].section
+			section_node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(section_name, folding_states, greenhouse_id, plant_id))
+			on_foldable_folding_state_changed(section_node.folded, section_name, folding_states, greenhouse_id, plant_id)
+#	if is_instance_of(node, FoldableSection):
+#		node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(node, folding_states, greenhouse_id, plant_id))
+#		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
 	for child in node.get_children():
 		bind_foldables(child, folding_states, greenhouse_id, plant_id)
 
 
 # Foldable signal callback. Save it's state to plugin state
-func on_foldable_folding_state_changed(folded:bool, node:Node, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
-	folding_states[greenhouse_id][plant_id][get_path_to(node)] = folded
+func on_foldable_folding_state_changed(folded:bool, section_name:String, folding_states: Dictionary, greenhouse_id: String, plant_id: String):
+	folding_states[greenhouse_id][plant_id][section_name] = folded
 
 
 # Get resource path to use as ID. If resource hasn't been saved yet - use it's 'name' instead

@@ -15,12 +15,18 @@ metadata/class = "UI_SidePanel"
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 2
+theme_type_variation = &"InspectorPanelContainer"
 
 [node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer"]
 layout_mode = 2
-split_offset = 100
+split_offset = 150
 
-[node name="Label_Error" type="Label" parent="PanelContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 visible = false
 layout_mode = 2
+
+[node name="Label_Error" type="Label" parent="MarginContainer"]
+layout_mode = 2
 text = "To begin, set the Gardener's Work Directory in the Inspector"
+horizontal_alignment = 1
+vertical_alignment = 1

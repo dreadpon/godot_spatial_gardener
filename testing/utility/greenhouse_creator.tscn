@@ -1,0 +1,148 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://testing/utility/greenhouse_creator.gd" id="1"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed.gd" id="2"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="5"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="6"]
+[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed_brush.gd" id="7"]
+
+[sub_resource type="Resource" id="18"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("6")
+__meta__ = {
+"class": "Greenhouse_LODVariant"
+}
+
+[sub_resource type="Resource" id="10"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("5")
+__meta__ = {
+"class": "Greenhouse_Plant"
+}
+mesh/mesh_LOD_variants = [SubResource("18")]
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_ten_units = 50.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(0.2, 0.2, 0.2), Vector3(0.4, 0.4, 0.4)]
+up_vector/up_vector_primary_type = 1
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+
+[sub_resource type="Resource" id="11"]
+resource_name = "PlantState"
+script = ExtResource("3")
+__meta__ = {
+"class": "Greenhouse_PlantState"
+}
+plant/plant_brush_active = false
+plant/plant = SubResource("10")
+
+[sub_resource type="Resource" id="12"]
+resource_name = "Greenhouse_Plant"
+script = ExtResource("5")
+__meta__ = {
+"class": "Greenhouse_Plant"
+}
+mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_max_distance = 50.0
+mesh/mesh_LOD_kill_distance = -1.0
+mesh/mesh_LOD_max_capacity = 100
+mesh/mesh_LOD_min_size = 1.0
+octree/octree_reconfigure_button = false
+octree/octree_recenter_button = false
+density/density_per_ten_units = 5.0
+scale/scale_scaling_type = 0
+scale/scale_range = [Vector3(0.3, 0.3, 0.3), Vector3(0.6, 0.6, 0.6)]
+up_vector/up_vector_primary_type = 1
+up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_blending = 0.0
+offset/offset_y_range = [0.0, 0.0]
+offset/offset_jitter_fraction = 0.6
+rotation/rotation_random_y = 180.0
+rotation/rotation_random_x = 0.0
+rotation/rotation_random_z = 0.0
+slope/slope_allowed_range = [0.0, 180.0]
+
+[sub_resource type="Resource" id="13"]
+resource_name = "PlantState"
+script = ExtResource("3")
+__meta__ = {
+"class": "Greenhouse_PlantState"
+}
+plant/plant_brush_active = false
+plant/plant = SubResource("12")
+
+[sub_resource type="Resource" id="4"]
+resource_name = "Greenhouse"
+script = ExtResource("4")
+__meta__ = {
+"class": "Greenhouse"
+}
+plant_types/greenhouse_plant_states = [SubResource("11"), SubResource("13")]
+
+[sub_resource type="Resource" id="14"]
+resource_name = "Toolshed_Brush"
+script = ExtResource("7")
+__meta__ = {
+"class": "Toolshed_Brush"
+}
+behavior/behavior_brush_type = 0
+shape/shape_size = 1.0
+behavior/behavior_strength = 1.0
+
+[sub_resource type="Resource" id="15"]
+resource_name = "Toolshed_Brush"
+script = ExtResource("7")
+__meta__ = {
+"class": "Toolshed_Brush"
+}
+behavior/behavior_brush_type = 0
+shape/shape_size = 1.0
+behavior/behavior_strength = 1.0
+
+[sub_resource type="Resource" id="16"]
+resource_name = "Toolshed_Brush"
+script = ExtResource("7")
+__meta__ = {
+"class": "Toolshed_Brush"
+}
+behavior/behavior_brush_type = 0
+shape/shape_size = 1.0
+behavior/behavior_strength = 1.0
+
+[sub_resource type="Resource" id="17"]
+resource_name = "Toolshed_Brush"
+script = ExtResource("7")
+__meta__ = {
+"class": "Toolshed_Brush"
+}
+behavior/behavior_brush_type = 0
+shape/shape_size = 1.0
+behavior/behavior_strength = 1.0
+
+[sub_resource type="Resource" id="9"]
+resource_name = "Toolshed"
+script = ExtResource("2")
+__meta__ = {
+"class": "Toolshed"
+}
+brush/brushes = [SubResource("14"), SubResource("15"), SubResource("16"), SubResource("17")]
+
+[node name="GreenhouseCreator" type="Node"]
+script = ExtResource("1")
+greenhouses = [SubResource("4")]
+@toolsheds = [SubResource("9")]
+save_path = "res://addons/dreadpon.spatial_gardener/testing/tests/gardener_tests/work_directory"
