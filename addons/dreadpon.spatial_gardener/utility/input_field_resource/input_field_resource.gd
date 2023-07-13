@@ -7,6 +7,9 @@ extends Resource
 # All properties are suppposed to be set using PropAction
 # That helps to easily update UI and do/undo actions in editor
 # There's also a bit of property management sprinkled on top (conditional display, modified values, etc.)
+#
+# TODO: reduce amount of abstractions and indirections. 
+#		overhead for function calls and container usage is the most demnding part of this thing
 #-------------------------------------------------------------------------------
 
 
@@ -53,7 +56,6 @@ var input_field_blacklist:Array = []
 var res_edit_data:Array = []
 # All properties that are affected by other properties
 var prop_dependency_data:Array = []
-var owned_input_fields: Dictionary = {}
 
 var logger = null
 
@@ -325,6 +327,7 @@ func _perform_prop_action(prop_action:PropAction):
 #	for connection in get_signal_connection_list("prop_action_executed"):
 #		logger.info(connection.target.resource_name if connection.target is Resource else str(connection.target))
 #	print("prop_action_executed ", self, " ", prop_action)
+#	print("prop_action_executed %d" % [Time.get_ticks_msec()])
 	prop_action_executed.emit(prop_action, get(prop_action.prop))
 
 
@@ -450,94 +453,67 @@ func _emit_property_list_changed_notify():
 
 # Create all the UI input fields
 # input_field_blacklist is responsible for excluding certain props
-func _mk_input_fields(whitelist:Array = []) -> Dictionary:
+# Optionally specify a whitelist to use instead of an object-wide blacklist
+# They both allow to conditionally hide/show input fields
+func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []) -> Dictionary:
+#	print("create_input_fields %s %s %d start" % [str(self), get_meta("class"), Time.get_ticks_msec()])
 	var prop_names = _get_prop_dictionary().keys()
-	var input_fields = {}
+	var input_fields := {}
 	
 	for prop in prop_names:
+		# Conditional rejection of a property
 		if whitelist.is_empty():
 			if input_field_blacklist.has(prop): continue
 		else:
 			if !whitelist.has(prop): continue
 		
-		var input_field:UI_InputField = _create_input_field(prop)
-		
+		var input_field:UI_InputField = create_input_field(_base_control, _resource_previewer, prop)
 		if input_field:
-			input_field.name = prop
-			input_field.set_tooltip(get_prop_tooltip(prop))
-			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
-			
-			input_field.prop_action_requested.connect(request_prop_action)
-			prop_action_executed.connect(input_field.on_prop_action_executed)
-			prop_list_changed.connect(input_field.on_prop_list_changed)
-			input_field.tree_entered.connect(_deferred_on_if_tree_entered.bind(input_field))
-			
-			if is_instance_of(input_field, UI_IF_ThumbnailArray):
-				input_field.requested_press.connect(on_if_thumbnail_array_press.bind(input_field))
-				req_change_interaction_feature.connect(input_field.on_changed_interaction_feature)
-			
 			input_fields[prop] = input_field
-	
+#	print("create_input_fields %s %s %d end" % [str(self), get_meta("class"), Time.get_ticks_msec()])
 	return input_fields
+
+
+func create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
+#	print("create_input_field %s %s %s %d start" % [str(self), get_meta("class"), prop, Time.get_ticks_msec()])
+	
+	var input_field = _create_input_field(_base_control, _resource_previewer, prop)
+	if input_field:
+#		print("create_input_field -> prepare_input_field ", prop, " ", input_field.get_meta("class"))
+		input_field.name = prop
+		input_field.set_tooltip(get_prop_tooltip(prop))
+		input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
+		
+		input_field.prop_action_requested.connect(request_prop_action)
+		prop_action_executed.connect(input_field.on_prop_action_executed)
+		prop_list_changed.connect(input_field.on_prop_list_changed)
+#		input_field.tree_entered.connect(_deferred_on_if_tree_entered.bind(input_field))
+		input_field.tree_entered.connect(on_if_tree_entered.bind(input_field))
+		
+		if is_instance_of(input_field, UI_IF_ThumbnailArray):
+			input_field.requested_press.connect(on_if_thumbnail_array_press.bind(input_field))
+			req_change_interaction_feature.connect(input_field.on_changed_interaction_feature)
+		input_field.prepare_input_field(_get(prop), _base_control, _resource_previewer)
+	
+#	print("create_input_field %s %s %s %d end" % [str(self), get_meta("class"), prop, Time.get_ticks_msec()])
+	
+	return input_field
 
 
 # Creates a specified input field
 # To be overridden
-func _create_input_field(prop:String) -> UI_InputField:
+func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
 	return null
 
 
-
-# Prepare all the UI input fields to be added into the scene
-# Optionally specify a whitelist to conditionally hide/show input fields
-func prepare_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []) -> Array:
-	var prop_names = _get_prop_dictionary().keys()
-	var input_fields = []
-	
-	# TODO: this is a workaround for error
-	#		res://addons/dreadpon.spatial_gardener/utility/input_field_resource/input_field_resource.gd:523 
-#				- Trying to assign invalid previously freed instance.
-	#		nvm, it didn't work :/
-#	var fields_to_regen = []
-#	for prop in owned_input_fields:
-#		if !is_instance_valid(owned_input_fields[prop]):
-#			fields_to_regen.append(prop)
-#	owned_input_fields.merge(_mk_input_fields(fields_to_regen), true)
-#	print("prepare ", resource_name, " ", self)
-	for prop in prop_names:
-		# Conditional rejection of a property
-		if !whitelist.is_empty() && !whitelist.has(prop): continue
-		
-		var input_field:UI_InputField = _prepare_input_field(_base_control, _resource_previewer, prop)
-		
-		if input_field:
-			if is_instance_valid(input_field.get_parent()):
-				input_field.get_parent().remove_child(input_field)
-			input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
-			input_fields.append(input_field)
-	
-#	print("prepared all ", resource_name, " ", self)
-	return input_fields
-
-
-func _prepare_input_field(_base_control:Control, _resource_previewer, prop: String):
-#	print("prepare ", prop)
-	var input_field:UI_InputField = owned_input_fields.get(prop, null) 
-	if input_field:
-		input_field.prepare_input_field(_get(prop), _base_control, _resource_previewer)
-	return input_field
-
-
-
-func _deferred_on_if_tree_entered(input_field:UI_InputField):
-	call_deferred("on_if_tree_entered", input_field)
+# func _deferred_on_if_tree_entered(input_field:UI_InputField):
+# 	call_deferred("on_if_tree_entered", input_field)
 
 
 # Do something with an input field when it's _ready()
 func on_if_tree_entered(input_field:UI_InputField):
-	# TODOIF 
-#	input_field.ready.disconnect(on_if_ready)
-	
+#	await input_field.get_tree().process_frame
+
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
 		var res_val = get(res_edit.res_prop)
@@ -549,11 +525,13 @@ func on_if_tree_entered(input_field:UI_InputField):
 
 # An array thumbnail representing a resource was pressed
 func on_if_thumbnail_array_press(pressed_index:int, input_field:Control):
+#	print("on_if_thumbnail_array_press %d start" % [Time.get_ticks_msec()])
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
 		var array_val = get(res_edit.array_prop)
 		var new_res_val = array_val[pressed_index]
 		_res_edit_select(res_edit.array_prop, [new_res_val], true)
+#	print("on_if_thumbnail_array_press %d end" % [Time.get_ticks_msec()])
 
 
 # Get a tooltip string for each property to be used in it's InputField
@@ -643,18 +621,24 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 
 # Requests a prop action that updates the needed property
 func _res_edit_select(array_prop:String, new_res_array:Array, create_history:bool = false):
+#	print("_res_edit_select %d start" % [Time.get_ticks_msec()])
+	
 	var res_edit = find_res_edit_by_array_prop(array_prop)
+#	print("_res_edit_select %d 1" % [Time.get_ticks_msec()])
 	if res_edit:
 		var array_val = get(res_edit.array_prop)
 		var res_val = get(res_edit.res_prop)
 		var new_res_val = new_res_array[0]
 		if res_val == new_res_val:
 			new_res_val = null
+#		print("_res_edit_select %d 2" % [Time.get_ticks_msec()])
 		
 		var prop_action = PA_PropSet.new(res_edit.res_prop, new_res_val)
 		prop_action.can_create_history = create_history
 		request_prop_action(prop_action)
+#		print("_res_edit_select %d 3" % [Time.get_ticks_msec()])
 		res_edit_update_interaction_features(prop_action.prop)
+#		print("_res_edit_select %d end" % [Time.get_ticks_msec()])
 
 
 

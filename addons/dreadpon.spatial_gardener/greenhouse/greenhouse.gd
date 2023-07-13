@@ -53,35 +53,19 @@ func _init():
 	resource_name = "Greenhouse"
 	
 	_add_res_edit_source_array("plant_types/greenhouse_plant_states", "plant_types/selected_for_edit_resource")
-	
+
 	if Engine.is_editor_hint():
 		# https://github.com/godotengine/godot/issues/73525
 		_file_dialog = (EditorFileDialog as Variant).new()
 	else:
 		_file_dialog = FileDialog.new()
-	self_str = str(self)
-#	print("new filedialog ", self_str)
-#	print("init ", resource_name, " ", self)
+	_file_dialog.close_requested.connect(on_file_dialog_hide)
 
 
-var self_str
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
 			_file_dialog.free()
-#			print("cleanup filedialog ", self_str)
-
-func create_input_fields():
-	super()
-	grid_container_plant_thumbnails_nd = owned_input_fields["plant_types/greenhouse_plant_states"]
-	grid_container_plant_thumbnails_nd.label.visible = false
-	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
-	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	grid_container_plant_thumbnails_nd.requested_check.connect(on_plant_state_check)
-	grid_container_plant_thumbnails_nd.requested_label_edit.connect(on_plant_label_edit)
-	
-	vbox_container_properties_nd = owned_input_fields["plant_types/selected_for_edit_resource"]
 
 
 # The UI is created here because we need to manage it afterwards
@@ -100,7 +84,19 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_properties_nd.theme_type_variation = "InspectorPanelContainer"
 	ui_category_greenhouse.theme_type_variation = "InspectorPanelContainer"
 	
-	var input_fields = prepare_input_fields(_base_control, _resource_previewer)
+	if grid_container_plant_thumbnails_nd:
+		grid_container_plant_thumbnails_nd.free()
+	grid_container_plant_thumbnails_nd = create_input_field(_base_control, _resource_previewer, "plant_types/greenhouse_plant_states")
+	grid_container_plant_thumbnails_nd.label.visible = false
+	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
+	grid_container_plant_thumbnails_nd.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	grid_container_plant_thumbnails_nd.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid_container_plant_thumbnails_nd.requested_check.connect(on_plant_state_check)
+	grid_container_plant_thumbnails_nd.requested_label_edit.connect(on_plant_label_edit)
+	
+	if vbox_container_properties_nd:
+		vbox_container_properties_nd.free()
+	vbox_container_properties_nd = create_input_field(_base_control, _resource_previewer, "plant_types/selected_for_edit_resource")
 	
 	scroll_container_plant_thumbnails_nd.add_child(grid_container_plant_thumbnails_nd)
 	scroll_container_properties_nd.add_child(vbox_container_properties_nd)
@@ -108,23 +104,19 @@ func create_ui(__base_control:Control, __resource_previewer):
 	return ui_category_greenhouse
 
 
-func _create_input_field(prop:String):
+func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
 	var input_field:UI_InputField = null
 	match prop:
 		"plant_types/greenhouse_plant_states":
 			var settings := {
 				"add_create_inst_button": true,
-#				"_base_control": _base_control,
 				"accepted_classes": ["Greenhouse_PlantState"],
 				"element_display_size": 100 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_PLANT_STATE,
-#				"_resource_previewer": _resource_previewer,
 				}
 			input_field = UI_IF_ThumbnailArray.new(greenhouse_plant_states, "Plant Types", prop, settings)
 		"plant_types/selected_for_edit_resource":
 			var settings := {
-#				"_base_control": _base_control, 
-#				"_resource_previewer": _resource_previewer, 
 				"label_visibility": false, 
 				"tab": 0}
 			input_field = UI_IF_Object.new(selected_for_edit_resource, "Plant State", prop, settings)
@@ -200,6 +192,10 @@ func show_transform_import(type: String):
 			_file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 
 
+func on_file_dialog_hide():
+	FunLib.disconnect_all(_file_dialog.file_selected)
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -260,9 +256,12 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 			match prop_action_class:
 				"PA_ArrayInsert":
 					# This is deferred because the action thumbnail is not ready yet
-					call_deferred("plant_count_updated", prop_action.index, 0)
-					call_deferred("select_plant_state_for_brush", prop_action.index, final_val[prop_action.index].plant_brush_active)
-					call_deferred("set_plant_state_label", prop_action.index, final_val[prop_action.index].plant_label)
+					plant_count_updated(prop_action.index, 0)
+					select_plant_state_for_brush(prop_action.index, final_val[prop_action.index].plant_brush_active)
+					set_plant_state_label(prop_action.index, final_val[prop_action.index].plant_label)
+#					call_deferred("plant_count_updated", prop_action.index, 0)
+#					call_deferred("select_plant_state_for_brush", prop_action.index, final_val[prop_action.index].plant_brush_active)
+#					call_deferred("set_plant_state_label", prop_action.index, final_val[prop_action.index].plant_label)
 	
 
 

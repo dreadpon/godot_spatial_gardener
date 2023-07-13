@@ -81,7 +81,7 @@ func _init(_owned_spatial):
 	set_meta("class", "Painter")
 	
 	owned_spatial = _owned_spatial
-	
+#
 	paint_brush_node = MeshInstance3D.new()
 	paint_brush_node.name = "active_brush"
 	set_brush_mesh()

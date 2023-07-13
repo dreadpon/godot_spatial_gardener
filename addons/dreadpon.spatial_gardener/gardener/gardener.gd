@@ -142,6 +142,7 @@ func _exit_tree():
 
 
 func _process(delta):
+#	print("_process %d" % [Time.get_ticks_msec()])
 	if painter:
 		painter.update(delta)
 
@@ -220,6 +221,7 @@ func restore_references():
 # Initialize a Painter
 # Assumed to be the first manager to initialize
 func init_painter():
+	FunLib.free_children(painting_node)
 	painter = Painter.new(painting_node)
 	painter.stroke_updated.connect(on_painter_stroke_updated)
 	painter.changed_active_brush_prop.connect(on_changed_active_brush_prop)
@@ -366,35 +368,35 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	_undo_redo = __undoRedo
-	
+
 	_side_panel = __side_panel
 	changed_initialized_for_edit.connect(_side_panel.set_main_control_state)
 	
+	var start = Time.get_ticks_msec()
 	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
 	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
+	print("create_ui took %d" % [Time.get_ticks_msec() - start])
+	start = Time.get_ticks_msec()
 	_side_panel.set_tool_ui(ui_category_brushes, 0)
 	_side_panel.set_tool_ui(ui_category_plants, 1)
+	print("set_tool_ui took %d" % [Time.get_ticks_msec() - start])
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
-	
+
 	arborist._undo_redo = _undo_redo
-	
+
 #	# Making sure we and UI are on the same page (setting property values and checkboxes/tabs)
 	painter_update_to_active_brush(toolshed.active_brush)
 	_side_panel.set_main_control_state(initialized_for_edit)
-	
+
 	painter.start_editing()
-	
+
 	for i in range(0, arborist.octree_managers.size()):
 		arborist.emit_member_count(i)
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
 	
-#	await get_tree().process_frame
-#	var debug_scene = PackedScene.new()
-#	debug_scene.pack(_side_panel)
-#	ResourceSaver.save(debug_scene, "res://debug_side_panel.tscn")
 
 
 # Stop editing (painting) a scene

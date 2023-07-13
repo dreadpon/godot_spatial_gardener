@@ -1,17 +1,15 @@
-[gd_resource type="Resource" load_steps=12 format=3 uid="uid://clfem1ff2kscl"]
+[gd_resource type="Resource" load_steps=11 format=3 uid="uid://clfem1ff2kscl"]
 
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="1_5st78"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="1_c5irr"]
 [ext_resource type="BoxMesh" uid="uid://dh3m5dnktrfj4" path="res://work_dir/new_box_mesh.tres" id="1_dm1s7"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2_rm3lh"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="2_s8x4f"]
-[ext_resource type="PackedScene" uid="uid://j5rdfcb6g122" path="res://work_dir/col.tscn" id="3_bbv02"]
 
 [sub_resource type="Resource" id="Resource_q2egr"]
 resource_name = "Greenhouse_LODVariant"
 script = ExtResource("2_rm3lh")
 mesh = ExtResource("1_dm1s7")
-spawned_spatial = ExtResource("3_bbv02")
 cast_shadow = 1
 metadata/class = "Greenhouse_LODVariant"
 
@@ -20,13 +18,13 @@ resource_name = "Greenhouse_Plant"
 script = ExtResource("1_5st78")
 mesh/mesh_LOD_variants = [SubResource("Resource_q2egr")]
 mesh/selected_for_edit_resource = SubResource("Resource_q2egr")
-mesh/mesh_LOD_max_distance = 2.0
+mesh/mesh_LOD_max_distance = 18.69
 mesh/mesh_LOD_kill_distance = -1.0
-mesh/mesh_LOD_max_capacity = 75
+mesh/mesh_LOD_max_capacity = 1000
 mesh/mesh_LOD_min_size = 1.0
 octree/octree_reconfigure_button = false
 octree/octree_recenter_button = false
-density/density_per_units = 100.0
+density/density_per_units = 2000.0
 scale/scale_scaling_type = 0
 scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
 up_vector/up_vector_primary_type = 2
@@ -74,7 +72,7 @@ scale/scale_scaling_type = 0
 scale/scale_range = [Vector3(1, 1, 1), Vector3(1, 1, 1)]
 up_vector/up_vector_primary_type = 2
 up_vector/up_vector_primary = Vector3(0, 0, 0)
-up_vector/up_vector_secondary_type = 2
+up_vector/up_vector_secondary_type = 0
 up_vector/up_vector_secondary = Vector3(0, 0, 0)
 up_vector/up_vector_blending = 0.0
 fwd_vector/fwd_vector_primary_type = 0

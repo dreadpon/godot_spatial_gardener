@@ -7,6 +7,9 @@ extends PanelContainer
 # Is bound to a given property of a given object
 # Will update this property if changed
 # And will change if this property is updated elsewhere
+#
+# TODO: convert to premade scenes?
+#		this might speed up creation and setup of these elements
 #-------------------------------------------------------------------------------
 
 
@@ -93,6 +96,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	set_stylebox(get_theme_stylebox('panel', 'PanelContainer'))
 	
 	set_tooltip(tooltip)
+	
+	add_child(container_box)
+	container_box.add_child(tab_spacer)
+	container_box.add_child(label)
+	container_box.add_child(value_container)
 
 
 func _notification(what):
@@ -117,15 +125,15 @@ func prepare_input_field(__init_val, __base_control:Control, __resource_previewe
 
 
 func _ready():
-	add_child(container_box)
-	container_box.add_child(tab_spacer)
-	container_box.add_child(label)
-	container_box.add_child(value_container)
+#	print("_ready ", prop_name, " ", self.get_meta("class"))
 	_set_tab(tab_index)
 
 
 func _enter_tree():
-	_init_ui()
+#	_init_ui()
+#	print("_init_ui ", prop_name, " ", self.get_meta("class"))
+	_update_ui_to_val(init_val)
+	init_val = null
 
 
 # Set tabulation offset and color
@@ -172,8 +180,8 @@ func set_stylebox(stylebox:StyleBox):
 # Property changed outside of this InputField
 # Update the UI
 func on_prop_action_executed(prop_action:PropAction, final_val):
+#	print("on_prop_action_executed %d" % [Time.get_ticks_msec()])
 	if prop_action.prop == prop_name:
-#		print("on_prop_action_executed ", prop_action, " ", self)
 		_update_ui_to_prop_action(prop_action, final_val)
 #	on_tracked_property_changed(prop_action.prop, final_val)
 
@@ -192,14 +200,16 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 
 # Set UI values for the first time
-func _init_ui():
-	_update_ui_to_val(init_val)
-	init_val = null
+#func _init_ui():
+##	print("_init_ui ", prop_name, " ", self.get_meta("class"))
+#	_update_ui_to_val(init_val)
+#	init_val = null
 
 
 # Specific implementation of updating UI
 # To be overridden
 func _update_ui_to_val(val):
+#	print("_update_ui_to_val ", prop_name, " ", self.get_meta("class"), " ", val)
 	val_cache = val
 
 

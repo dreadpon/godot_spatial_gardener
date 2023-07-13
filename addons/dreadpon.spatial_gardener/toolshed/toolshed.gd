@@ -62,7 +62,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 		section_brush.name = FunLib.capitalize_string_array(brush.BrushType.keys())[brush.behavior_brush_type]
 		tab_container_brushes_nd.add_child(section_brush)
 		
-		for input_field in brush.prepare_input_fields(_base_control, _resource_previewer):
+		for input_field in brush.create_input_fields(_base_control, _resource_previewer).values():
 			vbox_container_properties.add_child(input_field)
 		
 		section_brush.theme_type_variation = "InspectorPanelContainer"

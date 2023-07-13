@@ -170,8 +170,10 @@ func update_size():
 
 
 func set_counter_val(val:int):
-	if is_instance_valid(counter_label_nd):
-		counter_label_nd.text = str(val)
+	if !counter_label_nd: return
+	if !is_node_ready():
+		await ready
+	counter_label_nd.text = str(val)
 
 
 
@@ -241,8 +243,10 @@ func on_set_drag(path):
 		requested_set_drag.emit(path)
 
 func on_press():
+	print("on_press %d start" % [Time.get_ticks_msec()])
 	if active_interaction_flags.has(InteractionFlags.PRESS):
 		requested_press.emit()
+	print("on_press %d end" % [Time.get_ticks_msec()])
 
 func on_check():
 	if active_interaction_flags.has(InteractionFlags.CHECK):

@@ -39,7 +39,6 @@ func _init():
 	resource_name = "Greenhouse_PlantState"
 	# A workaround to trigger the initial creation of a plant
 	_set("plant/plant", plant)
-#	print("init ", resource_name, " ", self)
 
 
 
@@ -173,10 +172,10 @@ func _get_prop_dictionary():
 		}
 
 
-func prepare_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []):
+func create_input_fields(_base_control:Control, _resource_previewer, whitelist:Array = []) -> Dictionary:
 	if plant:
-		return plant.prepare_input_fields(_base_control, _resource_previewer, whitelist)
-	return []
+		return plant.create_input_fields(_base_control, _resource_previewer, whitelist)
+	return {}
 
 
 func _fix_duplicate_signals(copy):

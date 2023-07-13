@@ -40,6 +40,9 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
+	
+	margin_container.add_child(input_field_container)
+	value_container.add_child(margin_container)
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
@@ -50,9 +53,6 @@ func prepare_input_field(__init_val, __base_control:Control, __resource_previewe
 
 func _ready():
 	super()
-	margin_container.add_child(input_field_container)
-	value_container.add_child(margin_container)
-	
 	if tab_index > 0:
 		margin_container.theme_type_variation = "PanelContainer"
 	else:
@@ -68,37 +68,50 @@ func _cleanup():
 
 
 func rebuild_object_input_fields(object:Object):
+	if !is_node_ready():
+		await ready
 	FunLib.free_children(input_field_container)
 	if is_instance_valid(object):
 		
 		property_sections = {}
+		var section_dict = {}
+		var subsection_dict = {}
+		var nest_section_name = ""
+		var nest_subsection_name = ""
 		
-#		print("rebuild_object_input_fields")
-		var input_fields = object.prepare_input_fields(_base_control, _resource_previewer)
-		for input_field in input_fields:
+		var input_fields = object.create_input_fields(_base_control, _resource_previewer)
+#		print("sections %d start" % [Time.get_ticks_msec()])
+		for input_field in input_fields.values():
 			var nesting := (input_field.prop_name as String).split('/')
+
 			if nesting.size() >= 2:
-				if !property_sections.has(nesting[0]): 
+				nest_section_name = nesting[0]
+				section_dict = property_sections.get(nest_section_name, null)
+				if section_dict == null: 
 					var section = UI_FoldableSection_SCN.instantiate()
-					property_sections[nesting[0]] = {'section': section, 'subsections': {}}
 					input_field_container.add_child(section)
-					section.set_button_text(nesting[0].capitalize())
+					section.set_button_text(nest_section_name.capitalize())
 					section.set_nesting_level(0)
-				
+					section_dict = {'section': section, 'subsections': {}}
+					property_sections[nest_section_name] = section_dict
+
 				if nesting.size() >= 3:
-					if !property_sections[nesting[0]].subsections.has(nesting[1]):
+					nest_subsection_name = nesting[1]
+					subsection_dict = section_dict.subsections.get(nest_subsection_name, null)
+					if subsection_dict == null: 
 						var subsection = UI_FoldableSection_SCN.instantiate()
-						property_sections[nesting[0]].subsections[nesting[1]] = {'subsection': subsection} 
-						property_sections[nesting[0]].section.add_child(subsection)
-						subsection.set_button_text(nesting[1].capitalize())
+						section_dict.section.add_child(subsection)
+						subsection.set_button_text(nest_subsection_name.capitalize())
 						subsection.set_nesting_level(1)
-					
-					property_sections[nesting[0]].subsections[nesting[1]].add_prop_node(input_field)
+						subsection_dict = {'subsection': subsection} 
+						section_dict.subsections[nest_subsection_name] = subsection_dict
+
+					subsection_dict.add_prop_node(input_field)
 				else:
-					property_sections[nesting[0]].section.add_prop_node(input_field)
+					section_dict.section.add_prop_node(input_field)
 			else:
 				input_field_container.add_child(input_field)
-#		print("finished rebuild_object_input_fields")
+#		print("sections %d end" % [Time.get_ticks_msec()])
 
 
 
@@ -109,12 +122,14 @@ func rebuild_object_input_fields(object:Object):
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
+#	print("_update_ui_to_prop_action %d" % [Time.get_ticks_msec()])
 	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
+#		print("_update_ui_to_prop_action -> _update_ui_to_val %s" % [str(prop_action)])
 		_update_ui_to_val(final_val)
 
 
 func _update_ui_to_val(val):
-#	print("_update_ui_to_val")
+#	print("_update_ui_to_val %d start" % [Time.get_ticks_msec()])
 	if is_instance_valid(val):
 		rebuild_object_input_fields(val)
 		visibility_forced = -1
@@ -123,5 +138,5 @@ func _update_ui_to_val(val):
 		rebuild_object_input_fields(null)
 		visibility_forced = 0
 		visible = false
-#	print("finished _update_ui_to_val")
+#	print("_update_ui_to_val %d end" % [Time.get_ticks_msec()])
 	super._update_ui_to_val(val)

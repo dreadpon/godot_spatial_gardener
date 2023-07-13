@@ -126,10 +126,9 @@ func _init():
 	_add_prop_dependency("mesh/mesh_LOD_kill_distance", ["mesh/mesh_LOD_max_distance"])
 	_add_prop_dependency("scale/scale_range", ["scale/scale_scaling_type"])
 	_add_res_edit_source_array("mesh/mesh_LOD_variants", "mesh/selected_for_edit_resource")
-#	print("init ", resource_name, " ", self)
 
 
-func _create_input_field(prop:String) -> UI_InputField:
+func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
 	var input_field:UI_InputField = null
 	match prop:
 		"mesh/mesh_LOD_variants":
@@ -137,17 +136,13 @@ func _create_input_field(prop:String) -> UI_InputField:
 			accepted_classes.append_array(Globals.MESH_CLASSES)
 			var settings := {
 				"add_create_inst_button": true,
-#				"_base_control": _base_control,
 				"accepted_classes": accepted_classes,
 				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_LOD_VARIANT,
-#				"_resource_previewer": _resource_previewer,
 				}
 			input_field = UI_IF_ThumbnailArray.new(mesh_LOD_variants, "LOD Variants", prop, settings)
 		"mesh/selected_for_edit_resource":
 			var settings := {
-#				"_base_control": _base_control, 
-#				"_resource_previewer": _resource_previewer, 
 				"label_visibility": false, 
 				"tab": 1
 				}
@@ -168,10 +163,10 @@ func _create_input_field(prop:String) -> UI_InputField:
 			var settings := {"min": 0.0, "max": max_value,  "step": 0.01,  "allow_greater": true,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(mesh_LOD_min_size, "Min node size", prop, settings)
 		"octree/octree_reconfigure_button":
-			var bound_input_fields:Array = _mk_input_fields(["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]).values()
+			var bound_input_fields:Array = create_input_fields(
+				_base_control, _resource_previewer, ["mesh/mesh_LOD_max_capacity", "mesh/mesh_LOD_min_size"]).values()
 			var settings := {
 				"button_text": "Configure Octree", 
-#				"_base_control": _base_control, 
 				"bound_input_fields": bound_input_fields
 				}
 			input_field = UI_IF_ApplyChanges.new(octree_reconfigure_button, "Octree Configuration", prop, settings)
@@ -211,8 +206,6 @@ func _create_input_field(prop:String) -> UI_InputField:
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_primary, "Up-Vector Primary", prop, settings)
-#			input_field.add_tracked_property("up_vector/up_vector_primary_type", DirectionVectorType.CUSTOM, up_vector_primary_type)
-#			input_field.set_visibility_is_tracked(true)
 		"up_vector/up_vector_secondary_type":
 			var settings := {"enum_list": FunLib.capitalize_string_array(DirectionVectorType.keys())}
 			input_field = UI_IF_Enum.new(up_vector_secondary_type, "Secondary Up-Vector", prop, settings)
@@ -223,8 +216,6 @@ func _create_input_field(prop:String) -> UI_InputField:
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(up_vector_secondary, "Up-Vector Secondary", prop, settings)
-#			input_field.add_tracked_property("up_vector/up_vector_secondary_type", DirectionVectorType.CUSTOM, up_vector_secondary_type)
-#			input_field.set_visibility_is_tracked(true)
 		"up_vector/up_vector_blending":
 			var settings := {"min": 0.0, "max": 1.0,  "step": 0.01,  "allow_greater": false,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(up_vector_blending, "Up-Vector Blending", prop, settings)
@@ -239,8 +230,6 @@ func _create_input_field(prop:String) -> UI_InputField:
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_primary, "Forward-Vector Primary", prop, settings)
-#			input_field.add_tracked_property("fwd_vector/fwd_vector_primary_type", DirectionVectorType.CUSTOM, fwd_vector_primary_type)
-#			input_field.set_visibility_is_tracked(true)
 		"fwd_vector/fwd_vector_secondary_type":
 			var settings := {"enum_list": FunLib.capitalize_string_array(DirectionVectorType.keys())}
 			input_field = UI_IF_Enum.new(fwd_vector_secondary_type, "Secondary Forward-Vector", prop, settings)
@@ -251,8 +240,6 @@ func _create_input_field(prop:String) -> UI_InputField:
 				"representation_type": UI_IF_MultiRange.RepresentationType.VECTOR,
 				}
 			input_field = UI_IF_MultiRange.new(fwd_vector_secondary, "Forward-Vector Secondary", prop, settings)
-#			input_field.add_tracked_property("fwd_vector/fwd_vector_secondary_type", DirectionVectorType.CUSTOM, fwd_vector_secondary_type)
-#			input_field.set_visibility_is_tracked(true)
 		"fwd_vector/fwd_vector_blending":
 			var settings := {"min": 0.0, "max": 1.0,  "step": 0.01,  "allow_greater": false,  "allow_lesser": false,}
 			input_field = UI_IF_RealSlider.new(fwd_vector_blending, "Forward-Vector Blending", prop, settings)
@@ -303,15 +290,6 @@ func _create_input_field(prop:String) -> UI_InputField:
 			input_field = UI_IF_Button.new(import_export_export_greenhouse_data_button, "Export Greenhouse Data", prop, settings)
 			input_field.pressed.connect(on_if_button.bind(input_field))
 	
-	return input_field
-
-
-func _prepare_input_field(_base_control:Control, _resource_previewer, prop: String):
-	var input_field:UI_InputField = super(_base_control, _resource_previewer, prop)
-	match prop:
-		"octree/octree_reconfigure_button":
-			for sub_input_field in input_field.bound_input_fields:
-				sub_input_field.prepare_input_field(get(sub_input_field.prop_name), _base_control, _resource_previewer)
 	return input_field
 
 

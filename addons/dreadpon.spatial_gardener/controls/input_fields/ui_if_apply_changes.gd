@@ -51,6 +51,8 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	bound_input_fields = settings.bound_input_fields
 	
 	button.theme_type_variation = "InspectorButton"
+	
+	value_container.add_child(button)
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
@@ -60,7 +62,6 @@ func prepare_input_field(__init_val, __base_control:Control, __resource_previewe
 
 func _ready():
 	super()
-	value_container.add_child(button)
 	for input_field in bound_input_fields:
 		input_field.disable_history = true
 		apply_dialog.fields.add_child(input_field)
@@ -69,6 +70,7 @@ func _ready():
 func _enter_tree():
 	if _base_control:
 		_base_control.add_child(apply_dialog)
+	super()
 
 
 func _exit_tree():

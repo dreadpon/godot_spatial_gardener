@@ -155,7 +155,7 @@ func remove_custom_types():
 func on_tree_node_added(node:Node):
 	if FunLib.obj_is_script(node, Gardener):
 		gardeners_in_tree.append(node)
-	
+
 	if node.has_method("set_undo_redo"):
 		node.set_undo_redo(undo_redo)
 	if node.has_method("set_editor_selection"):
@@ -380,8 +380,10 @@ func start_gardener_edit(gardener):
 	# I am testing a workaround of just restoring references, to avoid the unneccesary operations caused be previous solution
 	# UPD: Actually seems to work even without calling the method below. I'm confused
 	# I'll keep it here *just in case* the bug still persists but hides well
+	#
+	# UPD: when converting to Godot 4.0, this method resulted in enormous delay when selecting a Gardener for edit (3 seconds for empty Gardener)
 	active_gardener.restore_references()
-	
+
 	active_gardener.tree_exited.connect(set_gardener_edit_state.bind(null))
 	active_gardener.greenhouse_prop_action_executed.connect(on_greenhouse_prop_action_executed)
 	active_gardener.start_editing(_base_control, _resource_previewer, undo_redo, _side_panel)

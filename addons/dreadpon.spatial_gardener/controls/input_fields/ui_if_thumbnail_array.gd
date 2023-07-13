@@ -40,11 +40,12 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	flex_grid = UI_FlexGridContainer.new()
 	
 	scroll_intermediary.add_child(flex_grid)
-
-
-func _ready():
-	super()
+	
 	value_container.add_child(scroll_intermediary)
+
+
+#func _ready():
+#	super()
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
@@ -77,6 +78,8 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 
 func _update_ui_to_val(val):
+	if !is_node_ready():
+		await ready
 	FunLib.free_children(flex_grid)
 	
 	if add_create_inst_button:
@@ -87,17 +90,17 @@ func _update_ui_to_val(val):
 		
 		var element = val[i]
 		if is_instance_of(element, Resource):
-#			var thumb = flex_grid.get_child(i)
-			call_deferred("_queue_thumbnail", element, thumb)
+			_queue_thumbnail(element, thumb)
 		else:
-			thumb.call_deferred("set_thumbnail", null)
-#			flex_grid.get_child(i).set_thumbnail(null)
+			thumb.set_thumbnail(null)
 	
 	super._update_ui_to_val(val.duplicate())
 
 
 # Set possible interaction features for an action thumbnail
 func set_thumb_interaction_feature_with_data(interaction_flag:int, val, data:Dictionary):
+	if !is_node_ready():
+		await ready
 	if data.index >= flex_grid.get_child_count(): return
 	if data.index < 0: return
 	var thumb = flex_grid.get_child(data.index)
@@ -124,7 +127,6 @@ func _add_thumb(index:int = -1):
 	var thumb = _generate_thumbnail()
 	flex_grid.add_child(thumb)
 	
-	print("_add_thumb, ", index)
 	if index >= flex_grid.get_child_count():
 		logger.warn("_add_thumb index %d is beyond maximum of %d. Clamping..." % [index, flex_grid.get_child_count() - 1])
 		index = flex_grid.get_child_count() - 1
@@ -143,7 +145,7 @@ func _remove_thumb(index:int):
 	
 	var thumb = flex_grid.get_child(index)
 	flex_grid.remove_child(thumb)
-	thumb.free()
+	thumb.queue_free()
 
 
 

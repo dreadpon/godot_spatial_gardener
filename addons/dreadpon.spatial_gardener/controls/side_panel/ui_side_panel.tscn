@@ -19,7 +19,7 @@ theme_type_variation = &"InspectorPanelContainer"
 
 [node name="PanelContainer_Tools_Split" type="VSplitContainer" parent="PanelContainer"]
 layout_mode = 2
-split_offset = 150
+split_offset = 200
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 visible = false

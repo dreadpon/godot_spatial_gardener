@@ -47,11 +47,12 @@ func _ready():
 # Can pass an index to specify child order
 func set_tool_ui(control:Control, index:int):
 	if panel_container_tools_split_nd.get_child_count() > index:
-		panel_container_tools_split_nd.remove_child(panel_container_tools_split_nd.get_child(index))
+		var last_tool = panel_container_tools_split_nd.get_child(index)
+		panel_container_tools_split_nd.remove_child(last_tool)
+		last_tool.queue_free()
 	
 	panel_container_tools_split_nd.add_child(control)
 	if panel_container_tools_split_nd.get_child_count() > index:
-		print("set_tool_ui")
 		panel_container_tools_split_nd.move_child(control, index)
 
 
@@ -95,7 +96,9 @@ func refresh_folding_states_for_greenhouse(folding_states:Dictionary, greenhouse
 	var greenhouse_id = get_res_name_or_path(folding_states, greenhouse)
 	var plant_id = get_res_name_or_path(folding_states[greenhouse_id], greenhouse.selected_for_edit_resource)
 	if folding_states.has(greenhouse_id) && folding_states[greenhouse_id].has(plant_id):
+#		set_folding_states(self, folding_states[greenhouse_id][plant_id])
 		call_deferred('set_folding_states', self, folding_states[greenhouse_id][plant_id])
+#	bind_foldables(self, folding_states, greenhouse_id, plant_id)
 	call_deferred('bind_foldables', self, folding_states, greenhouse_id, plant_id)
 
 

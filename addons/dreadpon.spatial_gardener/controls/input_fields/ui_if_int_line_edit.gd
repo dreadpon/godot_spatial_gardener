@@ -35,11 +35,12 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input.focus_exited.connect(focus_lost.bind(value_input))
 	value_input.gui_input.connect(on_node_received_input.bind(value_input))
 	value_input.theme_type_variation = "IF_LineEdit"
-
-
-func _ready():
-	super()
+	
 	value_container.add_child(value_input)
+
+
+#func _ready():
+#	super()
 
 
 func _cleanup():

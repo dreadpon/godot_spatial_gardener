@@ -111,11 +111,13 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 				
 				value_range_row.add_child(dash_label)
 				dash_label.theme_type_variation = "MultiRangeDashLabel"
-
-
-func _ready():
-	super()
+	
 	value_container.add_child(vertical_container)
+	
+
+
+#func _ready():
+#	super()
 
 
 func _cleanup():

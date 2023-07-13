@@ -28,11 +28,13 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	if settings.has("label_visibility"):
 		label.visible = settings.label_visibility
-
-
-func _ready():
-	super()
+	
 	value_container.add_child(displayed_label)
+	
+
+
+#func _ready():
+#	super()
 
 
 func _cleanup():
