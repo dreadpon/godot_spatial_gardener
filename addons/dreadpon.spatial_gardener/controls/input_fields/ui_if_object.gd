@@ -42,7 +42,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 		label.visible = settings.label_visibility
 	
 	margin_container.add_child(input_field_container)
-	value_container.add_child(margin_container)
+	container_box.add_child(margin_container)
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):

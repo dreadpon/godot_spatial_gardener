@@ -35,8 +35,6 @@ var container_box:HBoxContainer = HBoxContainer.new()
 var tab_spacer:Control = Control.new()
 # Stores the name of our property
 var label:Label = Label.new()
-# Stores the value of our property
-var value_container:HBoxContainer = HBoxContainer.new()
 
 # Bound prop name
 var prop_name:String = ""
@@ -86,9 +84,9 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	label.text = __labelText
 	label.size_flags_horizontal = SIZE_EXPAND_FILL
 	
-	value_container.name = "value_container"
-	value_container.size_flags_horizontal = SIZE_EXPAND_FILL
-	value_container.alignment = BoxContainer.ALIGNMENT_CENTER
+#	value_container.name = "value_container"
+#	value_container.size_flags_horizontal = SIZE_EXPAND_FILL
+#	value_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	if settings.has("tab"):
 		tab_index = settings.tab
@@ -100,7 +98,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	add_child(container_box)
 	container_box.add_child(tab_spacer)
 	container_box.add_child(label)
-	container_box.add_child(value_container)
 
 
 func _notification(what):
@@ -116,8 +113,6 @@ func _cleanup():
 		tab_spacer.free()
 	if is_instance_valid(label):
 		label.free()
-	if is_instance_valid(value_container):
-		value_container.free()
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):

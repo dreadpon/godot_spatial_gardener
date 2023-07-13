@@ -29,7 +29,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	bool_check.toggled.connect(_request_prop_action.bind("PA_PropSet"))
 	bool_check.theme_type_variation = "InspectorCheckBox"
 	
-	value_container.add_child(bool_check)
+	container_box.add_child(bool_check)
 
 
 #func _ready():

@@ -33,7 +33,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.pressed.connect(on_pressed)
 	button.theme_type_variation = "InspectorButton"
 	
-	value_container.add_child(button)
+	container_box.add_child(button)
 
 
 #func _ready():

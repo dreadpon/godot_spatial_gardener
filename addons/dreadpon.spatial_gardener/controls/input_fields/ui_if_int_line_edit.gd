@@ -25,7 +25,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input = LineEdit.new()
 	value_input.name = "value_input"
 	value_input.size_flags_horizontal = SIZE_EXPAND_FILL
-	value_input.size_flags_stretch_ratio = 0.5
+#	value_input.size_flags_stretch_ratio = 0.5
 	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
 	value_input.focus_entered.connect(select_line_edit.bind(value_input, true))
@@ -36,7 +36,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input.gui_input.connect(on_node_received_input.bind(value_input))
 	value_input.theme_type_variation = "IF_LineEdit"
 	
-	value_container.add_child(value_input)
+	container_box.add_child(value_input)
 
 
 #func _ready():

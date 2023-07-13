@@ -375,11 +375,11 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	var start = Time.get_ticks_msec()
 	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
 	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
-	print("create_ui took %d" % [Time.get_ticks_msec() - start])
+#	print("create_ui took %d" % [Time.get_ticks_msec() - start])
 	start = Time.get_ticks_msec()
 	_side_panel.set_tool_ui(ui_category_brushes, 0)
 	_side_panel.set_tool_ui(ui_category_plants, 1)
-	print("set_tool_ui took %d" % [Time.get_ticks_msec() - start])
+#	print("set_tool_ui took %d" % [Time.get_ticks_msec() - start])
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
 

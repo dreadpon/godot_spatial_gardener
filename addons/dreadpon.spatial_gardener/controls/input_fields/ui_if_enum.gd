@@ -30,9 +30,9 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 		enum_selector.add_item(settings.enum_list[i], i)
 	
 	enum_selector.item_selected.connect(_request_prop_action.bind("PA_PropSet"))
-	enum_selector.theme_type_variation = "OptionButton"
+	enum_selector.theme_type_variation = "InspectorOptionButton"
 	
-	value_container.add_child(enum_selector)
+	container_box.add_child(enum_selector)
 
 
 #func _ready():

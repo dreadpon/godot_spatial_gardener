@@ -74,8 +74,10 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	theme.set_type_variation("MultiRangeValue", "LineEdit")
 	
 	# MultiRangePropLabel -> Label
-	var MultiRangePropLabel_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
+	var MultiRangePropLabel_stylebox_panel := PanelContainer_stylebox_panel.duplicate(true)
+#	var MultiRangePropLabel_stylebox_panel := LineEdit_stylebox_normal.duplicate(true)
 	MultiRangePropLabel_stylebox_panel.bg_color = dark_color_3
+	MultiRangePropLabel_stylebox_panel.draw_center = true
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "MultiRangePropLabel", MultiRangePropLabel_stylebox_panel)
 	theme.set_type_variation("MultiRangePropLabel", "Label")
 
@@ -158,16 +160,6 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "PropertySubsection", PropertySubsection_stylebox)
 	theme.set_type_variation("PropertySubsection", "PanelContainer")
 	
-	# Buttons
-	var InspectorButton_stylebox_normal := Button_stylebox_normal.duplicate(true)
-	var InspectorButton_stylebox_hover := Button_stylebox_hover.duplicate(true)
-	var InspectorButton_stylebox_pressed := Button_stylebox_pressed.duplicate(true)
-	var InspectorButton_stylebox_focus := Button_stylebox_focus.duplicate(true)
-	InspectorButton_stylebox_normal.bg_color = dark_color_2
-	InspectorButton_stylebox_hover.bg_color = dark_color_2 * 1.2
-	InspectorButton_stylebox_pressed.bg_color = dark_color_2
-	InspectorButton_stylebox_focus.bg_color = dark_color_2
-	
 	# ActionThumbnail_SelectionPanel -> Panel
 	var ActionThumbnail_SelectionPanel_stylebox := Button_stylebox_focus.duplicate(true)
 	ActionThumbnail_SelectionPanel_stylebox.bg_color = Color8(255, 255, 255, 51)
@@ -177,32 +169,28 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	theme.set_type_variation("ActionThumbnail_SelectionPanel", "PanelContainer")
 
 	# InspectorButton -> Button
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorButton", InspectorButton_stylebox_normal)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorButton", InspectorButton_stylebox_hover)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorButton", InspectorButton_stylebox_pressed)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorButton", InspectorButton_stylebox_focus)
-	theme.set_type_variation("InspectorButton", "Button")
-
 	# InspectorCheckBox -> CheckBox
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorCheckBox", InspectorButton_stylebox_normal)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorCheckBox", InspectorButton_stylebox_hover)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorCheckBox", InspectorButton_stylebox_pressed)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorCheckBox", InspectorButton_stylebox_focus)
-	theme.set_type_variation("InspectorCheckBox", "CheckBox")
-
-	# InspectorOptionButton -> OptionButton
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorOptionButton", InspectorButton_stylebox_normal)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorOptionButton", InspectorButton_stylebox_hover)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorOptionButton", InspectorButton_stylebox_pressed)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorOptionButton", InspectorButton_stylebox_focus)
-	theme.set_type_variation("InspectorOptionButton", "OptionButton")
-	
-	# InspectorMenuButton -> MenuButton
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "InspectorMenuButton", InspectorButton_stylebox_normal)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "InspectorMenuButton", InspectorButton_stylebox_hover)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "pressed", "InspectorMenuButton", InspectorButton_stylebox_pressed)
-	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "focus", "InspectorMenuButton", InspectorButton_stylebox_focus)
-	theme.set_type_variation("InspectorMenuButton", "MenuButton")
+#	# InspectorOptionButton -> OptionButton
+#	# InspectorMenuButton -> MenuButton
+	for theme_type in ["Button", "CheckBox", "OptionButton", "MenuButton"]:
+		for data_type in range(0, theme.DATA_TYPE_MAX):
+			for theme_item in theme.get_theme_item_list(data_type, theme_type):
+				var item = theme.get_theme_item(data_type, theme_item, theme_type)
+				if is_instance_of(item, Resource):
+					item = item.duplicate(true)
+				if data_type == theme.DATA_TYPE_STYLEBOX:
+					match theme_item:
+						"normal", "pressed", "focus":
+							item.bg_color = dark_color_2
+							item.draw_center = true
+						"hover":
+							item.bg_color = dark_color_2 * 1.2
+							item.draw_center = true
+						"disabled":
+							item.bg_color = dark_color_2 * 1.5
+							item.draw_center = true
+				theme.set_theme_item(data_type, theme_item, "Inspector" + theme_type, item)
+		theme.set_type_variation("Inspector" + theme_type, theme_type)
 	
 	return theme
 

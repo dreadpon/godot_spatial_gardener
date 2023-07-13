@@ -61,9 +61,9 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	file_dialog.current_path = "res://"
 	file_dialog.close_requested.connect(file_dialog_hidden)
 	
-	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	value_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+#	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+#	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+#	value_container.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):

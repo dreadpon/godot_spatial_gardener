@@ -52,7 +52,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	
 	button.theme_type_variation = "InspectorButton"
 	
-	value_container.add_child(button)
+	container_box.add_child(button)
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):

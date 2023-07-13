@@ -40,8 +40,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	flex_grid = UI_FlexGridContainer.new()
 	
 	scroll_intermediary.add_child(flex_grid)
-	
-	value_container.add_child(scroll_intermediary)
+	container_box.add_child(scroll_intermediary)
 
 
 #func _ready():
