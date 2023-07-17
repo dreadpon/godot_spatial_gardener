@@ -243,10 +243,10 @@ func on_set_drag(path):
 		requested_set_drag.emit(path)
 
 func on_press():
-	print("on_press %d start" % [Time.get_ticks_msec()])
+#	print("on_press %d start" % [Time.get_ticks_msec()])
 	if active_interaction_flags.has(InteractionFlags.PRESS):
 		requested_press.emit()
-	print("on_press %d end" % [Time.get_ticks_msec()])
+#	print("on_press %d end" % [Time.get_ticks_msec()])
 
 func on_check():
 	if active_interaction_flags.has(InteractionFlags.CHECK):

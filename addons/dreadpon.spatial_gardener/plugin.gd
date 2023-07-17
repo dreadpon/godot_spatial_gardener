@@ -254,7 +254,7 @@ func focus_painter():
 func simulate_key(keycode):
 	var event = InputEventKey.new()
 	event.keycode = keycode
-	event.button_pressed = true
+	event.pressed = true
 	Input.parse_input_event(event)
 
 

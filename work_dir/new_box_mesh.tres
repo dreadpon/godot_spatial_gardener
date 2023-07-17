@@ -1,3 +1,7 @@
-[gd_resource type="BoxMesh" format=3 uid="uid://dh3m5dnktrfj4"]
+[gd_resource type="BoxMesh" load_steps=2 format=3 uid="uid://dh3m5dnktrfj4"]
+
+[sub_resource type="ORMMaterial3D" id="ORMMaterial3D_6sbko"]
+albedo_color = Color(1, 0, 0.0156863, 1)
 
 [resource]
+material = SubResource("ORMMaterial3D_6sbko")

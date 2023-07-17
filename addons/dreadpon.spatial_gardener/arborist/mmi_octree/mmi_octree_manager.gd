@@ -131,7 +131,9 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 		root_octree_node.MMI_container, min_leaf_extent)
 
 	if !all_placeforms.is_empty():
-		add_placeforms(all_placeforms)
+		queue_placeforms_add_bulk(all_placeforms)
+		process_queues()
+#		add_placeforms(all_placeforms)
 	request_debug_redraw()
 	
 	debug_manual_root_logger("rebuilt root")
@@ -162,7 +164,9 @@ func recenter_octree():
 		root_octree_node.MMI_container, last_root.min_leaf_extent)
 
 	if !all_placeforms.is_empty():
-		add_placeforms(all_placeforms)
+		queue_placeforms_add_bulk(all_placeforms)
+		process_queues()
+#		add_placeforms(all_placeforms)
 	request_debug_redraw()
 	
 	debug_manual_root_logger("recentered root")
@@ -184,6 +188,7 @@ func grow_to_members(placeforms:Array):
 	debug_manual_root_logger("grew to members")
 	root_octree_node.adopt_child(last_root, last_octant)
 	var root_copy = root_octree_node
+	
 	add_placeforms(placeforms)
 	root_copy.try_collapse_children(0)
 
@@ -216,13 +221,17 @@ func get_all_placeforms(target_array: Array = []):
 
 
 # Queue changes for bulk processing
-func queue_placeforms_add(placeforms):
-	add_placeforms_queue.append(placeforms)
+func queue_placeforms_add(placeform):
+	add_placeforms_queue.append(placeform)
+
+
+func queue_placeforms_add_bulk(placeforms: Array):
+	add_placeforms_queue.append_array(placeforms)
 
 
 # Queue changes for bulk processing
-func queue_placeforms_remove(placeforms):
-	remove_placeforms_queue.append(placeforms)
+func queue_placeforms_remove(placeform):
+	remove_placeforms_queue.append(placeform)
 
 
 # Queue changes for bulk processing
@@ -233,6 +242,7 @@ func queue_placeforms_set(change):
 # Bulk process the queues
 func process_queues():
 	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	var affected_addressed := []
 	
 	if !add_placeforms_queue.is_empty():
 		add_placeforms(add_placeforms_queue)

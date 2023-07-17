@@ -205,7 +205,7 @@ func set_LODs_to_active_index():
 			if MMI.multimesh.mesh != new_mesh:
 				# Assign the LOD variant mesh
 				MMI.multimesh.mesh = new_mesh
-				clear_and_spawn_all_member_spatials(active_LOD_index)
+			clear_and_spawn_all_member_spatials(active_LOD_index)
 			# Update cast_shadow as well
 			MMI.cast_shadow = shared_LOD_variants[active_LOD_index].cast_shadow
 		else:
@@ -368,30 +368,37 @@ func add_members(new_placeforms:Array):
 		# Further execution can lead to members being added to a collapsed node
 		# (OctreeManager tries to collapse children when growing to members)
 		# So we abort
-		return
+		return []
 	
-	if new_placeforms.is_empty(): return
+	if new_placeforms.is_empty(): return []
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	active_LOD_index = 0
 	
-	assign_octants_to_placeforms(new_placeforms)
+	var mapped_placeforms = assign_octants_to_placeforms(new_placeforms)
 	
 	var members_changed := false
 	if extent * 0.5 >= min_leaf_extent:
 		if child_nodes.is_empty() && member_count() + new_placeforms.size() > max_members:
 			_make_children()
-			iter_placeforms(self, '_add_member_to_child')
+			var self_mapped_placeforms = assign_octants_to_placeforms(member_placeforms)
+			for octant in self_mapped_placeforms:
+				_add_members_to_child(octant, self_mapped_placeforms[octant])
+#			iter_placeforms(self, '_add_member_to_child')
 			reset_member_arrays()
 	
 	if !child_nodes.is_empty():
-		for placeform in new_placeforms:
-			_add_member_to_child(placeform)
+		for octant in mapped_placeforms:
+			_add_members_to_child(octant, mapped_placeforms[octant])
+#		for placeform in new_placeforms:
+#			_add_member_to_child(placeform)
 	else:
+		var idxs = range(member_count(), member_count() + new_placeforms.size() - 1)
 		for placeform in new_placeforms:
 			append_to_member_arrays(placeform)
-			spawn_spatial_for_member_idx(member_count() - 1)
+#			spawn_spatial_for_member_idxs(member_count() - 1)
 			print_address("", "adding placeform " + Placeform.to_str(placeform))
 			members_changed = true
+		spawn_spatial_for_member_idxs(idxs)
 	
 	if members_changed && parent:
 		parent._child_added_members(octant)
@@ -453,12 +460,23 @@ func reject_outside_placeforms(new_placeforms:Array):
 # Map members to octants within this node (i.e. place inside a 2x2x2 cube)
 # It's mostly used to quick access the child node holding this member
 func assign_octants_to_placeforms(new_placeforms: Array):
+	var mapped_placeforms = {}
+	for i in 8:
+		mapped_placeforms[i] = []
+	var octant = 0
 	for placeform in new_placeforms:
-		placeform[3] = _map_point_to_octant(placeform[0])
+		octant = _map_point_to_octant(placeform[0])
+		placeform[3] = octant
+		mapped_placeforms[octant].append(placeform)
+	return mapped_placeforms
 
 
-func _add_member_to_child(new_placeform: Array):
-	child_nodes[new_placeform[3]].add_members([new_placeform])
+#func _add_member_to_child(new_placeform: Array):
+#	child_nodes[new_placeform[3]].add_members([new_placeform])
+
+
+func _add_members_to_child(child_octant: int, placeforms: Array):
+	child_nodes[child_octant].add_members(placeforms)
 
 
 func _remove_member_from_child(old_placeform: Array):
@@ -510,28 +528,68 @@ func validate_member_spatials():
 			child_spatial.transform = get_member_transform(index)
 	
 	# Spawn all the missing spatials
-	for index in range(MMI.get_child_count(), member_count()):
-		spawn_spatial_for_member_idx(index)
+	spawn_spatial_for_member_idxs(range(MMI.get_child_count(), member_count()))
+#	for index in range(MMI.get_child_count(), member_count()):
+#		spawn_spatial_for_member_idxs([index])
 
 
 # Spawn a spatial for member
-func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
+func spawn_spatial_for_member_idxs(member_idxs:Array, mmi_idxs:Array = []):
 	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
 	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
 	if !LODVariant || !LODVariant.spawned_spatial: return
 	
-	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
-	spawned_spatial.transform = get_member_transform(member_idx)
-	MMI.add_child(spawned_spatial)
-	spawned_spatial.owner = MMI.owner
-	if mmi_idx >= 0:
-		MMI.move_child(spawned_spatial, mmi_idx)
+	var spawned_spatial = null
+	var member_idx = -1
+	var mmi_idx = -1
+	
+	for i in member_idxs.size():
+		member_idx = member_idxs[i]
+		if i < mmi_idxs.size():
+			mmi_idx = mmi_idxs[i]
+		
+		spawned_spatial = LODVariant.spawned_spatial.instantiate()
+		spawned_spatial.transform = get_member_transform(member_idx)
+		MMI.add_child(spawned_spatial)
+		spawned_spatial.owner = MMI.owner
+		if mmi_idx >= 0:
+			MMI.move_child(spawned_spatial, mmi_idx)
+
+
+# Spawn a spatial for member
+#func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
+#	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
+#	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
+#	if !LODVariant || !LODVariant.spawned_spatial: return
+#
+#	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
+#	spawned_spatial.transform = get_member_transform(member_idx)
+#	MMI.add_child(spawned_spatial)
+#	spawned_spatial.owner = MMI.owner
+#	if mmi_idx >= 0:
+#		MMI.move_child(spawned_spatial, mmi_idx)
+
+
+# Remove a spatial for member
+#func remove_spatial_for_member_idxs(member_idxs:Array):
+#	var child_count = MMI.get_child_count()
+#	for member_idx in member_idxs:
+#		if child_count > member_idx:
+#			MMI.remove_child(MMI.get_child(member_idx))
 
 
 # Remove a spatial for member
 func remove_spatial_for_member_idx(member_idx:int):
 	if MMI.get_child_count() > member_idx:
 		MMI.remove_child(MMI.get_child(member_idx))
+
+
+# Set spatial's Transform3D for member
+func set_spatial_for_member_idxs(member_idxs:Array):
+	var child_count = MMI.get_child_count()
+	for member_idx in member_idxs:
+		if child_count > member_idx:
+			MMI.get_child(member_idx).transform = get_member_transform(member_idx)
 
 
 # Set spatial's Transform3D for member
@@ -570,8 +628,9 @@ func clear_all_member_spatials():
 
 
 func spawn_all_member_spatials():
-	for member_idx in member_count():
-		spawn_spatial_for_member_idx(member_idx)
+	spawn_spatial_for_member_idxs(range(0, member_count()))
+#	for member_idx in member_count():
+#		spawn_spatial_for_member_idxs([member_idx])
 
 
 # Recursively MMI_refresh_instance_placements()

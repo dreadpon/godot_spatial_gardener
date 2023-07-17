@@ -1,10 +1,11 @@
-[gd_resource type="Resource" load_steps=11 format=3 uid="uid://clfem1ff2kscl"]
+[gd_resource type="Resource" load_steps=13 format=3 uid="uid://clfem1ff2kscl"]
 
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="1_5st78"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="1_c5irr"]
 [ext_resource type="BoxMesh" uid="uid://dh3m5dnktrfj4" path="res://work_dir/new_box_mesh.tres" id="1_dm1s7"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2_rm3lh"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="2_s8x4f"]
+[ext_resource type="PackedScene" uid="uid://j5rdfcb6g122" path="res://work_dir/col.tscn" id="3_sca0s"]
 
 [sub_resource type="Resource" id="Resource_q2egr"]
 resource_name = "Greenhouse_LODVariant"
@@ -17,9 +18,10 @@ metadata/class = "Greenhouse_LODVariant"
 resource_name = "Greenhouse_Plant"
 script = ExtResource("1_5st78")
 mesh/mesh_LOD_variants = [SubResource("Resource_q2egr")]
+mesh/selected_for_edit_resource = SubResource("Resource_q2egr")
 mesh/mesh_LOD_max_distance = 18.69
 mesh/mesh_LOD_kill_distance = -1.0
-mesh/mesh_LOD_max_capacity = 1000
+mesh/mesh_LOD_max_capacity = 2000
 mesh/mesh_LOD_min_size = 1.0
 octree/octree_reconfigure_button = false
 octree/octree_recenter_button = false
@@ -56,10 +58,19 @@ plant/plant_label = ""
 plant/plant = SubResource("Resource_bavyg")
 metadata/class = "Greenhouse_PlantState"
 
+[sub_resource type="Resource" id="Resource_38kyr"]
+resource_name = "Greenhouse_LODVariant"
+script = ExtResource("2_rm3lh")
+mesh = ExtResource("1_dm1s7")
+spawned_spatial = ExtResource("3_sca0s")
+cast_shadow = 1
+metadata/class = "Greenhouse_LODVariant"
+
 [sub_resource type="Resource" id="Resource_1yosp"]
 resource_name = "Greenhouse_Plant"
 script = ExtResource("1_5st78")
-mesh/mesh_LOD_variants = []
+mesh/mesh_LOD_variants = [SubResource("Resource_38kyr")]
+mesh/selected_for_edit_resource = SubResource("Resource_38kyr")
 mesh/mesh_LOD_max_distance = 10.0
 mesh/mesh_LOD_kill_distance = -1.0
 mesh/mesh_LOD_max_capacity = 75
