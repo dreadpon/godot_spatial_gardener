@@ -14,6 +14,10 @@ config/name="Dreadpon's Spatial Gardener"
 config/features=PackedStringArray("4.1")
 config/icon="res://addons/dreadpon.spatial_gardener/icons/gardener_icon.png"
 
+[dreadpons_spatial_gardener]
+
+input_and_ui/brush_prop_edit_button=8
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/dreadpon.spatial_gardener/plugin.cfg")

@@ -328,6 +328,9 @@ func _perform_prop_action(prop_action:PropAction):
 #		logger.info(connection.target.resource_name if connection.target is Resource else str(connection.target))
 #	print("prop_action_executed ", self, " ", prop_action)
 #	print("prop_action_executed %d" % [Time.get_ticks_msec()])
+	
+	res_edit_update_interaction_features(prop_action.prop)
+	
 	prop_action_executed.emit(prop_action, get(prop_action.prop))
 
 
@@ -586,8 +589,8 @@ func _add_res_edit_source_array(array_prop:String, res_prop:String):
 # React to lifecycle stages for actions executed on res_edit_data members
 func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_stage:int):
 	var prop_action_class = prop_action.get_meta("class")
-	
 	var res_edit = find_res_edit_by_array_prop(prop_action.prop)
+	
 	if res_edit:
 		var array_prop = res_edit.array_prop
 		var array_val = get(array_prop)
@@ -604,6 +607,7 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 							_undo_redo.add_undo_method(self, "_res_edit_select", array_prop, [res_val])
 					else:
 						if lifecycle_stage == PropActionLifecycle.AFTER_DO:
+							print("PA_ArrayRemove if lifecycle_stage == PropActionLifecycle.AFTER_DO:")
 							_res_edit_select(array_prop, [null])
 			"PA_ArraySet":
 				var new_res_val = prop_action.val
@@ -616,6 +620,7 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 							_undo_redo.add_undo_method(self, "_res_edit_select", array_prop, [res_val])
 					else:
 						if lifecycle_stage == PropActionLifecycle.AFTER_DO:
+							print("PA_ArraySet if lifecycle_stage == PropActionLifecycle.AFTER_DO:")
 							_res_edit_select(array_prop, [new_res_val])
 
 
@@ -637,7 +642,7 @@ func _res_edit_select(array_prop:String, new_res_array:Array, create_history:boo
 		prop_action.can_create_history = create_history
 		request_prop_action(prop_action)
 #		print("_res_edit_select %d 3" % [Time.get_ticks_msec()])
-		res_edit_update_interaction_features(prop_action.prop)
+#		res_edit_update_interaction_features(prop_action.prop)
 #		print("_res_edit_select %d end" % [Time.get_ticks_msec()])
 
 

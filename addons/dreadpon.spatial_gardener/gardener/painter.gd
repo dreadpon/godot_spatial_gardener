@@ -226,7 +226,7 @@ func get_property_edit_modifier():
 
 
 func get_property_edit_button():
-	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button", Globals.MouseButton.MOUSE_BUTTON_RIGHT)
+	var key = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button", Globals.MouseButton.MOUSE_BUTTON_XBUTTON1)
 	return Globals.index_to_enum(key, Globals.MouseButton)
 
 

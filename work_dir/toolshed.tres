@@ -7,7 +7,7 @@
 resource_name = "Toolshed_Brush"
 script = ExtResource("1_jaq6y")
 behavior/behavior_brush_type = 0
-shape/shape_volume_size = 66.6
+shape/shape_volume_size = 44.6
 shape/shape_projection_size = 304.0
 behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
