@@ -71,7 +71,11 @@ func setup(__base_control: Control):
 
 
 func destroy():
-	_base_control.remove_child(_convert_dialog)
+	if is_instance_valid(_convert_dialog):
+		_base_control.remove_child(_convert_dialog)
+		_convert_dialog.queue_free()
+	if is_instance_valid(_result_dialog):
+		_result_dialog.queue_free()
 
 
 func _hide_dialog():

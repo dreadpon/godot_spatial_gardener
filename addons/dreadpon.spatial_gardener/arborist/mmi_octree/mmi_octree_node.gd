@@ -9,7 +9,7 @@ extends Resource
 
 # Parent OctreeNodes do not have members of their own and delegate them to their children
 # That is (in part) because no one member can exist in more than one OctreeNode
-# Since member represents a position and has no volume
+# Since member represents a position and treated as if it had no volume
 
 
 const FunLib = preload("../../utility/fun_lib.gd")
@@ -101,6 +101,11 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	print_address("", "initialized")
 
 
+#func _notification(what):
+#	if what == NOTIFICATION_PREDELETE:
+#		print("mmi_octree_node NOTIFICATION_PREDELETE")
+
+
 # Duplictes the octree structure
 func duplicate_tree():
 	var copy = self.duplicate()
@@ -132,6 +137,7 @@ func safe_init_root():
 func prepare_for_removal():
 	print_address("", "prepare for removal")
 	
+	parent = null
 	for child in child_nodes:
 		child.prepare_for_removal()
 	child_nodes = []
@@ -172,6 +178,8 @@ func set_is_leaf(val):
 		if is_instance_valid(MMI) && is_instance_valid(MMI_container):
 			MMI_container.remove_child(MMI)
 			MMI.owner = null
+		if is_instance_valid(MMI):
+			MMI.queue_free()
 		if MMI:
 			MMI = null
 		MMI_name = ""
@@ -392,10 +400,10 @@ func add_members(new_placeforms:Array):
 #		for placeform in new_placeforms:
 #			_add_member_to_child(placeform)
 	else:
-		var idxs = range(member_count(), member_count() + new_placeforms.size() - 1)
+		var idxs = range(member_count(), member_count() + new_placeforms.size())
 		for placeform in new_placeforms:
 			append_to_member_arrays(placeform)
-#			spawn_spatial_for_member_idxs(member_count() - 1)
+#			spawn_spatial_for_member_idx(member_count() - 1)
 			print_address("", "adding placeform " + Placeform.to_str(placeform))
 			members_changed = true
 		spawn_spatial_for_member_idxs(idxs)
@@ -529,6 +537,7 @@ func validate_member_spatials():
 	
 	# Spawn all the missing spatials
 	spawn_spatial_for_member_idxs(range(MMI.get_child_count(), member_count()))
+	spawned_spatial.queue_free()
 #	for index in range(MMI.get_child_count(), member_count()):
 #		spawn_spatial_for_member_idxs([index])
 
@@ -557,17 +566,17 @@ func spawn_spatial_for_member_idxs(member_idxs:Array, mmi_idxs:Array = []):
 
 
 # Spawn a spatial for member
-#func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
-#	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
-#	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
-#	if !LODVariant || !LODVariant.spawned_spatial: return
-#
-#	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
-#	spawned_spatial.transform = get_member_transform(member_idx)
-#	MMI.add_child(spawned_spatial)
-#	spawned_spatial.owner = MMI.owner
-#	if mmi_idx >= 0:
-#		MMI.move_child(spawned_spatial, mmi_idx)
+func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
+	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
+	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
+	if !LODVariant || !LODVariant.spawned_spatial: return
+
+	var spawned_spatial = LODVariant.spawned_spatial.instantiate()
+	spawned_spatial.transform = get_member_transform(member_idx)
+	MMI.add_child(spawned_spatial)
+	spawned_spatial.owner = MMI.owner
+	if mmi_idx >= 0:
+		MMI.move_child(spawned_spatial, mmi_idx)
 
 
 # Remove a spatial for member

@@ -54,9 +54,9 @@ func prepare_input_field(__init_val, __base_control:Control, __resource_previewe
 func _cleanup():
 	super()
 	if is_instance_valid(scroll_intermediary):
-		scroll_intermediary.free()
+		scroll_intermediary.queue_free()
 	if is_instance_valid(flex_grid):
-		flex_grid.free()
+		flex_grid.queue_free()
 
 
 

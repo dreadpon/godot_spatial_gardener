@@ -34,11 +34,11 @@ const gardener_icon:Texture2D = preload("icons/gardener_icon.svg")
 
 
 var _side_panel:UI_SidePanel = null
-var _base_control:Control = Control.new()
+var _base_control:Control = null
 var _resource_previewer = null
 var control_theme:Theme = null
 
-var toolbar:HBoxContainer = HBoxContainer.new()
+var toolbar:HBoxContainer = null
 var debug_view_menu:MenuButton
 
 var active_gardener = null
@@ -80,10 +80,6 @@ func _ready():
 	get_tree().node_added.connect(on_tree_node_added)
 	get_tree().node_removed.connect(on_tree_node_removed)
 	
-	make_debug_view_menu()
-	
-	toolbar.add_child(VSeparator.new())
-	toolbar.add_child(debug_view_menu)
 
 
 func _enter_tree():
@@ -104,6 +100,12 @@ func _enter_tree():
 	scene_converter.setup(_base_control)
 	_side_panel = UI_SidePanel_SCN.instantiate()
 	_side_panel.theme = control_theme
+	
+	make_debug_view_menu()
+	
+	toolbar = HBoxContainer.new()
+	toolbar.add_child(VSeparator.new())
+	toolbar.add_child(debug_view_menu)
 	toolbar.visible = false
 	
 	add_custom_types()
@@ -115,13 +117,16 @@ func _enter_tree():
 func _exit_tree():
 	if !Engine.is_editor_hint(): return
 		
-	if scene_converter:
-		scene_converter.destroy()
+	scene_converter.destroy()
+	scene_converter.queue_free()
 	
 	set_gardener_edit_state(null)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	remove_custom_types()
+
+	_side_panel.queue_free()
+	toolbar.queue_free()
 
 
 # Previously here was '_apply_changes', but it fired even when scene was closed without saving
@@ -462,7 +467,7 @@ func debug_get_dump_editor_tree_key():
 func debug_toggle_console():
 	var current_scene := get_tree().get_current_scene()
 	if current_scene.has_node("Console") && is_instance_of(current_scene.get_node("Console"), Console):
-		current_scene.remove_child(current_scene.get_node("Console"))
+		current_scene.get_node("Console").queue_free()
 	else:
 		var console = Console_SCN.instantiate()
 		current_scene.add_child(console)

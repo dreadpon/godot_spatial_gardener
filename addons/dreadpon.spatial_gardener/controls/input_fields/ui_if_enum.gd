@@ -42,7 +42,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _cleanup():
 	super()
 	if is_instance_valid(enum_selector):
-		enum_selector.free()
+		enum_selector.queue_free()
 
 
 

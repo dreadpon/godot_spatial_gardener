@@ -76,15 +76,18 @@ func _enter_tree():
 func _exit_tree():
 	if _base_control && _base_control.get_children().has(apply_dialog):
 		_base_control.remove_child(apply_dialog)
-		apply_dialog.free()
+		apply_dialog.queue_free()
 
 
 func _cleanup():
 	super()
 	if is_instance_valid(button):
-		button.free()
+		button.queue_free()
 	if is_instance_valid(apply_dialog):
-		apply_dialog.free()
+		apply_dialog.queue_free()
+	for bound_input_field in bound_input_fields:
+		if is_instance_valid(bound_input_field):
+			bound_input_field.queue_free()
 
 
 func reset_dialog():

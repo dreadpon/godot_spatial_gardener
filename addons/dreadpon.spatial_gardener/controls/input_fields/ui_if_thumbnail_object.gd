@@ -35,7 +35,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _cleanup():
 	super()
 	if is_instance_valid(_thumb):
-		_thumb.free()
+		_thumb.queue_free()
 
 
 

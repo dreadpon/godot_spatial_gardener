@@ -239,8 +239,10 @@ func init_arborist():
 		logger.info("Found existing Arborist")
 	else:
 		if has_node("Arborist"):
-			get_node("Arborist").owner = null
-			remove_child(get_node("Arborist"))
+			var old_arborist = get_node("Arborist")
+			old_arborist.owner = null
+			remove_child(old_arborist)
+			old_arborist.queue_free()
 			logger.info("Removed invalid Arborist")
 		arborist = Arborist.new()
 		arborist.name = "Arborist"

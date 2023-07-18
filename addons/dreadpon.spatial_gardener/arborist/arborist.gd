@@ -96,6 +96,7 @@ func _ready():
 	MMI_container = get_node_or_null("MMI_container")
 	if MMI_container && !is_instance_of(MMI_container, Node3D):
 		remove_child(MMI_container)
+		MMI_container.queue_free()
 		MMI_container = null
 	if !MMI_container:
 		FunLib.free_children(self)

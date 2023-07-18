@@ -39,7 +39,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _cleanup():
 	super()
 	if is_instance_valid(displayed_label):
-		displayed_label.free()
+		displayed_label.queue_free()
 
 
 

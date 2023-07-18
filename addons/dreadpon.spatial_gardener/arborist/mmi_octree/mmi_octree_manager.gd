@@ -48,6 +48,13 @@ func _init():
 	set_placeforms_queue = []
 
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+#		print("mmi_octree_manager NOTIFICATION_PREDELETE")
+		if is_instance_valid(root_octree_node):
+			root_octree_node.prepare_for_removal()
+
+
 # Duplictes the octree structure
 func duplicate_tree():
 	var copy = duplicate(false)

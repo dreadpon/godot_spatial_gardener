@@ -40,7 +40,7 @@ func execute():
 	
 	var results = print_and_get_result(-1, {"morph discrepancies": morphs_gone_wrong, "UndoRedo discrepancies": undo_redo_gone_wrong})
 	finish_execution(results)
-	if Engine.is_editor_hint():
+	if !Engine.is_editor_hint():
 		UndoRedoInterface.clear_history(undo_redo)
 
 

@@ -82,13 +82,13 @@ func _exit_tree():
 	if _base_control:
 		if _base_control.get_children().has(file_dialog):
 			_base_control.remove_child(file_dialog)
-			file_dialog.free()
+			file_dialog.queue_free()
 
 
 func _cleanup():
 	super()
 	if is_instance_valid(file_dialog):
-		file_dialog.free()
+		file_dialog.queue_free()
 
 
 # Add filters for all accepted classes

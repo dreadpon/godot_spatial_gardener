@@ -61,9 +61,9 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _cleanup():
 	super()
 	if is_instance_valid(real_slider):
-		real_slider.free()
+		real_slider.queue_free()
 	if is_instance_valid(value_input):
-		value_input.free()
+		value_input.queue_free()
 
 
 

@@ -49,6 +49,9 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
+	if is_instance_valid(ui_category_brushes_nd):
+		ui_category_brushes_nd.queue_free()
+	
 	ui_category_brushes_nd = ui_category_brushes_SCN.instantiate()
 	tab_container_brushes_nd = ui_category_brushes_nd.find_child('TabContainer_Brushes')
 	panel_container_category_nd = ui_category_brushes_nd.find_child('Label_Category')

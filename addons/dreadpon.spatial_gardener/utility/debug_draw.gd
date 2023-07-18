@@ -40,6 +40,11 @@ func _process(delta):
 	cached_geometry = []
 
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		clear_cached_geometry()
+
+
 # Manual clear for active geometry
 func clear_cached_geometry():
 	var removed_active_geometry := []

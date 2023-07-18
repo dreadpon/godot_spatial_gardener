@@ -62,9 +62,9 @@ func _ready():
 func _cleanup():
 	super()
 	if is_instance_valid(margin_container):
-		margin_container.free()
+		margin_container.queue_free()
 	if is_instance_valid(input_field_container):
-		input_field_container.free()
+		input_field_container.queue_free()
 
 
 func rebuild_object_input_fields(object:Object):

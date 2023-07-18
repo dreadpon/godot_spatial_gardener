@@ -204,8 +204,11 @@ func ensure_MMIs(amount:int):
 			MMI.multimesh.mesh = DebugDraw.generate_cube(Vector3.ONE, Color.WHITE)
 			octree_MMIs.append(MMI)
 	elif octree_MMIs.size() > amount:
+		var MMI = null
 		while octree_MMIs.size() > amount:
-			remove_child(octree_MMIs.pop_back())
+			MMI = octree_MMIs.pop_back()
+			remove_child(MMI)
+			MMI.queue_free()
 
 
 # Recursively draw an octree node

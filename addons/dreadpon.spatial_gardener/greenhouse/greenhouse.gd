@@ -65,7 +65,7 @@ func _init():
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
-			_file_dialog.free()
+			_file_dialog.queue_free()
 
 
 # The UI is created here because we need to manage it afterwards
@@ -73,6 +73,13 @@ func _notification(what):
 func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
+	
+	if is_instance_valid(ui_category_greenhouse):
+		ui_category_greenhouse.queue_free()
+	if grid_container_plant_thumbnails_nd:
+		grid_container_plant_thumbnails_nd.queue_free()
+	if vbox_container_properties_nd:
+		vbox_container_properties_nd.queue_free()
 	
 	ui_category_greenhouse = ui_category_greenhouse_SCN.instantiate()
 	scroll_container_plant_thumbnails_nd = ui_category_greenhouse.find_child('ScrollContainer_PlantThumbnails')
@@ -84,8 +91,6 @@ func create_ui(__base_control:Control, __resource_previewer):
 	scroll_container_properties_nd.theme_type_variation = "InspectorPanelContainer"
 	ui_category_greenhouse.theme_type_variation = "InspectorPanelContainer"
 	
-	if grid_container_plant_thumbnails_nd:
-		grid_container_plant_thumbnails_nd.free()
 	grid_container_plant_thumbnails_nd = create_input_field(_base_control, _resource_previewer, "plant_types/greenhouse_plant_states")
 	grid_container_plant_thumbnails_nd.label.visible = false
 	grid_container_plant_thumbnails_nd.name = "GridContainer_PlantThumbnails"
@@ -94,8 +99,6 @@ func create_ui(__base_control:Control, __resource_previewer):
 	grid_container_plant_thumbnails_nd.requested_check.connect(on_plant_state_check)
 	grid_container_plant_thumbnails_nd.requested_label_edit.connect(on_plant_label_edit)
 	
-	if vbox_container_properties_nd:
-		vbox_container_properties_nd.free()
 	vbox_container_properties_nd = create_input_field(_base_control, _resource_previewer, "plant_types/selected_for_edit_resource")
 	
 	scroll_container_plant_thumbnails_nd.add_child(grid_container_plant_thumbnails_nd)

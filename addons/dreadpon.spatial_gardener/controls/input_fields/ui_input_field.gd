@@ -108,11 +108,11 @@ func _notification(what):
 
 func _cleanup():
 	if is_instance_valid(container_box):
-		container_box.free()
+		container_box.queue_free()
 	if is_instance_valid(tab_spacer):
-		tab_spacer.free()
+		tab_spacer.queue_free()
 	if is_instance_valid(label):
-		label.free()
+		label.queue_free()
 
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):

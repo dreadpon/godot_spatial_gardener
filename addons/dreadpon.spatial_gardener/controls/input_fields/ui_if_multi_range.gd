@@ -133,10 +133,10 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _cleanup():
 	super()
 	if is_instance_valid(field_container):
-		field_container.free()
+		field_container.queue_free()
 	for node in field_editable_controls:
 		if is_instance_valid(node):
-			node.free()
+			node.queue_free()
 
 
 

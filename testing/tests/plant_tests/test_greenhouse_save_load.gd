@@ -36,7 +36,7 @@ func execute():
 		
 		greenhouse_save_load_node.save_given(greenhouse.duplicate_ifr(false, true), test_save_load_path, "greenhouse.tres")
 		remove_child(greenhouse_save_load_node)
-		greenhouse_save_load_node.free()
+		greenhouse_save_load_node.queue_free()
 	
 	var results = print_and_get_result(-1, {"load discrepancies": loads_gone_wrong})
 	finish_execution(results)
