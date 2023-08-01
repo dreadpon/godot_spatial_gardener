@@ -32,10 +32,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	container_box.add_child(bool_check)
 
 
-#func _ready():
-#	super()
-
-
 func _cleanup():
 	super()
 	if is_instance_valid(bool_check):

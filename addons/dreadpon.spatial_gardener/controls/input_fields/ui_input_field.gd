@@ -51,8 +51,6 @@ var tab_index:int = 0
 	# -1 - don't force any visibility state
 	# 0/1 force invisible/visible state
 var visibility_forced:int = -1
-#var visibility_tracked_properties:Array = []
-#var visibility_is_tracked:bool = false : set = set_visibility_is_tracked
 
 var _undo_redo = null
 var disable_history:bool = false
@@ -84,10 +82,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	label.text = __labelText
 	label.size_flags_horizontal = SIZE_EXPAND_FILL
 	
-#	value_container.name = "value_container"
-#	value_container.size_flags_horizontal = SIZE_EXPAND_FILL
-#	value_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	
 	if settings.has("tab"):
 		tab_index = settings.tab
 	
@@ -103,9 +97,11 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
+			# Make sure we don't have memory leaks of keeping removed nodes in memory
 			_cleanup()
 
 
+# Clean up to avoid memory leaks of keeping removed nodes in memory
 func _cleanup():
 	if is_instance_valid(container_box):
 		container_box.queue_free()
@@ -120,13 +116,10 @@ func prepare_input_field(__init_val, __base_control:Control, __resource_previewe
 
 
 func _ready():
-#	print("_ready ", prop_name, " ", self.get_meta("class"))
 	_set_tab(tab_index)
 
 
 func _enter_tree():
-#	_init_ui()
-#	print("_init_ui ", prop_name, " ", self.get_meta("class"))
 	_update_ui_to_val(init_val)
 	init_val = null
 
@@ -175,10 +168,8 @@ func set_stylebox(stylebox:StyleBox):
 # Property changed outside of this InputField
 # Update the UI
 func on_prop_action_executed(prop_action:PropAction, final_val):
-#	print("on_prop_action_executed %d" % [Time.get_ticks_msec()])
 	if prop_action.prop == prop_name:
 		_update_ui_to_prop_action(prop_action, final_val)
-#	on_tracked_property_changed(prop_action.prop, final_val)
 
 
 func on_prop_list_changed(prop_dict: Dictionary):
@@ -194,17 +185,9 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 	pass
 
 
-# Set UI values for the first time
-#func _init_ui():
-##	print("_init_ui ", prop_name, " ", self.get_meta("class"))
-#	_update_ui_to_val(init_val)
-#	init_val = null
-
-
 # Specific implementation of updating UI
 # To be overridden
 func _update_ui_to_val(val):
-#	print("_update_ui_to_val ", prop_name, " ", self.get_meta("class"), " ", val)
 	val_cache = val
 
 
@@ -245,68 +228,6 @@ func on_node_received_input(event, node):
 		if is_instance_of(event, InputEventKey) && !event.pressed:
 			if event.keycode == KEY_ENTER || event.keycode == KEY_ESCAPE:
 				node.release_focus()
-
-
-
-
-#-------------------------------------------------------------------------------
-# Tracking conditional visibility properties
-#-------------------------------------------------------------------------------
-
-# visibility_tracked_properties[] is an array of dictionaries that track properties belonging to certain objects
-# If all of them have the target value - show this Control. Otherwise - hide it
-
-# Add a new property to track
-#func add_tracked_property(prop:String, target_val, initial_val = null):
-#	visibility_tracked_properties.append({
-#		"prop": prop,
-#		"target_val": target_val,
-#		"last_val": initial_val,
-#	})
-#
-#
-## Reset all properties from being tracked
-#func reset_visibility_tracked_properties(val):
-#	visibility_tracked_properties = []
-#
-#
-## A property has changed. Check if it is being tracked and update its value
-#func on_tracked_property_changed(prop:String, val):
-#	var prop_dict = null
-#	for prop_dict_search in visibility_tracked_properties:
-#		if prop_dict_search.prop == prop:
-#			prop_dict = prop_dict_search
-#
-#	if prop_dict:
-#		prop_dict.last_val = val
-#
-#	_try_visibility_check()
-#
-#
-## Enable/disable conditional visibility tracking
-#func set_visibility_is_tracked(val):
-#	visibility_is_tracked = val
-#	_try_visibility_check()
-#
-#
-## Test if all tracked properties are of the needed value
-#func _try_visibility_check():
-#	if !visibility_is_tracked: return
-#
-#	if visibility_forced == 0:
-#		visible = false
-#		return
-#	elif visibility_forced > 0:
-#		visible = true
-#		return
-#
-#	var result := true
-#	for prop_dict in visibility_tracked_properties:
-#		if prop_dict.last_val != prop_dict.target_val:
-#			result = false
-#			break
-#
-#	visible = result
 
 
 

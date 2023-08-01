@@ -1,3 +1,8 @@
+#-------------------------------------------------------------------------------
+# An interface for common functionality between 
+# Editor-specific and runtime UndoRedo systems
+#-------------------------------------------------------------------------------
+
 extends Object
 
 

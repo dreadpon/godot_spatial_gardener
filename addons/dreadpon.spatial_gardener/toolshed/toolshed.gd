@@ -136,7 +136,6 @@ func on_changed_brush():
 
 
 func on_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
-#	print("on_prop_action_executed_on_brush toolshed")
 	prop_action_executed_on_brush.emit(prop_action, final_val, brush)
 
 

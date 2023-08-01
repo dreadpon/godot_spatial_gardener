@@ -42,7 +42,6 @@ static func get_morph_actions(initial:Greenhouse, target:Greenhouse, enable_prop
 
 
 static func get_morph_actions_recursive(initial, target, address:Array, prop_name, nested_prop_name_classes:Dictionary, morph_actions: Array, enable_prop_edit_actions:bool = true):
-#	print(address)
 	if is_instance_of(target, Object):
 		if target.has_meta("class") && nested_prop_name_classes.values().has(target.get_meta("class")):
 			for nested_prop in target._get_prop_dictionary():
@@ -118,8 +117,6 @@ static func get_array_morph_actions(t_array:Array, i_array:Array, adrs:Array, pr
 
 static func get_prop_morph_actions(t_val, i_val, adrs:Array, prop:String, edit_beforehand:bool = false):
 	var morph_actions := []
-#	var t_val = t_res.get(prop)
-#	var i_val = i_res.get(prop)
 	
 	if !are_props_equal(t_val, i_val):
 		if t_val is Array || t_val is Dictionary:
@@ -162,21 +159,15 @@ static func are_props_equal(t_val, i_val):
 
 static func perform_morph_actions(initial:Greenhouse, morph_actions:Array):
 	for morph_action in morph_actions:
-#		print("before res = initial ", initial.get_reference_count())
 		var res = initial
-#		print("after res = initial ", initial.get_reference_count())
-#		print("before address_entry ", initial.get_reference_count())
 		for address_entry in morph_action.prop_address:
 			if res is Array || res is Dictionary:
 				res = res[address_entry]
 			else:
 				res = res.get(address_entry)
-#		print("after address_entry ", initial.get_reference_count())
 		
 		var morph_action_copy = morph_action.prop_action.duplicate(true)
-#		print("before request_prop_action ", initial.get_reference_count(), " ", morph_action_copy)
 		res.request_prop_action(morph_action_copy)
-#		print("after request_prop_action ", initial.get_reference_count(), " ", morph_action_copy)
 
 
 

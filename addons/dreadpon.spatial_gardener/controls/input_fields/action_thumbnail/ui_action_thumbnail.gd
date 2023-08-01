@@ -149,28 +149,6 @@ func update_size():
 	var thumb_rect = Vector2(thumb_size, thumb_size)
 	custom_minimum_size = thumb_rect
 	size = thumb_rect
-	
-#	var scaling_factor = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0)
-#	print(default_button_sizes)
-#	if is_instance_valid(menu_button_nd):
-#		menu_button_nd.custom_minimum_size = default_button_sizes[menu_button_nd] * scaling_factor
-#	if is_instance_valid(check_box_nd):
-#		check_box_nd.custom_minimum_size = default_button_sizes[check_box_nd] * scaling_factor
-	
-#	var font_scale = pow(float(button_size) / def_button_size.x, 0.25)
-#
-#	if is_instance_valid(counter_label_nd):
-#		scale_font(counter_label_nd, font_scale)
-#
-#	if is_instance_valid(alt_text_margin_nd):
-#		scale_font(alt_text_label_nd, font_scale)
-#
-#	if is_instance_valid(label_line_edit_nd):
-#		scale_font(label_line_edit_nd, font_scale * 0.9)
-
-#func scale_font(node: Control, font_scale: float):
-#	var font_size = node.get_theme_font_size("font_size")
-#	node.add_theme_font_size_override("font_size", font_size * font_scale)
 
 
 func set_counter_val(val:int):
@@ -247,10 +225,8 @@ func on_set_drag(path):
 		requested_set_drag.emit(path)
 
 func on_press():
-#	print("on_press %d start" % [Time.get_ticks_msec()])
 	if active_interaction_flags.has(InteractionFlags.PRESS):
 		requested_press.emit()
-#	print("on_press %d end" % [Time.get_ticks_msec()])
 
 func on_check():
 	if active_interaction_flags.has(InteractionFlags.CHECK):

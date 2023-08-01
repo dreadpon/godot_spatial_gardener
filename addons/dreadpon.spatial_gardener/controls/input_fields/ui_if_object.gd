@@ -80,7 +80,6 @@ func rebuild_object_input_fields(object:Object):
 		var nest_subsection_name = ""
 		
 		var input_fields = object.create_input_fields(_base_control, _resource_previewer)
-#		print("sections %d start" % [Time.get_ticks_msec()])
 		for input_field in input_fields.values():
 			var nesting := (input_field.prop_name as String).split('/')
 
@@ -122,14 +121,11 @@ func rebuild_object_input_fields(object:Object):
 
 
 func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-#	print("_update_ui_to_prop_action %d" % [Time.get_ticks_msec()])
 	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
-#		print("_update_ui_to_prop_action -> _update_ui_to_val %s" % [str(prop_action)])
 		_update_ui_to_val(final_val)
 
 
 func _update_ui_to_val(val):
-#	print("_update_ui_to_val %d start" % [Time.get_ticks_msec()])
 	if is_instance_valid(val):
 		rebuild_object_input_fields(val)
 		visibility_forced = -1
@@ -138,5 +134,4 @@ func _update_ui_to_val(val):
 		rebuild_object_input_fields(null)
 		visibility_forced = 0
 		visible = false
-#	print("_update_ui_to_val %d end" % [Time.get_ticks_msec()])
 	super._update_ui_to_val(val)

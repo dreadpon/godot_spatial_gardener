@@ -17,6 +17,8 @@ const Logger = preload("../../utility/logger.gd")
 const Placeform = preload("../placeform.gd")
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 
+# A dummy mesh, since in Godot 4.0 multimesh breaks if it has transforms set but no mesh assigned
+# This is used when there's no "actual" mesh
 var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
 
 # An array for looking up placements conviniently
@@ -101,11 +103,6 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	print_address("", "initialized")
 
 
-#func _notification(what):
-#	if what == NOTIFICATION_PREDELETE:
-#		print("mmi_octree_node NOTIFICATION_PREDELETE")
-
-
 # Duplictes the octree structure
 func duplicate_tree():
 	var copy = self.duplicate()
@@ -133,10 +130,11 @@ func safe_init_root():
 
 
 # Cleanup this this node before deletion
-# TODO find out if I can clear the member array here as well
+# TODO: find out if I can clear the member array here as well
 func prepare_for_removal():
 	print_address("", "prepare for removal")
 	
+	# Avoid circular reference so that RefCount can properly free objects
 	parent = null
 	for child in child_nodes:
 		child.prepare_for_removal()
@@ -393,19 +391,15 @@ func add_members(new_placeforms:Array):
 			var self_mapped_placeforms = assign_octants_to_placeforms(member_placeforms)
 			for octant in self_mapped_placeforms:
 				_add_members_to_child(octant, self_mapped_placeforms[octant])
-#			iter_placeforms(self, '_add_member_to_child')
 			reset_member_arrays()
 	
 	if !child_nodes.is_empty():
 		for octant in mapped_placeforms:
 			_add_members_to_child(octant, mapped_placeforms[octant])
-#		for placeform in new_placeforms:
-#			_add_member_to_child(placeform)
 	else:
 		var idxs = range(member_count(), member_count() + new_placeforms.size())
 		for placeform in new_placeforms:
 			append_to_member_arrays(placeform)
-#			spawn_spatial_for_member_idx(member_count() - 1)
 			print_address("", "adding placeform " + Placeform.to_str(placeform))
 			members_changed = true
 		spawn_spatial_for_member_idxs(idxs)
@@ -416,6 +410,9 @@ func add_members(new_placeforms:Array):
 
 # Remove members from self, or children
 # This function is destructive to the passed array. Duplicate it if the original needs to stay intact
+# TODO: add proper bulk edit support same way as in add_members()
+#		main obstacle is how growing/shrinking works and it's apparent incompatability 
+#		with obvious/straightforward implementation of bulk edits
 func remove_members(old_placeforms:Array):
 	if old_placeforms.is_empty(): return
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
@@ -470,6 +467,7 @@ func reject_outside_placeforms(new_placeforms:Array):
 # Map members to octants within this node (i.e. place inside a 2x2x2 cube)
 # It's mostly used to quick access the child node holding this member
 func assign_octants_to_placeforms(new_placeforms: Array):
+	# Map to and return a Dictionary, to support passing members in bulk to octants/child octree nodes
 	var mapped_placeforms = {}
 	for i in 8:
 		mapped_placeforms[i] = []
@@ -481,14 +479,12 @@ func assign_octants_to_placeforms(new_placeforms: Array):
 	return mapped_placeforms
 
 
-#func _add_member_to_child(new_placeform: Array):
-#	child_nodes[new_placeform[3]].add_members([new_placeform])
-
-
 func _add_members_to_child(child_octant: int, placeforms: Array):
 	child_nodes[child_octant].add_members(placeforms)
 
 
+# TODO: bulk removal not supported yet
+#		implement proper bulk removal of members
 func _remove_member_from_child(old_placeform: Array):
 	child_nodes[old_placeform[3]].remove_members([old_placeform])
 
@@ -513,6 +509,7 @@ func validate_MMI():
 	validate_MMI_mesh()
 
 
+# A workaround, since in Godot 4.0 multimesh breaks if it has transforms set but no mesh assigned
 func validate_MMI_mesh():
 	if MMI && !is_instance_valid(MMI.multimesh.mesh):
 		MMI.multimesh.mesh = DUMMY_MMI_MESH
@@ -540,11 +537,10 @@ func validate_member_spatials():
 	# Spawn all the missing spatials
 	spawn_spatial_for_member_idxs(range(MMI.get_child_count(), member_count()))
 	spawned_spatial.queue_free()
-#	for index in range(MMI.get_child_count(), member_count()):
-#		spawn_spatial_for_member_idxs([index])
 
 
-# Spawn a spatial for member
+# Spawn spatials for multiple members (denoted by their indexes)
+# mmi_idxs allows to map a member index to a specific child index under the MMI
 func spawn_spatial_for_member_idxs(member_idxs:Array, mmi_idxs:Array = []):
 	if shared_LOD_variants.size() <= active_LOD_index || active_LOD_index == -1: return
 	var LODVariant:Greenhouse_LODVariant = shared_LOD_variants[active_LOD_index]
@@ -581,21 +577,13 @@ func spawn_spatial_for_member_idx(member_idx:int, mmi_idx:int = -1):
 		MMI.move_child(spawned_spatial, mmi_idx)
 
 
-# Remove a spatial for member
-#func remove_spatial_for_member_idxs(member_idxs:Array):
-#	var child_count = MMI.get_child_count()
-#	for member_idx in member_idxs:
-#		if child_count > member_idx:
-#			MMI.remove_child(MMI.get_child(member_idx))
-
-
-# Remove a spatial for member
+# Remove a spatial for member idx
 func remove_spatial_for_member_idx(member_idx:int):
 	if MMI.get_child_count() > member_idx:
 		MMI.remove_child(MMI.get_child(member_idx))
 
 
-# Set spatial's Transform3D for member
+# Set spatials' Transform3D for multiple members (denoted by their indexes)
 func set_spatial_for_member_idxs(member_idxs:Array):
 	var child_count = MMI.get_child_count()
 	for member_idx in member_idxs:
@@ -640,8 +628,6 @@ func clear_all_member_spatials():
 
 func spawn_all_member_spatials():
 	spawn_spatial_for_member_idxs(range(0, member_count()))
-#	for member_idx in member_count():
-#		spawn_spatial_for_member_idxs([member_idx])
 
 
 # Recursively MMI_refresh_instance_placements()
@@ -666,7 +652,7 @@ func MMI_refresh_instance_placements():
 # Refresh member Transform3D when reapplying a new Transform3D
 # This avoids completely refreshing all instances like in MMI_refresh_instance_placements()
 func MMI_refresh_member(member_idx: int, transform: Transform3D):
-	assert(MMI.multimesh.instance_count > member_idx) #,"Trying to refresh multimesh instance [%d] that isn't allocated!" % [member_idx])
+	assert(MMI.multimesh.instance_count > member_idx) # Trying to refresh multimesh instance that isn't allocated
 
 	MMI.multimesh.set_instance_transform(member_idx, transform)
 

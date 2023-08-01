@@ -51,6 +51,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	element_display_size = settings.element_display_size
 
 	if Engine.is_editor_hint():
+		# Editor raises error everytime you run the game with F5 because of "abstract native class"
 		# https://github.com/godotengine/godot/issues/73525
 		file_dialog = (EditorFileDialog as Variant).new()
 	else:
@@ -61,10 +62,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	file_dialog.current_path = "res://"
 	file_dialog.close_requested.connect(file_dialog_hidden)
 	
-#	value_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-#	value_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-#	value_container.alignment = BoxContainer.ALIGNMENT_BEGIN
-
 
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
 	super(__init_val, __base_control, __resource_previewer)
@@ -253,7 +250,6 @@ func set_res_for_thumbnail(res:Resource, thumb):
 # Queue a resource for preview generation in a resource previewer
 func _queue_thumbnail(res:Resource, thumb: Node):
 	if !is_node_ready() || !is_instance_valid(thumb): return
-#	print("_queue_thumbnail")
 	var resource_path = _get_resource_path_for_resource(res)
 	if resource_path == "":
 		thumb.set_thumbnail(null)

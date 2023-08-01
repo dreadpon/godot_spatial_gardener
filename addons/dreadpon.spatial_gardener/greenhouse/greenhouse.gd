@@ -19,7 +19,6 @@ var selected_for_edit_resource:Resource = null
 var ui_category_greenhouse: Control = null
 var scroll_container_plant_thumbnails_nd:Control = null
 var scroll_container_properties_nd: Control = null
-#var panel_container_properties_nd: Control = null
 var panel_container_category_nd:Control = null
 
 var grid_container_plant_thumbnails_nd:UI_IF_ThumbnailArray = null
@@ -55,6 +54,7 @@ func _init():
 	_add_res_edit_source_array("plant_types/greenhouse_plant_states", "plant_types/selected_for_edit_resource")
 
 	if Engine.is_editor_hint():
+		# Editor raises error everytime you run the game with F5 because of "abstract native class"
 		# https://github.com/godotengine/godot/issues/73525
 		_file_dialog = (EditorFileDialog as Variant).new()
 	else:
@@ -66,6 +66,7 @@ func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
 			if is_instance_valid(_file_dialog):
+				# Avoid memory leaks
 				_file_dialog.queue_free()
 
 
@@ -75,6 +76,7 @@ func create_ui(__base_control:Control, __resource_previewer):
 	_base_control = __base_control
 	_resource_previewer = __resource_previewer
 	
+	# Avoid memory leaks
 	if is_instance_valid(ui_category_greenhouse):
 		ui_category_greenhouse.queue_free()
 	if is_instance_valid(grid_container_plant_thumbnails_nd):
@@ -259,13 +261,8 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 		"plant_types/greenhouse_plant_states":
 			match prop_action_class:
 				"PA_ArrayInsert":
-					# This is deferred because the action thumbnail is not ready yet
-#					plant_count_updated(prop_action.index, 0)
 					select_plant_state_for_brush(prop_action.index, final_val[prop_action.index].plant_brush_active)
 					set_plant_state_label(prop_action.index, final_val[prop_action.index].plant_label)
-#					call_deferred("plant_count_updated", prop_action.index, 0)
-#					call_deferred("select_plant_state_for_brush", prop_action.index, final_val[prop_action.index].plant_brush_active)
-#					call_deferred("set_plant_state_label", prop_action.index, final_val[prop_action.index].plant_label)
 	
 
 

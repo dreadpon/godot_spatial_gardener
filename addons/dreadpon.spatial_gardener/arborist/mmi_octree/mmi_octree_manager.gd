@@ -50,8 +50,8 @@ func _init():
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
-#		print("mmi_octree_manager NOTIFICATION_PREDELETE")
 		if is_instance_valid(root_octree_node):
+			# Avoid memory leaks when OctreeNode leaks MMI nodes and spawned spatials
 			root_octree_node.prepare_for_removal()
 
 
@@ -95,9 +95,6 @@ func connect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
 	FunLib.ensure_signal(octree_node.placeforms_rejected, grow_to_members)
 	FunLib.ensure_signal(octree_node.collapse_self_possible, collapse_root)
-	# Name of the method below is weird, as it was literally never present in the plugin
-	# I'm going to assume I meant request_debug_redraw
-#	FunLib.ensure_signal(octree_node.req_debug_redraw, schedule_debug_redraw)
 	FunLib.ensure_signal(octree_node.req_debug_redraw, request_debug_redraw)
 
 
@@ -105,9 +102,6 @@ func disconnect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
 	octree_node.placeforms_rejected.disconnect(grow_to_members)
 	octree_node.collapse_self_possible.disconnect(collapse_root)
-	# Name of the method below is weird, as it was literally never present in the plugin
-	# I'm going to assume I meant request_debug_redraw
-#	octree_node.req_debug_redraw.disconnect(schedule_debug_redraw)
 	octree_node.req_debug_redraw.disconnect(request_debug_redraw)
 
 
@@ -140,7 +134,6 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
 		process_queues()
-#		add_placeforms(all_placeforms)
 	request_debug_redraw()
 	
 	debug_manual_root_logger("rebuilt root")
@@ -173,7 +166,6 @@ func recenter_octree():
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
 		process_queues()
-#		add_placeforms(all_placeforms)
 	request_debug_redraw()
 	
 	debug_manual_root_logger("recentered root")
@@ -181,8 +173,8 @@ func recenter_octree():
 
 # Grow the tree to fit any members outside it's current bounds (by creating a whole new layer on top)
 func grow_to_members(placeforms:Array):
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
-	assert(placeforms.size() > 0) #,"'placeforms' is empty!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
+	assert(placeforms.size() > 0) # 'placeforms' is empty
 	
 	var target_point = placeforms[0][0]
 	
@@ -202,7 +194,7 @@ func grow_to_members(placeforms:Array):
 
 # Make one of the root's children the new root
 func collapse_root(new_root_octant):
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
 	
 	var last_root:MMIOctreeNode = root_octree_node
 	disconnect_node(last_root)
@@ -248,7 +240,7 @@ func queue_placeforms_set(change):
 
 # Bulk process the queues
 func process_queues():
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
 	var affected_addressed := []
 	
 	if !add_placeforms_queue.is_empty():
@@ -268,8 +260,8 @@ func process_queues():
 
 
 func add_placeforms(placeforms:Array):
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
-	assert(placeforms.size() > 0) #,"'placeforms' is empty!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
+	assert(placeforms.size() > 0) # 'placeforms' is empty
 	
 	root_octree_node.add_members(placeforms)
 	root_octree_node.MMI_refresh_instance_placements_recursive()
@@ -277,8 +269,8 @@ func add_placeforms(placeforms:Array):
 
 
 func remove_placeforms(placeforms:Array):
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
-	assert(placeforms.size() > 0) #,"'placeforms' is empty!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
+	assert(placeforms.size() > 0) # 'placeforms' is empty
 	
 	root_octree_node.remove_members(placeforms)
 	root_octree_node.process_collapse_children()
@@ -291,8 +283,8 @@ func remove_placeforms(placeforms:Array):
 
 
 func set_placeforms(changes:Array):
-	assert(root_octree_node) #,"'root_octree_node' is not initialized!")
-	assert(changes.size() > 0) #,"'changes' is empty!")
+	assert(root_octree_node) # 'root_octree_node' is not initialized
+	assert(changes.size() > 0) # 'changes' is empty
 	
 	root_octree_node.set_members(changes)
 

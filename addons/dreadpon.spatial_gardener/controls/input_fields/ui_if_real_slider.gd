@@ -54,10 +54,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	container_box.add_child(value_input)
 
 
-#func _ready():
-#	super()
-
-
 func _cleanup():
 	super()
 	if is_instance_valid(real_slider):
@@ -108,7 +104,6 @@ func _string_to_val(string) -> float:
 	elif string is float:
 		return string
 	else:
-#		print(string)
 		logger.warn("Passed variable is not a string!")
 	return 0.0
 

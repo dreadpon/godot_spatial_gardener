@@ -28,9 +28,6 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	var PanelContainer_stylebox_panel = theme.get_stylebox('panel', 'PanelContainer')
 	var Panel_stylebox_panel = theme.get_stylebox('panel', 'Panel')
 	var Window_stylebox_panel = theme.get_stylebox('panel', 'Window')
-	var Button_stylebox_normal := theme.get_stylebox('normal', 'Button')
-	var Button_stylebox_hover := theme.get_stylebox('hover', 'Button')
-	var Button_stylebox_pressed := theme.get_stylebox('pressed', 'Button')
 	var Button_stylebox_focus := theme.get_stylebox('focus', 'Button')
 	var EditorInspectorCategory_stylebox_bg := theme.get_stylebox('bg', 'EditorInspectorCategory')
 	
@@ -97,9 +94,6 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	# InspectorPanelContainer -> PanelContainer
 	var InspectorPanelContainer_stylebox := Tree_panel.duplicate(true)
 	InspectorPanelContainer_stylebox.draw_center = true
-#	InspectorPanelContainer_stylebox.bg_color = dark_color_1
-#	InspectorPanelContainer_stylebox.set_border_width_all(1)
-#	InspectorPanelContainer_stylebox.border_color = dark_color_3
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "InspectorPanelContainer", InspectorPanelContainer_stylebox)
 	theme.set_type_variation("InspectorPanelContainer", "PanelContainer")
 	
@@ -152,7 +146,6 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 	# PropertySubsection -> PanelContainer
 	var PropertySubsection_stylebox := PanelContainer_stylebox_panel.duplicate(true)
 	PropertySubsection_stylebox.draw_center = true
-#	PropertySubsection_stylebox.bg_color = true_prop_subsection_color
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "panel", "PropertySubsection", PropertySubsection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "normal", "PropertySubsection", PropertySubsection_stylebox)
 	theme.set_theme_item(Theme.DATA_TYPE_STYLEBOX, "hover", "PropertySubsection", PropertySubsection_stylebox)
@@ -170,8 +163,8 @@ static func adapt_theme(theme:Theme, duplicate_theme: bool = true) -> Theme:
 
 	# InspectorButton -> Button
 	# InspectorCheckBox -> CheckBox
-#	# InspectorOptionButton -> OptionButton
-#	# InspectorMenuButton -> MenuButton
+	# InspectorOptionButton -> OptionButton
+	# InspectorMenuButton -> MenuButton
 	for theme_type in ["Button", "CheckBox", "OptionButton", "MenuButton"]:
 		for data_type in range(0, theme.DATA_TYPE_MAX):
 			for theme_item in theme.get_theme_item_list(data_type, theme_type):

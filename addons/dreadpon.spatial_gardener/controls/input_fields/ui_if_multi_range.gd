@@ -30,7 +30,6 @@ var representation_type:int = RepresentationType.VECTOR
 var value_count:int = 3
 
 var is_range:bool = false
-#var vertical_container:VBoxContainer = null
 var field_container:GridContainer = null
 var field_editable_controls:Array = []
 
@@ -57,11 +56,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_count = settings.value_count
 	representation_type = settings.representation_type
 	
-#	var value_panel = PanelContainer.new()
-#	value_panel.name = "value_panel"
-#	value_panel.theme_type_variation = "MultiRangeValuePanel"
-#	value_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
 	field_container = GridContainer.new()
 	field_container.name = "field_container"
 	field_container.add_theme_constant_override("h_separation", 0)
@@ -69,19 +63,10 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	field_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	field_container.columns = 4 if is_range else 2
 	
-#	vertical_container = VBoxContainer.new()
-#	vertical_container.name = "vertical_container"
-#	vertical_container.add_theme_constant_override("separation", 2)
-#	vertical_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
 	for range_index in range(0, 2 if is_range else 1):
 		field_editable_controls.append([])
 	
-	for value_index in range(0, value_count):
-#		var value_range_row = HBoxContainer.new()
-#		value_range_row.name = "value_range_row_-_%s" % [str(value_index)]
-#		value_range_row.add_theme_constant_override("separation", 0)
-		
+	for value_index in range(0, value_count):		
 		var prop_label := Label.new()
 		prop_label.name = "prop_label_-_%s" % [str(value_index)]
 		prop_label.text = prop_label_text[representation_type][value_index]
@@ -122,12 +107,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 				dash_label.theme_type_variation = "MultiRangeDashLabel"
 				dash_label.add_theme_color_override("font_color", Color(prop_label_text_colors[value_index]))
 	
-#	value_panel.add_child(vertical_container)
 	container_box.add_child(field_container)
-
-
-#func _ready():
-#	super()
 
 
 func _cleanup():
@@ -171,7 +151,6 @@ func _string_to_val(string) -> float:
 	elif string is float:
 		return string
 	else:
-#		print(string)
 		logger.warn("Passed variable is not a string!")
 	return 0.0
 

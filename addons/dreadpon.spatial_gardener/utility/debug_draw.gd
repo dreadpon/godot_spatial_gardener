@@ -42,6 +42,7 @@ func _process(delta):
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
+		# Avoid memory leaks
 		clear_cached_geometry()
 
 

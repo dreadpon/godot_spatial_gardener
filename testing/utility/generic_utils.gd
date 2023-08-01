@@ -61,8 +61,6 @@ static func find_discrepancies(list_index:int, given:Dictionary, ref:Dictionary,
 	if !discrepancies.is_empty():
 		for discrepancy in discrepancies:
 			logger.info(get_idx_msg("", list_index, discrepancy))
-#		logger.info(get_idx_msg("", list_index, given))
-#		logger.info(get_idx_msg("", list_index, ref))
 		return true
 	return false
 

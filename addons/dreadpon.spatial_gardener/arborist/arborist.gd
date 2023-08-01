@@ -467,6 +467,7 @@ func update_LODs():
 			octree_manager.update_LODs_no_camera()
 
 
+# Add instances as a batch (mostly, as a result of importing Greenhouse data)
 func batch_add_instances(placeforms: Array, plant_idx: int):
 	active_painting_changes = PaintingChanges.new()
 	active_stroke_handler = SH_Manual.new()

@@ -70,7 +70,7 @@ func set_main_control_state(state):
 # Not a fan of how brute-force it is
 # TODO: this WILL NOT WORK with nested foldables or in any slightly-different configuration
 #		in the future, we need to associated foldables directly with their input_field_resource
-#		and bake that associateion into foldable states
+#		and bake that association into foldable states
 
 # Remove states that represent deleted resources
 func cleanup_folding_states(folding_states:Dictionary):
@@ -96,9 +96,7 @@ func refresh_folding_states_for_greenhouse(folding_states:Dictionary, greenhouse
 	var greenhouse_id = get_res_name_or_path(folding_states, greenhouse)
 	var plant_id = get_res_name_or_path(folding_states[greenhouse_id], greenhouse.selected_for_edit_resource)
 	if folding_states.has(greenhouse_id) && folding_states[greenhouse_id].has(plant_id):
-#		set_folding_states(self, folding_states[greenhouse_id][plant_id])
 		call_deferred('set_folding_states', self, folding_states[greenhouse_id][plant_id])
-#	bind_foldables(self, folding_states, greenhouse_id, plant_id)
 	call_deferred('bind_foldables', self, folding_states, greenhouse_id, plant_id)
 
 
@@ -111,11 +109,6 @@ func set_folding_states(node:Node, states: Dictionary):
 			section_node.folded = states.get(section_name, false)
 	for child in node.get_children():
 		set_folding_states(child, states)
-#	for path in states:
-#		var abs_path = str(get_path()) + '/' + str(path)
-#		if has_node(abs_path):
-#			print(abs_path, " restored to ", states[path])
-#			get_node(abs_path).folded = states[path]
 
 
 # Bind foldable ui elements to update the relevant folding states
@@ -126,9 +119,6 @@ func bind_foldables(node:Node, folding_states: Dictionary, greenhouse_id: String
 			section_node = node.property_sections[section_name].section
 			section_node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(section_name, folding_states, greenhouse_id, plant_id))
 			on_foldable_folding_state_changed(section_node.folded, section_name, folding_states, greenhouse_id, plant_id)
-#	if is_instance_of(node, FoldableSection):
-#		node.folding_state_changed.connect(on_foldable_folding_state_changed.bind(node, folding_states, greenhouse_id, plant_id))
-#		folding_states[greenhouse_id][plant_id][get_path_to(node)] = node.folded
 	for child in node.get_children():
 		bind_foldables(child, folding_states, greenhouse_id, plant_id)
 

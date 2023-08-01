@@ -25,7 +25,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input = LineEdit.new()
 	value_input.name = "value_input"
 	value_input.size_flags_horizontal = SIZE_EXPAND_FILL
-#	value_input.size_flags_stretch_ratio = 0.5
 	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
 	value_input.focus_entered.connect(select_line_edit.bind(value_input, true))
@@ -37,10 +36,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input.theme_type_variation = "IF_LineEdit"
 	
 	container_box.add_child(value_input)
-
-
-#func _ready():
-#	super()
 
 
 func _cleanup():
@@ -76,7 +71,6 @@ func _string_to_val(string) -> int:
 	elif string is int:
 		return string
 	else:
-#		print(string)
 		logger.warn("Passed variable is not a string!")
 	return 0
 

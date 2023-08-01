@@ -38,6 +38,7 @@ func _init(_arborist: Arborist, _greenhouse: Greenhouse, _toolshed: Toolshed = n
 #-------------------------------------------------------------------------------
 
 
+# Import data of a single plant (Greenhouse_Plant + placeforms)
 func import_plant_data(file_path: String, plant_idx: int):
 	var file := FileAccess.open(file_path, FileAccess.READ)
 	if !file:
@@ -60,6 +61,7 @@ func import_plant_data(file_path: String, plant_idx: int):
 		logger.info("Successfully imported placeform(s) from '%s'" % [file_path])
 
 
+# Export data of a single plant (Greenhouse_Plant + placeforms)
 func export_plant_data(file_path: String, plant_idx: int):
 	DirAccess.make_dir_recursive_absolute(file_path.get_base_dir())
 	var file := FileAccess.open(file_path, FileAccess.WRITE)
@@ -76,6 +78,7 @@ func export_plant_data(file_path: String, plant_idx: int):
 
 
 
+# Import data of an entire Greenhouse + placeforms
 func import_greenhouse_data(file_path: String):
 	var file := FileAccess.open(file_path, FileAccess.READ)
 	if !file:
@@ -96,6 +99,7 @@ func import_greenhouse_data(file_path: String):
 	logger.info("Successfully imported entire greenhouse of %d plants from '%s" % [import_data.size(), file_path])
 
 
+# Export data of an entire Greenhouse + placeforms
 func export_greenhouse_data(file_path: String):
 	DirAccess.make_dir_recursive_absolute(file_path.get_base_dir())
 	var file := FileAccess.open(file_path, FileAccess.WRITE)
@@ -141,7 +145,7 @@ func _import_process_data(plant_idx: int, data):
 	if data is Dictionary:
 		placeform_data = data.placeform_data
 		plant_data = data.plant_data
-	# Old version, supports transforms-only
+	# Old version, supports transforms-only, for Spatial Gardener 1.2.0 compatability
 	else:
 		placeform_data = data
 	

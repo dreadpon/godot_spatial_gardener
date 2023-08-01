@@ -27,7 +27,7 @@ func snapshot_tree(node:Node):
 	elif given_tree_snapshot.is_empty():
 		given_tree_snapshot = snapshot
 	else:
-		assert(true) #,"Both 'last' and 'new' tree snapshots are already defined!")
+		assert(true) # Both 'last' and 'new' tree snapshots are already defined
 
 
 func snapshot_octrees(octree_managers:Array):
@@ -37,7 +37,7 @@ func snapshot_octrees(octree_managers:Array):
 	elif given_octree_snapshots.is_empty():
 		given_octree_snapshots = snapshot
 	else:
-		assert(true) #,"Both 'last' and 'new' octree snapshots are already defined!")
+		assert(true) # Both 'last' and 'new' octree snapshots are already defined
 
 
 func check_tree_snapshots(logger, text:String = "") -> Array:

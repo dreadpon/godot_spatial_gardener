@@ -43,10 +43,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	container_box.add_child(scroll_intermediary)
 
 
-#func _ready():
-#	super()
-
-
 func prepare_input_field(__init_val, __base_control:Control, __resource_previewer):
 	super(__init_val, __base_control, __resource_previewer)
 

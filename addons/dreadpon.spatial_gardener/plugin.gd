@@ -391,6 +391,8 @@ func start_gardener_edit(gardener):
 	# I'll keep it here *just in case* the bug still persists but hides well
 	#
 	# UPD: when converting to Godot 4.0, this method resulted in enormous delay when selecting a Gardener for edit (3 seconds for empty Gardener)
+	# UPD: it seems most of the lag came from UI nodes, and method below is actually more-or-less fine
+	#		it's still extra work, so wouldn't hurt to actually find a solution without it
 	active_gardener.restore_references()
 
 	active_gardener.tree_exited.connect(set_gardener_edit_state.bind(null))
@@ -428,7 +430,6 @@ func stop_gardener_edit():
 
 # Dump the whole editor tree to console
 func debug_dump_editor_tree():
-#	debug_save_node_descendants(get_editor_interface().get_inspector(), get_editor_interface().get_inspector())
 	debug_dump_node_descendants(get_editor_interface().get_editor_main_screen())
 
 

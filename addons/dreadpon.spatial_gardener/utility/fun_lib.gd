@@ -72,10 +72,12 @@ static func make_hint_string(array:Array):
 	return string
 
 
+# Convert to custom string format, context-dependent but independednt to changes to Godot's var_to_str
 static func vec3_to_str(val: Vector3) -> String:
 	return "%f, %f, %f" % [val.x, val.y, val.z]
 
 
+# Convert to custom string format, context-dependent but independednt to changes to Godot's var_to_str
 static func transform3d_to_str(val: Transform3D) -> String:
 	return "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f" % [
 		val.basis.x.x, val.basis.x.y, val.basis.x.z,
@@ -85,6 +87,7 @@ static func transform3d_to_str(val: Transform3D) -> String:
 		]
 
 
+# Convert from custom string format
 static func str_to_vec3(string: String, str_version: int) -> Vector3:
 	match str_version:
 		0:
@@ -98,6 +101,7 @@ static func str_to_vec3(string: String, str_version: int) -> Vector3:
 			return Vector3.ZERO
 
 
+# Convert from custom string format
 static func str_to_transform3d(string: String, str_version: int) -> Transform3D:
 	match str_version:
 		0:

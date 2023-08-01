@@ -9,7 +9,7 @@ extends Resource
 # There's also a bit of property management sprinkled on top (conditional display, modified values, etc.)
 #
 # TODO: reduce amount of abstractions and indirections. 
-#		overhead for function calls and container usage is the most demnding part of this thing
+#		overhead for function calls and container usage is the most demanding part of this thing
 #-------------------------------------------------------------------------------
 
 
@@ -134,6 +134,7 @@ func duplicate(subresources:bool = false):
 	return copy
 
 
+# Convert Input Field Resource to a dictionary
 func ifr_to_dict(ifr_subresources:bool = false):
 	var dict = {}
 	
@@ -164,6 +165,7 @@ func ifr_to_dict(ifr_subresources:bool = false):
 	return dict
 
 
+# Convert Input Field Resource value from native to dictionary-compatible (and independent of native var_to_str)
 func _ifr_val_to_dict_compatible(val, ifr_subresources):
 	if ifr_subresources && is_instance_of(val, Resource) && !is_instance_of(val, Script):
 		if val.has_method("ifr_to_dict") && ifr_subresources:
@@ -180,6 +182,7 @@ func _ifr_val_to_dict_compatible(val, ifr_subresources):
 	return val
 
 
+# Convert dictionary to an Input Field Resource
 func ifr_from_dict(dict: Dictionary, ifr_subresources:bool = false, str_version: int = 1) -> Resource:
 	for prop_dict in _get_property_list():
 		if find_res_edit_by_res_prop(prop_dict.name):
@@ -215,6 +218,7 @@ func ifr_from_dict(dict: Dictionary, ifr_subresources:bool = false, str_version:
 	return self
 
 
+# Convert dictionary-compatible (and independent of native var_to_str) value to an Input Field Resource value
 func _dict_compatible_to_ifr_val(template_val, val, ifr_subresources, str_version):
 	if ifr_subresources && is_instance_of(template_val, Resource) && !is_instance_of(template_val, Script):
 		if template_val.has_method("ifr_from_dict") && ifr_subresources:
@@ -328,11 +332,6 @@ func _perform_prop_action(prop_action:PropAction):
 		_:
 			logger.error("Error: PropAction class \"%s\" is not accounted for" % [prop_action_class])
 			return
-	
-#	for connection in get_signal_connection_list("prop_action_executed"):
-#		logger.info(connection.target.resource_name if connection.target is Resource else str(connection.target))
-#	print("prop_action_executed ", self, " ", prop_action)
-#	print("prop_action_executed %d" % [Time.get_ticks_msec()])
 	
 	res_edit_update_interaction_features(prop_action.prop)
 	
@@ -478,16 +477,13 @@ func create_input_fields(_base_control:Control, _resource_previewer, whitelist:A
 		var input_field:UI_InputField = create_input_field(_base_control, _resource_previewer, prop)
 		if input_field:
 			input_fields[prop] = input_field
-#	print("create_input_fields %s %s %d end" % [str(self), get_meta("class"), Time.get_ticks_msec()])
 	return input_fields
 
 
 func create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
-#	print("create_input_field %s %s %s %d start" % [str(self), get_meta("class"), prop, Time.get_ticks_msec()])
 	
 	var input_field = _create_input_field(_base_control, _resource_previewer, prop)
 	if input_field:
-#		print("create_input_field -> prepare_input_field ", prop, " ", input_field.get_meta("class"))
 		input_field.name = prop
 		input_field.set_tooltip(get_prop_tooltip(prop))
 		input_field.on_prop_list_changed(_filter_prop_dictionary(_get_prop_dictionary()))
@@ -495,15 +491,18 @@ func create_input_field(_base_control:Control, _resource_previewer, prop:String)
 		input_field.prop_action_requested.connect(request_prop_action)
 		prop_action_executed.connect(input_field.on_prop_action_executed)
 		prop_list_changed.connect(input_field.on_prop_list_changed)
-#		input_field.tree_entered.connect(_deferred_on_if_tree_entered.bind(input_field))
 		input_field.tree_entered.connect(on_if_tree_entered.bind(input_field))
 		
 		if is_instance_of(input_field, UI_IF_ThumbnailArray):
 			input_field.requested_press.connect(on_if_thumbnail_array_press.bind(input_field))
 			req_change_interaction_feature.connect(input_field.on_changed_interaction_feature)
+		# NOTE: below is a leftover abstraction from an attempt to create ui nodes only once and reuse them
+		#		but it introduced to many unknowns to be viable as a part of Godot 3.5 -> Godot 4.0 transition
+		#		yet it stays, as a layer of abstraction
+		# TODO: implement proper reuse of ui nodes
+		#		or otherwise speed up their creation
 		input_field.prepare_input_field(_get(prop), _base_control, _resource_previewer)
 	
-#	print("create_input_field %s %s %s %d end" % [str(self), get_meta("class"), prop, Time.get_ticks_msec()])
 	
 	return input_field
 
@@ -514,32 +513,23 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 	return null
 
 
-# func _deferred_on_if_tree_entered(input_field:UI_InputField):
-# 	call_deferred("on_if_tree_entered", input_field)
-
-
 # Do something with an input field when it's _ready()
 func on_if_tree_entered(input_field:UI_InputField):
-#	await input_field.get_tree().process_frame
-
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
 		var res_val = get(res_edit.res_prop)
 		# We assume that input field that displays the resource is initialized during infput field creation
 		# And hense only update the array interaction features
 		res_edit_update_interaction_features(res_edit.res_prop)
-#		_res_edit_select(res_edit.array_prop, [res_val])
 
 
 # An array thumbnail representing a resource was pressed
 func on_if_thumbnail_array_press(pressed_index:int, input_field:Control):
-#	print("on_if_thumbnail_array_press %d start" % [Time.get_ticks_msec()])
 	var res_edit = find_res_edit_by_array_prop(input_field.prop_name)
 	if res_edit:
 		var array_val = get(res_edit.array_prop)
 		var new_res_val = array_val[pressed_index]
 		_res_edit_select(res_edit.array_prop, [new_res_val], true)
-#	print("on_if_thumbnail_array_press %d end" % [Time.get_ticks_msec()])
 
 
 # Get a tooltip string for each property to be used in it's InputField
@@ -629,24 +619,18 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 
 # Requests a prop action that updates the needed property
 func _res_edit_select(array_prop:String, new_res_array:Array, create_history:bool = false):
-#	print("_res_edit_select %d start" % [Time.get_ticks_msec()])
 	
 	var res_edit = find_res_edit_by_array_prop(array_prop)
-#	print("_res_edit_select %d 1" % [Time.get_ticks_msec()])
 	if res_edit:
 		var array_val = get(res_edit.array_prop)
 		var res_val = get(res_edit.res_prop)
 		var new_res_val = new_res_array[0]
 		if res_val == new_res_val:
 			new_res_val = null
-#		print("_res_edit_select %d 2" % [Time.get_ticks_msec()])
 		
 		var prop_action = PA_PropSet.new(res_edit.res_prop, new_res_val)
 		prop_action.can_create_history = create_history
 		request_prop_action(prop_action)
-#		print("_res_edit_select %d 3" % [Time.get_ticks_msec()])
-#		res_edit_update_interaction_features(prop_action.prop)
-#		print("_res_edit_select %d end" % [Time.get_ticks_msec()])
 
 
 

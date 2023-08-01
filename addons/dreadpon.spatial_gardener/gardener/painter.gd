@@ -394,7 +394,6 @@ func finish_brush_prop_edit(camera:Camera3D):
 					changed_active_brush_prop.emit("shape/shape_projection_size", brush_prop_edit_cur_val, true)
 	
 	Input.warp_mouse(brush_prop_edit_start_pos)
-#	camera.get_viewport().warp_mouse(brush_prop_edit_start_pos)
 	
 	brush_prop_edit_flag = BrushPropEditFlag.NONE
 	brush_prop_edit_start_pos = Vector2.ZERO

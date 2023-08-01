@@ -142,7 +142,6 @@ func _exit_tree():
 
 
 func _process(delta):
-#	print("_process %d" % [Time.get_ticks_msec()])
 	if painter:
 		painter.update(delta)
 
@@ -155,7 +154,6 @@ func _apply_changes():
 	save_greenhouse()
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
-#	init_arborist()
 
 
 func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode = 0):
@@ -327,7 +325,6 @@ func reload_resources():
 		save_toolshed()
 	if created_new_greenhouse:
 		save_greenhouse()
-	
 
 
 # It's possible we load a different Greenhouse while an Arborist is already initialized
@@ -380,14 +377,10 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	_side_panel = __side_panel
 	changed_initialized_for_edit.connect(_side_panel.set_main_control_state)
 	
-	var start = Time.get_ticks_msec()
 	ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
 	ui_category_plants = greenhouse.create_ui(_base_control, _resource_previewer)
-#	print("create_ui took %d" % [Time.get_ticks_msec() - start])
-	start = Time.get_ticks_msec()
 	_side_panel.set_tool_ui(ui_category_brushes, 0)
 	_side_panel.set_tool_ui(ui_category_plants, 1)
-#	print("set_tool_ui took %d" % [Time.get_ticks_msec() - start])
 	toolshed.set_undo_redo(_undo_redo)
 	greenhouse.set_undo_redo(_undo_redo)
 
@@ -404,7 +397,6 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
-	
 
 
 # Stop editing (painting) a scene

@@ -20,7 +20,6 @@ signal finished_undo_redo_action(current_action_index)
 
 func _init():
 	logger = Logger.get_for(self)
-#	if Engine.is_editor_hint():
 	dpon_testing_set_undo_redo(UndoRedo.new())
 
 
@@ -32,7 +31,7 @@ func set_do_execute(val):
 
 
 func execute():
-	assert(!is_executing) #,"Trying to execute an already running test!")
+	assert(!is_executing) # Trying to execute an already running test
 	is_executing = true
 
 
@@ -70,7 +69,6 @@ func print_and_get_result(list_index:int, error_counters:Dictionary):
 func execute_undo_redo_sequence(intervals:Array, undoable_action_count:int, callback_binds:Array = []):
 	var current_action_index := undoable_action_count
 	var callback_return_value = null
-	# var history_undo_redo = undo_redo.get_history_undo_redo(undo_redo.get_object_history_id(self))
 	
 	for index in intervals:
 		while current_action_index != index:

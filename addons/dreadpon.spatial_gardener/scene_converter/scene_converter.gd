@@ -5,7 +5,10 @@ extends Node
 #-------------------------------------------------------------------------------
 # NOTE: automatic conversion from Godot 3.5 to Godot 4.0 will not be supported
 #		instead, open the original project in Godot 3.5, export transforms to JSON for each plant
-#		rectreate plants in Godot 4.0 and import transforms one by one for each plant
+#		recreate plants in Godot 4.0 and import transforms one by one for each plant
+#
+# NOTE: most types that are represented as strings are kept in Godot 3.5 format
+#		this is deliberate, to preserve the state of converter as much as possible
 #
 # To use this converter:
 # 1. Make sure the plugin is updated to the most recent version
@@ -504,31 +507,31 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_TRANSFORM2D, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('Plane'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_PLANE, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('Quaternion'):
+			elif str_struct.begins_with('Quat'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_QUAT, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('AABB'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_AABB, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('Basis'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_BASIS, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('Transform3D'):
+			elif str_struct.begins_with('Transform'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_TRANSFORM, Types.PS_Transform.new(str_struct)))
 			elif str_struct.begins_with('Color'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_COLOR, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('NodePath'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_NODE_PATH, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedByteArray'):
+			elif str_struct.begins_with('PoolByteArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_RAW_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedInt32Array'):
+			elif str_struct.begins_with('PoolIntArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_INT_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedFloat32Array'):
+			elif str_struct.begins_with('PoolRealArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_REAL_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedStringArray'):
+			elif str_struct.begins_with('PoolStringArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedVector2Array'):
+			elif str_struct.begins_with('PoolVector2Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_VECTOR2_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedVector3Array'):
+			elif str_struct.begins_with('PoolVector3Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_VECTOR3_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PackedColorArray'):
+			elif str_struct.begins_with('PoolColorArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_COLOR_ARRAY, Types.PropStruct.new(str_struct)))
 			else:
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRUCT, str_last_inclusive_stripped(status_bundle)))
