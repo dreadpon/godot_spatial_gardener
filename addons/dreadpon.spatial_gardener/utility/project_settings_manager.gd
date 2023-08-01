@@ -46,7 +46,7 @@ static func add_plugin_project_settings():
 		TYPE_FLOAT)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_button",
-		Globals.MouseButton.MOUSE_BUTTON_RIGHT, Globals.MouseButton)
+		Globals.MouseButton.MOUSE_BUTTON_XBUTTON1, Globals.MouseButton)
 	add_project_setting_globals_enum(
 		"dreadpons_spatial_gardener/input_and_ui/brush_prop_edit_modifier",
 		Globals.KeyboardKey.KEY_SHIFT, Globals.KeyboardKey)
