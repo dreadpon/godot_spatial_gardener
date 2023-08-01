@@ -12,7 +12,7 @@ extends Resource
 
 const MMIOctreeNode = preload("mmi_octree_node.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
-const DebugDraw = preload("../../utility/debug_draw.gd")
+const DponDebugDraw = preload("../../utility/debug_draw.gd")
 const GreenhouseLODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 
 

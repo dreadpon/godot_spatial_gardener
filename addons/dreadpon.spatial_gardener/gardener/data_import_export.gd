@@ -161,5 +161,6 @@ func _import_process_data(plant_idx: int, data):
 				FunLib.str_to_vec3(placeform_dict.placement, str_version), 
 				FunLib.str_to_vec3(placeform_dict.surface_normal, str_version), 
 				FunLib.str_to_transform3d(placeform_dict.transform, str_version)))
+		
 		arborist.batch_add_instances(placeforms, plant_idx)
 		arborist.call_deferred("emit_member_count", plant_idx)

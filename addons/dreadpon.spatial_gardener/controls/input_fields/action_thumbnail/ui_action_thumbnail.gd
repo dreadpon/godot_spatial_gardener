@@ -92,16 +92,13 @@ func _ready():
 		default_button_sizes[check_box_nd] = check_box_nd.size
 	if has_node("%CounterLabel"):
 		counter_label_nd = %CounterLabel
-		counter_label_nd.add_theme_font_size_override('font_size', Label_font_size)
 		counter_label_nd.visible = false
 	if has_node("%AltTextLabel"):
 		alt_text_label_nd = %AltTextLabel
-		alt_text_label_nd.add_theme_font_size_override('font_size', Label_font_size)
 		alt_text_label_nd.visible = false
 	if has_node('%LabelLineEdit'):
 		label_line_container_nd = %LabelLineContainer
 		label_line_edit_nd = %LabelLineEdit
-		label_line_edit_nd.add_theme_font_size_override('font_size', Label_font_size)
 		label_line_edit_nd.theme_type_variation = "PlantTitleLineEdit"
 		label_line_edit_nd.text_changed.connect(on_label_edit)
 		label_line_container_nd.visible = false
@@ -111,6 +108,13 @@ func _ready():
 		menu_button_nd.get_popup().id_pressed.connect(on_popup_menu_press)
 		menu_button_nd.visible = true
 		default_button_sizes[menu_button_nd] = menu_button_nd.size
+	
+	if counter_label_nd:
+		counter_label_nd.add_theme_font_size_override('font_size', Label_font_size)
+	if label_line_edit_nd:
+		label_line_edit_nd.add_theme_font_size_override('font_size', Label_font_size)
+	if alt_text_label_nd:
+		alt_text_label_nd.add_theme_font_size_override('font_size', Label_font_size)
 	
 	update_size()
 	set_active_interaction_flags(active_interaction_flags)
@@ -170,9 +174,9 @@ func update_size():
 
 
 func set_counter_val(val:int):
-	if !counter_label_nd: return
 	if !is_node_ready():
 		await ready
+	if !counter_label_nd: return
 	counter_label_nd.text = str(val)
 
 

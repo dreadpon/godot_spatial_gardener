@@ -9,7 +9,7 @@ extends RefCounted
 
 
 const FunLib = preload("../utility/fun_lib.gd")
-const DebugDraw = preload("../utility/debug_draw.gd")
+const DponDebugDraw = preload("../utility/debug_draw.gd")
 const Toolshed_Brush = preload("../toolshed/toolshed_brush.gd")
 const Globals = preload("../utility/globals.gd")
 

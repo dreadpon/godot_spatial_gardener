@@ -175,6 +175,7 @@ func on_plant_added(plant_state, plant_index:int):
 	debug_print_lifecycle("plant: %s added at plant_index %d" % [str(plant_state), plant_index])
 	add_plant_octree_manager(plant_state, plant_index)
 	request_debug_redraw_from_index(plant_index)
+	call_deferred("emit_member_count", plant_index)
 
 
 # Instigate the OctreeManager removal process in response to an external signal

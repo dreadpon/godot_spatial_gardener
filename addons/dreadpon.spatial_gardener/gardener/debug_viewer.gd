@@ -8,7 +8,7 @@ extends Node3D
 
 
 const FunLib = preload("../utility/fun_lib.gd")
-const DebugDraw = preload("../utility/debug_draw.gd")
+const DponDebugDraw = preload("../utility/debug_draw.gd")
 const MMIOctreeManager = preload("../arborist/mmi_octree/mmi_octree_manager.gd")
 const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
 
@@ -201,7 +201,7 @@ func ensure_MMIs(amount:int):
 			MMI.multimesh = MultiMesh.new()
 			MMI.multimesh.transform_format = 1
 			MMI.multimesh.use_colors = true
-			MMI.multimesh.mesh = DebugDraw.generate_cube(Vector3.ONE, Color.WHITE)
+			MMI.multimesh.mesh = DponDebugDraw.generate_cube(Vector3.ONE, Color.WHITE)
 			octree_MMIs.append(MMI)
 	elif octree_MMIs.size() > amount:
 		var MMI = null

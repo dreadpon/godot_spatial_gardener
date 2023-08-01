@@ -20,7 +20,7 @@ const PA_ArraySet = preload("res://addons/dreadpon.spatial_gardener/utility/inpu
 
 @export var greenhouse_path:String = "" # (String, DIR)
 var gardener:Gardener = null
-var editor_selection:EditorSelection = null : set = set_editor_selection
+var editor_selection:EditorSelection = null : set = dpon_testing_set_editor_selection
 
 var painting_data:Array = []
 var painter_script:Array = []
@@ -70,7 +70,7 @@ func _exit_tree():
 	FunLib.free_children(self)
 
 
-func set_editor_selection(val):
+func dpon_testing_set_editor_selection(val):
 	editor_selection = val
 
 

@@ -37,9 +37,9 @@ func _init(__brushes:Array = []):
 	set_meta("class", "Toolshed")
 	resource_name = "Toolshed"
 	
-	brushes = __brushes
+	brushes = _modify_prop("brush/brushes", __brushes)
 	if brushes.size() > 0:
-		active_brush = brushes[0]
+		active_brush = _modify_prop("brush/active_brush", brushes[0])
 	_add_prop_dependency("brush/active_brush", ["brush/brushes"])
 
 
@@ -136,6 +136,7 @@ func on_changed_brush():
 
 
 func on_prop_action_executed_on_brush(prop_action:PropAction, final_val, brush):
+#	print("on_prop_action_executed_on_brush toolshed")
 	prop_action_executed_on_brush.emit(prop_action, final_val, brush)
 
 

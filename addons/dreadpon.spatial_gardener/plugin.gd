@@ -116,17 +116,20 @@ func _enter_tree():
 
 func _exit_tree():
 	if !Engine.is_editor_hint(): return
-		
-	scene_converter.destroy()
-	scene_converter.queue_free()
+	
+	if is_instance_valid(scene_converter):
+		scene_converter.destroy()
+		scene_converter.queue_free()
 	
 	set_gardener_edit_state(null)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT, _side_panel)
 	remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, toolbar)
 	remove_custom_types()
-
-	_side_panel.queue_free()
-	toolbar.queue_free()
+	
+	if is_instance_valid(_side_panel):
+		_side_panel.queue_free()
+	if is_instance_valid(toolbar):
+		toolbar.queue_free()
 
 
 # Previously here was '_apply_changes', but it fired even when scene was closed without saving
@@ -161,10 +164,10 @@ func on_tree_node_added(node:Node):
 	if FunLib.obj_is_script(node, Gardener):
 		gardeners_in_tree.append(node)
 
-	if node.has_method("set_undo_redo"):
-		node.set_undo_redo(undo_redo)
-	if node.has_method("set_editor_selection"):
-		node.set_editor_selection(get_editor_interface().get_selection())
+	if node.has_method("dpon_testing_set_undo_redo"):
+		node.dpon_testing_set_undo_redo(undo_redo)
+	if node.has_method("dpon_testing_set_editor_selection"):
+		node.dpon_testing_set_editor_selection(get_editor_interface().get_selection())
 
 
 func on_tree_node_removed(node:Node):
@@ -266,14 +269,15 @@ func simulate_key(keycode):
 # Restore selection to seamlessly continue gardener editing
 func restore_gardener_selection():
 	if !Engine.is_editor_hint(): return
+	
+	if !get_editor_interface().get_selection().selection_changed.is_connected(selection_changed):
+		get_editor_interface().get_selection().selection_changed.connect(selection_changed)
+	
 	if !active_gardener: return
 	
 	var editor_selection:EditorSelection = get_editor_interface().get_selection()
 	editor_selection.clear()
 	editor_selection.add_node(active_gardener)
-	
-	if get_editor_interface().get_selection().selection_changed.is_connected(selection_changed):
-		get_editor_interface().get_selection().selection_changed.connect(selection_changed)
 
 
 func get_focus_painter_key():

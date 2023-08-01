@@ -9,7 +9,7 @@ extends Node
 
 const Logger = preload("../../utility/logger.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
-const DebugDraw = preload("../../utility/debug_draw.gd")
+const DponDebugDraw = preload("../../utility/debug_draw.gd")
 const Greenhouse_Plant = preload("../../greenhouse/greenhouse_plant.gd")
 const Placeform = preload("../placeform.gd")
 const Toolshed_Brush = preload("../../toolshed/toolshed_brush.gd")
@@ -380,9 +380,9 @@ func debug_print_lifecycle(string:String):
 
 func debug_mk_debug_draw():
 	var context = camera.get_tree().edited_scene_root#.find_child('Gardener').get_parent()
-	if !context.has_node('DebugDraw'):
-		var debug_draw := DebugDraw.new()
-		debug_draw.name = 'DebugDraw'
+	if !context.has_node('DponDebugDraw'):
+		var debug_draw := DponDebugDraw.new()
+		debug_draw.name = 'DponDebugDraw'
 		context.add_child(debug_draw)
 
 
@@ -401,17 +401,17 @@ func debug_draw_point_array(points: Array, color: Color = Color.GREEN):
 func debug_draw_plane(draw_origin: Vector3, plane: Plane, color: Color = Color.RED):
 	if !debug_draw_enabled: return
 	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
-	context.get_node('DebugDraw').draw_plane(draw_origin, camera.far * 0.5, plane.normal, color, context, 2.0, camera.global_transform.basis.y, 10.0)
+	context.get_node('DponDebugDraw').draw_plane(draw_origin, camera.far * 0.5, plane.normal, color, context, 2.0, camera.global_transform.basis.y, 10.0)
 
 
 func debug_draw_point(draw_origin: Vector3, color: Color = Color.GREEN):
 	if !debug_draw_enabled: return
 	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
-	context.get_node('DebugDraw').draw_cube(draw_origin, Vector3.ONE, Quaternion(), color, context, 10.0)
+	context.get_node('DponDebugDraw').draw_cube(draw_origin, Vector3.ONE, Quaternion(), color, context, 10.0)
 
 
 func debug_draw_cube(draw_origin: Vector3, size: Vector3, rotation: Quaternion, basis: Basis = Basis(), color: Color = Color.BLUE):
 	if !debug_draw_enabled: return
 	var context = camera.get_tree().edited_scene_root.find_child('Gardener').get_parent()
 	size = Vector3(size.x * basis.x.length(), size.y * basis.y.length(), size.z * basis.z.length())
-	context.get_node('DebugDraw').draw_cube(draw_origin, size, rotation, color, context, 10.0)
+	context.get_node('DponDebugDraw').draw_cube(draw_origin, size, rotation, color, context, 10.0)

@@ -1,5 +1,5 @@
+# Backup files, byproduct of automatic backup system of scene_converter.gd
 *.backup
-default_env.tres
 
 # Godot 4+ specific ignores
 .godot/
@@ -17,4 +17,8 @@ export_presets.cfg
 data_*/
 mono_crash.*.json
 
+# System/tool-specific ignores
+.directory
 .DS_Store
+*~
+*.blend1

@@ -172,6 +172,8 @@ func set_is_leaf(val):
 		MMI_name = MMI.name
 		MMI.multimesh = MultiMesh.new()
 		MMI.multimesh.transform_format = 1
+		# TODO: test whenever Godot team fixes this
+		#		https://github.com/godotengine/godot/issues/68592
 		MMI.multimesh.resource_local_to_scene = true
 		MMI.multimesh.mesh = DUMMY_MMI_MESH
 	elif !is_leaf:

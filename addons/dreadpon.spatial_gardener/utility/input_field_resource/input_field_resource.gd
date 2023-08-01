@@ -138,6 +138,9 @@ func ifr_to_dict(ifr_subresources:bool = false):
 	var dict = {}
 	
 	for prop_dict in _get_property_list():
+		if find_res_edit_by_res_prop(prop_dict.name):
+			continue
+		
 		var prop_val = _get(prop_dict.name)
 		
 		if prop_val is Array || prop_val is Dictionary:
@@ -179,6 +182,9 @@ func _ifr_val_to_dict_compatible(val, ifr_subresources):
 
 func ifr_from_dict(dict: Dictionary, ifr_subresources:bool = false, str_version: int = 1) -> Resource:
 	for prop_dict in _get_property_list():
+		if find_res_edit_by_res_prop(prop_dict.name):
+			continue
+		
 		var prop_val = dict.get(prop_dict.name, null)
 		var existing_prop_val = _get(prop_dict.name)
 		
@@ -203,7 +209,6 @@ func ifr_from_dict(dict: Dictionary, ifr_subresources:bool = false, str_version:
 		
 		else:
 			prop_val = _dict_compatible_to_ifr_val(existing_prop_val, prop_val, ifr_subresources, str_version)
-		
 		
 		_set(prop_dict.name, prop_val)
 	
@@ -607,7 +612,6 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 							_undo_redo.add_undo_method(self, "_res_edit_select", array_prop, [res_val])
 					else:
 						if lifecycle_stage == PropActionLifecycle.AFTER_DO:
-							print("PA_ArrayRemove if lifecycle_stage == PropActionLifecycle.AFTER_DO:")
 							_res_edit_select(array_prop, [null])
 			"PA_ArraySet":
 				var new_res_val = prop_action.val
@@ -620,7 +624,6 @@ func _handle_res_edit_prop_action_lifecycle(prop_action:PropAction, lifecycle_st
 							_undo_redo.add_undo_method(self, "_res_edit_select", array_prop, [res_val])
 					else:
 						if lifecycle_stage == PropActionLifecycle.AFTER_DO:
-							print("PA_ArraySet if lifecycle_stage == PropActionLifecycle.AFTER_DO:")
 							_res_edit_select(array_prop, [new_res_val])
 
 

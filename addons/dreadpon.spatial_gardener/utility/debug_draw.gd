@@ -15,7 +15,7 @@ var cached_geometry:Array = []
 
 
 func _init():
-	set_meta("class", "DebugDraw")
+	set_meta("class", "DponDebugDraw")
 
 
 # Instantiation through autoload allows to clear geometry after a delay

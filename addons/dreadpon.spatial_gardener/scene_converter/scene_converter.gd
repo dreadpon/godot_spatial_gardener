@@ -182,7 +182,7 @@ func _get_candidate_scenes(root_dir: String, check_gardeners: bool = true) -> Ar
 			continue
 		
 		for result in results:
-			if int(result.strings[1]) != Gardener.get_storage_ver():
+			if int(result.strings[1]) != Gardener.get_storage_ver() && conversion_map.has(result.strings[1]):
 				gardener_file_paths.append(scene_file)
 				continue
 	

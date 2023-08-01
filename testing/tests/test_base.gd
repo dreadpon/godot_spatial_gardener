@@ -9,7 +9,7 @@ const UndoRedoInterface = preload("res://addons/dreadpon.spatial_gardener/utilit
 
 @export var do_execute:bool = false : set = set_do_execute
 var logger = null
-var undo_redo = null : set = set_undo_redo
+var undo_redo = null : set = dpon_testing_set_undo_redo
 var is_executing:bool = false
 
 signal finished_execution(result)
@@ -21,7 +21,7 @@ signal finished_undo_redo_action(current_action_index)
 func _init():
 	logger = Logger.get_for(self)
 #	if Engine.is_editor_hint():
-	set_undo_redo(UndoRedo.new())
+	dpon_testing_set_undo_redo(UndoRedo.new())
 
 
 func set_do_execute(val):
@@ -41,7 +41,7 @@ func finish_execution(results:Array = []):
 	finished_execution.emit(results)
 
 
-func set_undo_redo(val):
+func dpon_testing_set_undo_redo(val):
 	undo_redo = val
 
 

@@ -1,0 +1,6 @@
+[gd_resource type="FontVariation" load_steps=2 format=3 uid="uid://dokuyg8sikplj"]
+
+[ext_resource type="FontFile" path="res://addons/dreadpon.spatial_gardener/utility/console/fonts/dynamic/urbanist_regular.tres" id="1_h16sp"]
+
+[resource]
+base_font = ExtResource("1_h16sp")

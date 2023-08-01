@@ -65,7 +65,8 @@ func _init():
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
-			_file_dialog.queue_free()
+			if is_instance_valid(_file_dialog):
+				_file_dialog.queue_free()
 
 
 # The UI is created here because we need to manage it afterwards
@@ -76,9 +77,9 @@ func create_ui(__base_control:Control, __resource_previewer):
 	
 	if is_instance_valid(ui_category_greenhouse):
 		ui_category_greenhouse.queue_free()
-	if grid_container_plant_thumbnails_nd:
+	if is_instance_valid(grid_container_plant_thumbnails_nd):
 		grid_container_plant_thumbnails_nd.queue_free()
-	if vbox_container_properties_nd:
+	if is_instance_valid(vbox_container_properties_nd):
 		vbox_container_properties_nd.queue_free()
 	
 	ui_category_greenhouse = ui_category_greenhouse_SCN.instantiate()
@@ -178,7 +179,7 @@ func on_if_tree_entered(input_field:UI_InputField):
 
 
 func plant_count_updated(plant_index, new_count):
-	if grid_container_plant_thumbnails_nd && grid_container_plant_thumbnails_nd.flex_grid.get_child_count() > plant_index:
+	if is_instance_valid(grid_container_plant_thumbnails_nd) && grid_container_plant_thumbnails_nd.flex_grid.get_child_count() > plant_index:
 		grid_container_plant_thumbnails_nd.flex_grid.get_child(plant_index).set_counter_val(new_count)
 
 
@@ -259,7 +260,7 @@ func on_prop_action_executed(prop_action:PropAction, final_val):
 			match prop_action_class:
 				"PA_ArrayInsert":
 					# This is deferred because the action thumbnail is not ready yet
-					plant_count_updated(prop_action.index, 0)
+#					plant_count_updated(prop_action.index, 0)
 					select_plant_state_for_brush(prop_action.index, final_val[prop_action.index].plant_brush_active)
 					set_plant_state_label(prop_action.index, final_val[prop_action.index].plant_label)
 #					call_deferred("plant_count_updated", prop_action.index, 0)
