@@ -214,10 +214,10 @@ func proj_filter_obstructed_placeforms(placeforms_data_in_frustum: Array, contai
 		var ray_vector = container_transform * placeform_data.placeform[0] - ray_start
 		var ray_end: Vector3 = ray_start + ray_vector.normalized() * (ray_vector.length() - raycast_margin)
 		
-		var params = PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+		var params = PhysicsRayQueryParameters3D.create(ray_start, ray_end, collision_mask)
 		var ray_result = space_state.intersect_ray(params)
 		
-		if !ray_result.is_empty() && ray_result.collider.collision_layer & collision_mask:
+		if !ray_result.is_empty():# && ray_result.collider.collision_layer & collision_mask:
 			placeforms_data_in_frustum.remove_at(i)
 
 

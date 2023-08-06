@@ -55,7 +55,7 @@ func import_plant_data(file_path: String, plant_idx: int):
 	
 	_import_process_data(plant_idx, import_data)
 	
-	if import_data is Dictionary && !import_data.get("plant_data", {}).is_empty()
+	if import_data is Dictionary && !import_data.get("plant_data", {}).is_empty():
 		logger.info("Successfully imported plant settings and placeform(s) from '%s'" % [file_path])
 	else:
 		logger.info("Successfully imported placeform(s) from '%s'" % [file_path])

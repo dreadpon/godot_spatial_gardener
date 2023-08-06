@@ -13,8 +13,7 @@
 1. **[Follow the template for feature requests.](https://github.com/dreadpon/godot_spatial_gardener/issues/new?assignees=dreadpon&labels=&template=feature_request.md&title=%5BFEATURE+REQUEST%5D)**
 2. [Search for existing proposals first.](https://github.com/dreadpon/godot_spatial_gardener/issues)
 3. Request something with a real-world use-case. Abstract features may not be considered.
-4. It's best to discuss a feature in `Issues` first an only then propose a PR.
-5. If you are capable of implementing said feature, include some code that demonstrates the finer details/nuances of said feature.
+4. If you are capable of implementing said feature, include some code that demonstrates the finer details/nuances of said feature.
 
 ## Getting in touch
 
