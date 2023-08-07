@@ -5,6 +5,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.3.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.0) - 2023-08-08
+
+### Changed
+
+#### Godot 4.1 port
+- Plugin is fully ported to Godot 4.1! (should work on 4.0 too)
+- Special thanks to [@nan0m](https://github.com/nan0m) and [@nonunknown](https://github.com/nonunknown) who kickstarted the whole porting process
+- This change breaks compatability with previous versions (duh). Refer [here](reference/TUTORIAL_SCENE_CONVERSION.md) for a conversion guide
+
+#### UI
+- Change default mouse button for adjusting brush size and strength from `MOUSE_BUTTON_RIGHT` to `MOUSE_BUTTON_XBUTTON1` to allow both modes of navigation around the scene available in Godot (`WASD+RMB` and `MMB/Shift+MMB`) (you can still change it back)
+- Improve performance when creating side panel UI by removing unnecessary intermediate containers
+- Slightly improve plant `Paint`ing performance (by adding them in bulks instead of one-by-one). This does not apply to `Erase`ing plants
+
+<br/>
+
+### Fixed
+
+#### Stability
+- Fix memory leaks in `octree-node.gd` stemming from a circular reference between parent and leaf nodes, preventing `octree-node.gd` resources and `Node`s they were referencing from being freed
+- Fix memory leaks in UI nodes (and those using them) by manually freeing them in several places throughout the plugin
+
+#### Plant creation
+- Fix plant data resetting, which was happening when user created a new Gardener, assigned a working directory and then switched between nodes without saving prior (reported by @Jem)
+
+<br/>
+
+### Known issues
+- Godot-wide (not plugin-specific) error when opening a project and having no scene open on startup
+	- `ERROR: Index p_idx = -1 is out of bounds (edited_scene.size() = 1).`
+	- https://github.com/godotengine/godot/issues/79944
+	- No negative effects observed beyond error messages
+- Godot-wide (not plugin-specific) error that occurs when `Multimesh` is loaded with `resource_local_to_scene` set to `true` and zero instances assigned
+	- `buffer_update: Buffer argument is not a valid buffer of any type.`
+	`ERROR: Condition "instance_count > 0" is true.`
+	- https://github.com/godotengine/godot/issues/68592
+	- This might lag the scene on load and flood the console, but seems to work fine after it is loaded
+
+<br/><br/>
+
 ## [v1.2.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.2.0) - 2022-12-18
 
 ### Changed
