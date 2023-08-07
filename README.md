@@ -1,11 +1,11 @@
 <p align="center">
-	<img width="256px" src="../godot_spatial_gardener_media/godot_spatial_gardener_media/readme/rdm_logo.png" alt="Plugin logo" />
+	<img width="256px" src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/readme/rdm_logo.png" alt="Plugin logo" />
 	<h1 align="center">
 		A Godot plugin for painting foliage and props on any 3D surface
 	</h1>
 </p>
 
-![Animated cover](../godot_spatial_gardener_media/godot_spatial_gardener_media/readme/rdm_cover_gif_lossy.gif)
+![Animated cover](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/readme/rdm_cover_gif_lossy.gif)
 
 </br>
 
@@ -17,7 +17,7 @@ It can also handle thousands of foliage instances without completely tanking the
 
 This is a single player plugin and works best with finite medium-sized scenes. Think platformers, shooters, adventure games, anything with a hand-made level.
 
-[![Video preview](../godot_spatial_gardener_media/godot_spatial_gardener_media/readme/rdm_trailer_thubmnail_360p_ext_compressed.jpg)](https://youtu.be/o_59aTeljpg)
+[![Video preview](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/readme/rdm_trailer_thubmnail_360p_ext_compressed.jpg)](https://youtu.be/o_59aTeljpg)
 
 </br>
 
@@ -27,7 +27,7 @@ Current stable release requires at least Godot v4.1.
 
 Want a test-drive? Go to [Releases](https://github.com/dreadpon/godot_spatial_gardener/releases) and get the most recent windows build: `godot_spatial_gardener_showcase_windows_x64_<version>.zip`.
 
-![Test-drive](../godot_spatial_gardener_media/godot_spatial_gardener_media/readme/rdm_showcase_gif_lossy.gif)
+![Test-drive](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/readme/rdm_showcase_gif_lossy.gif)
 
 </br>
 
@@ -39,7 +39,7 @@ Download the code by clicking green `Code` button and then `Download ZIP`. Unpac
 
 Copy the folder `addons/dreadpon.spatial_gardener/` to `res://addons/` in your Godot project and enable it from `Project -> Project Settings -> Plugins`.
 
-![Paint 1](../godot_spatial_gardener_media/godot_spatial_gardener_media/readme/rdm_paint_1.jpg)
+![Paint 1](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/readme/rdm_paint_1.jpg)
 
 </br>
 
@@ -49,8 +49,8 @@ For a detailed guide you can refer to my tutorial.
 
 It comes in two formats, depending on your preference:
 
-- **[<img src="../godot_spatial_gardener_media/godot_spatial_gardener_media/marketing_artwork/yt_icon_rgb.png" width="16" style="margin-right:4px"/> Video (recommended)](https://youtube.com/playlist?list=PLtsfK5HW0bX-TKR8eO_uKEguii8w9dGIh)**
-- **[<img src="../godot_spatial_gardener_media/godot_spatial_gardener_media/marketing_artwork/text_icon.png" width="16" style="margin-right:4px"/> Text](reference/TUTORIAL_ROOT.md)**
+- **[<img src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/marketing_artwork/yt_icon_rgb.png" width="16" style="margin-right:4px"/> Video (recommended)](https://youtube.com/playlist?list=PLtsfK5HW0bX-TKR8eO_uKEguii8w9dGIh)**
+- **[<img src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/marketing_artwork/text_icon.png" width="16" style="margin-right:4px"/> Text](reference/TUTORIAL_ROOT.md)**
 
 Text tutorial is the most up-to-date, but video better illustrates each step due to being a video, duh.
 
@@ -68,8 +68,8 @@ If you want to report a bug or request a feature, you should do so on GitHub usi
 
 You're welcome to support me on:
 
-- **[<img src="../godot_spatial_gardener_media/godot_spatial_gardener_media/marketing_artwork/Digital-Patreon-Logo_FieryCoral.png" width="16" style="margin-right:4px"/> Patreon](https://www.patreon.com/dreadpon)**
-- **[<img src="../godot_spatial_gardener_media/godot_spatial_gardener_media/marketing_artwork/Boosty_Color.png" width="16" style="margin-right:4px"/> Boosty](https://boosty.to/dreadpon)**
+- **[<img src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/marketing_artwork/Digital-Patreon-Logo_FieryCoral.png" width="16" style="margin-right:4px"/> Patreon](https://www.patreon.com/dreadpon)**
+- **[<img src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/marketing_artwork/Boosty_Color.png" width="16" style="margin-right:4px"/> Boosty](https://boosty.to/dreadpon)**
 
 Or with crypto:
 
@@ -80,7 +80,7 @@ This will help make updates for this plugin and embark on new exciting projects!
 
 You can also join me on Discord:
 
-- **[<img src="../godot_spatial_gardener_media/godot_spatial_gardener_media/marketing_artwork/Discord-Logo-Color.png" width="16" style="margin-right:4px"/> Discord](https://discord.gg/CzRSk8E)**
+- **[<img src="https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/marketing_artwork/Discord-Logo-Color.png" width="16" style="margin-right:4px"/> Discord](https://discord.gg/CzRSk8E)**
 
 </br>
 
