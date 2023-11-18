@@ -27,6 +27,7 @@ var _cached_camera: Camera3D = null
 const sphere_brush_material = preload("../shaders/shm_sphere_brush.tres")
 const circle_brush_material = preload("../shaders/shm_circle_brush.tres")
 var paint_brush_node:MeshInstance3D = null
+var detached_paint_brush_container:Node = null
 
 # Temporary variables to store current quick prop edit state
 var brush_prop_edit_flag = BrushPropEditFlag.NONE
@@ -86,7 +87,10 @@ func _init(_owned_spatial):
 	paint_brush_node.name = "active_brush"
 	set_brush_mesh()
 	
-	owned_spatial.add_child(paint_brush_node)
+	#owned_spatial.add_child(paint_brush_node)
+	detached_paint_brush_container = Node.new()
+	owned_spatial.add_child(detached_paint_brush_container)
+	detached_paint_brush_container.add_child(paint_brush_node)
 	set_can_draw(false)
 
 
