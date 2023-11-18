@@ -122,7 +122,7 @@ func _ready():
 
 func _set_default_textures():
 	if !clear_texture || !delete_texture || !new_texture || !options_texture:
-		var editor_theme = ThemeAdapter.get_theme(self)
+		var editor_theme = ThemeAdapter.editor_theme
 		clear_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "Clear", "EditorIcons")
 		delete_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "ImportFail", "EditorIcons")
 		new_texture = editor_theme.get_theme_item(Theme.DATA_TYPE_ICON, "Add", "EditorIcons")

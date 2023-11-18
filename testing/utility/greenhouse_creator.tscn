@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=19 format=3 uid="uid://cki1qgeugx182"]
 
 [ext_resource type="Script" path="res://testing/utility/greenhouse_creator.gd" id="1"]
 [ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed.gd" id="2"]
@@ -11,16 +11,12 @@
 [sub_resource type="Resource" id="18"]
 resource_name = "Greenhouse_LODVariant"
 script = ExtResource("6")
-__meta__ = {
-"class": "Greenhouse_LODVariant"
-}
+cast_shadow = 1
+metadata/class = "Greenhouse_LODVariant"
 
 [sub_resource type="Resource" id="10"]
 resource_name = "Greenhouse_Plant"
 script = ExtResource("5")
-__meta__ = {
-"class": "Greenhouse_Plant"
-}
 mesh/mesh_LOD_variants = [SubResource("18")]
 mesh/mesh_LOD_max_distance = 50.0
 mesh/mesh_LOD_kill_distance = -1.0
@@ -28,34 +24,42 @@ mesh/mesh_LOD_max_capacity = 100
 mesh/mesh_LOD_min_size = 1.0
 octree/octree_reconfigure_button = false
 octree/octree_recenter_button = false
-density/density_per_ten_units = 50.0
+density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [Vector3(0.2, 0.2, 0.2), Vector3(0.4, 0.4, 0.4)]
 up_vector/up_vector_primary_type = 1
+up_vector/up_vector_primary = Vector3(0, 0, 0)
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
 up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [0.0, 0.0]
 offset/offset_jitter_fraction = 0.6
 rotation/rotation_random_y = 180.0
 rotation/rotation_random_x = 0.0
 rotation/rotation_random_z = 0.0
 slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
 
 [sub_resource type="Resource" id="11"]
-resource_name = "PlantState"
+resource_name = "Greenhouse_PlantState"
 script = ExtResource("3")
-__meta__ = {
-"class": "Greenhouse_PlantState"
-}
 plant/plant_brush_active = false
+plant/plant_label = ""
 plant/plant = SubResource("10")
+metadata/class = "Greenhouse_PlantState"
 
 [sub_resource type="Resource" id="12"]
 resource_name = "Greenhouse_Plant"
 script = ExtResource("5")
-__meta__ = {
-"class": "Greenhouse_Plant"
-}
 mesh/mesh_LOD_variants = []
 mesh/mesh_LOD_max_distance = 50.0
 mesh/mesh_LOD_kill_distance = -1.0
@@ -63,83 +67,98 @@ mesh/mesh_LOD_max_capacity = 100
 mesh/mesh_LOD_min_size = 1.0
 octree/octree_reconfigure_button = false
 octree/octree_recenter_button = false
-density/density_per_ten_units = 5.0
+density/density_per_units = 100.0
 scale/scale_scaling_type = 0
 scale/scale_range = [Vector3(0.3, 0.3, 0.3), Vector3(0.6, 0.6, 0.6)]
 up_vector/up_vector_primary_type = 1
+up_vector/up_vector_primary = Vector3(0, 0, 0)
 up_vector/up_vector_secondary_type = 1
+up_vector/up_vector_secondary = Vector3(0, 0, 0)
 up_vector/up_vector_blending = 0.0
+fwd_vector/fwd_vector_primary_type = 0
+fwd_vector/fwd_vector_primary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_secondary_type = 0
+fwd_vector/fwd_vector_secondary = Vector3(0, 0, 0)
+fwd_vector/fwd_vector_blending = 0.0
 offset/offset_y_range = [0.0, 0.0]
 offset/offset_jitter_fraction = 0.6
 rotation/rotation_random_y = 180.0
 rotation/rotation_random_x = 0.0
 rotation/rotation_random_z = 0.0
 slope/slope_allowed_range = [0.0, 180.0]
+import_export/import_plant_data_button = false
+import_export/export_plant_data_button = false
+import_export/import_greenhouse_data_button = false
+import_export/export_greenhouse_data_button = false
+metadata/class = "Greenhouse_Plant"
 
 [sub_resource type="Resource" id="13"]
-resource_name = "PlantState"
+resource_name = "Greenhouse_PlantState"
 script = ExtResource("3")
-__meta__ = {
-"class": "Greenhouse_PlantState"
-}
 plant/plant_brush_active = false
+plant/plant_label = ""
 plant/plant = SubResource("12")
+metadata/class = "Greenhouse_PlantState"
 
 [sub_resource type="Resource" id="4"]
 resource_name = "Greenhouse"
 script = ExtResource("4")
-__meta__ = {
-"class": "Greenhouse"
-}
 plant_types/greenhouse_plant_states = [SubResource("11"), SubResource("13")]
+metadata/class = "Greenhouse"
 
 [sub_resource type="Resource" id="14"]
 resource_name = "Toolshed_Brush"
 script = ExtResource("7")
-__meta__ = {
-"class": "Toolshed_Brush"
-}
 behavior/behavior_brush_type = 0
-shape/shape_size = 1.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
+metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="15"]
 resource_name = "Toolshed_Brush"
 script = ExtResource("7")
-__meta__ = {
-"class": "Toolshed_Brush"
-}
 behavior/behavior_brush_type = 0
-shape/shape_size = 1.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
+metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="16"]
 resource_name = "Toolshed_Brush"
 script = ExtResource("7")
-__meta__ = {
-"class": "Toolshed_Brush"
-}
 behavior/behavior_brush_type = 0
-shape/shape_size = 1.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
+metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="17"]
 resource_name = "Toolshed_Brush"
 script = ExtResource("7")
-__meta__ = {
-"class": "Toolshed_Brush"
-}
 behavior/behavior_brush_type = 0
-shape/shape_size = 1.0
+shape/shape_volume_size = 1.0
+shape/shape_projection_size = 1.0
 behavior/behavior_strength = 1.0
+behavior/behavior_passthrough = false
+behavior/behavior_overlap_mode = 0
+behavior/behavior_no_settings_text = "This brush has no additional settings"
+metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="9"]
 resource_name = "Toolshed"
 script = ExtResource("2")
-__meta__ = {
-"class": "Toolshed"
-}
 brush/brushes = [SubResource("14"), SubResource("15"), SubResource("16"), SubResource("17")]
+metadata/class = "Toolshed"
 
 [node name="GreenhouseCreator" type="Node"]
 script = ExtResource("1")

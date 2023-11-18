@@ -45,6 +45,7 @@ var member_placeforms: Array[Array] = []
 var parent:Resource
 var MMI_container:Node3D = null
 var MMI:MultiMeshInstance3D = null
+var MMI_multimesh: MultiMesh = null
 @export var active_LOD_index:int = -1
 @export var MMI_name:String = ""
 
@@ -163,17 +164,20 @@ func restore_after_load(__MMI_container:Node3D, LOD_variants:Array):
 # If yes, also create an MMI
 func set_is_leaf(val):
 	is_leaf = val
+	
+	if is_leaf && !is_instance_valid(MMI_multimesh):
+		MMI_multimesh = MultiMesh.new()
+		MMI_multimesh.transform_format = 1
+		# TODO: test whenever Godot team fixes these errors when there're 0 mutimesh instances
+		#		https://github.com/godotengine/godot/issues/68592
+		MMI_multimesh.resource_local_to_scene = true
+		MMI_multimesh.mesh = DUMMY_MMI_MESH
+	
 	if is_leaf && !is_instance_valid(MMI) && is_instance_valid(MMI_container):
 		MMI = MultiMeshInstance3D.new()
 		MMI_container.add_child(MMI, true)
 		MMI.owner = MMI_container.owner
 		MMI_name = MMI.name
-		MMI.multimesh = MultiMesh.new()
-		MMI.multimesh.transform_format = 1
-		# TODO: test whenever Godot team fixes this
-		#		https://github.com/godotengine/godot/issues/68592
-		MMI.multimesh.resource_local_to_scene = true
-		MMI.multimesh.mesh = DUMMY_MMI_MESH
 	elif !is_leaf:
 		if is_instance_valid(MMI) && is_instance_valid(MMI_container):
 			MMI_container.remove_child(MMI)
@@ -183,7 +187,8 @@ func set_is_leaf(val):
 		if MMI:
 			MMI = null
 		MMI_name = ""
-	# NB this was previously under 'elif' check. Look out for unexpected behavior
+	
+	# NOTE: this was previously under 'elif' check. Look out for unexpected behavior
 	active_LOD_index = -1
 
 
@@ -210,9 +215,10 @@ func set_LODs_to_active_index():
 			if !is_instance_valid(new_mesh):
 				new_mesh = DUMMY_MMI_MESH
 			# Our assigned mesh is different from the intended one
-			if MMI.multimesh.mesh != new_mesh:
+			if MMI_multimesh.mesh != new_mesh:
 				# Assign the LOD variant mesh
-				MMI.multimesh.mesh = new_mesh
+				MMI_multimesh.mesh = new_mesh
+				validate_MMI_multimesh()
 			clear_and_spawn_all_member_spatials(active_LOD_index)
 			# Update cast_shadow as well
 			MMI.cast_shadow = shared_LOD_variants[active_LOD_index].cast_shadow
@@ -287,16 +293,17 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	# We need to set active_LOD_index on both leaves/non-leaves
 	# But non-leaves do not have an MMI and can't spawn spatials
 	if is_leaf:
-		#print(MMI.multimesh)
-		MMI.multimesh.mesh = shared_LOD_variants[LOD_index].mesh
-		validate_MMI_mesh()
+		#print(MMI_multimesh)
+		MMI_multimesh.mesh = shared_LOD_variants[LOD_index].mesh
+		validate_MMI_multimesh()
 		MMI.cast_shadow = shared_LOD_variants[LOD_index].cast_shadow
 		clear_and_spawn_all_member_spatials(last_LOD_index)
 
 
 # Reset MMIs and spawned spatials
 func clear_LOD_member_state():
-	MMI.multimesh.mesh = DUMMY_MMI_MESH
+	MMI_multimesh.mesh = DUMMY_MMI_MESH
+	validate_MMI_multimesh()
 	clear_all_member_spatials()
 
 
@@ -350,8 +357,8 @@ func restore_placeforms():
 	if !is_leaf: return
 	member_placeforms = []
 	var MMI_inst_transform: Transform3D
-	for idx in range(0, MMI.multimesh.instance_count):
-		MMI_inst_transform = MMI.multimesh.get_instance_transform(idx)
+	for idx in range(0, MMI_multimesh.instance_count):
+		MMI_inst_transform = MMI_multimesh.get_instance_transform(idx)
 		member_placeforms.append(Placeform.set_placement_from_origin_offset(
 			Placeform.mk(
 				Vector3(),
@@ -505,14 +512,25 @@ func validate_MMI():
 		MMI.owner = null
 		MMI = null
 		MMI_name = ""
+	
+	if MMI && MMI.multimesh:
+		MMI_multimesh = MMI.multimesh
+	
 	set_is_leaf(is_leaf)
-	validate_MMI_mesh()
+	validate_MMI_multimesh()
 
 
-# A workaround, since in Godot 4.0 multimesh breaks if it has transforms set but no mesh assigned
-func validate_MMI_mesh():
-	if MMI && !is_instance_valid(MMI.multimesh.mesh):
-		MMI.multimesh.mesh = DUMMY_MMI_MESH
+# A workaround, since in Godot 4.0 multimesh breaks 
+# If it has transforms set but no mesh assigned or zero instances
+# With resource_local_to_scene set to true
+func validate_MMI_multimesh():
+	if MMI:
+		var valid_mesh = is_instance_valid(MMI_multimesh.mesh) && MMI_multimesh.mesh != DUMMY_MMI_MESH
+		if valid_mesh && MMI_multimesh.instance_count > 0:
+			if MMI.multimesh != MMI_multimesh:
+				MMI.multimesh = MMI_multimesh
+		elif MMI.multimesh != null:
+			MMI.multimesh = null
 
 
 # Make sure all neccessary spawned spatials exist
@@ -644,17 +662,18 @@ func MMI_refresh_instance_placements_recursive():
 # But Idk if allocated and hidden instances (with reduced visible_instance_count) still tank GPU perfomance or not
 # If they do, we're better off keeping things as is to have better in-game performance
 func MMI_refresh_instance_placements():
-	MMI.multimesh.instance_count = member_count()
+	MMI_multimesh.instance_count = member_count()
+	validate_MMI_multimesh()
 	for member_idx in range(0, member_count()):
-		MMI.multimesh.set_instance_transform(member_idx, member_placeforms[member_idx][2])
+		MMI_multimesh.set_instance_transform(member_idx, member_placeforms[member_idx][2])
 
 
 # Refresh member Transform3D when reapplying a new Transform3D
 # This avoids completely refreshing all instances like in MMI_refresh_instance_placements()
 func MMI_refresh_member(member_idx: int, transform: Transform3D):
-	assert(MMI.multimesh.instance_count > member_idx) # Trying to refresh multimesh instance that isn't allocated
+	assert(MMI_multimesh.instance_count > member_idx) # Trying to refresh multimesh instance that isn't allocated
 
-	MMI.multimesh.set_instance_transform(member_idx, transform)
+	MMI_multimesh.set_instance_transform(member_idx, transform)
 
 
 

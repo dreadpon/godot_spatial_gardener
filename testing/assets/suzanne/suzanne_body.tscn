@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://mlm32hvvh3ku"]
 
 [ext_resource type="Shape3D" uid="uid://dgc0vtpn50fet" path="res://testing/assets/suzanne/suzanne_collision.tres" id="1"]
 

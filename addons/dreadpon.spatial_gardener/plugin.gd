@@ -301,8 +301,8 @@ func make_debug_view_menu():
 func adapt_editor_theme():
 	if !Engine.is_editor_hint(): return
 	
-	var editorTheme = ThemeAdapter.get_theme(get_editor_interface().get_inspector())
-	control_theme = ThemeAdapter.adapt_theme(editorTheme, true)
+	var editorTheme = get_editor_interface().get_editor_theme()
+	control_theme = ThemeAdapter.adapt_theme(editorTheme)
 
 
 # Gather folding states from side panel

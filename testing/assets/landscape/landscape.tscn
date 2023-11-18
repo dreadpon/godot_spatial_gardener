@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://k3qksunskqfg"]
 
 [ext_resource type="ArrayMesh" uid="uid://mgdxrv58deq4" path="res://testing/assets/landscape/foliage_tool_test_landscape_LOD_2.obj" id="1"]
 
