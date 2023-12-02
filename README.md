@@ -23,7 +23,7 @@ This is a single player plugin and works best with finite medium-sized scenes. T
 
 ## Stability
 
-Current stable release requires at least Godot v4.1.
+Current stable release requires at least Godot v4.2.
 
 Want a test-drive? Go to [Releases](https://github.com/dreadpon/godot_spatial_gardener/releases) and get the most recent windows build: `godot_spatial_gardener_showcase_windows_x64_<version>.zip`.
 

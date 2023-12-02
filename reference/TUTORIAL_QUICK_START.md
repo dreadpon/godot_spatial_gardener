@@ -19,7 +19,7 @@
 ## Plugin Setup
 You should have Godot engine installed; if not, you can download it from the [official website](https://godotengine.org/download).
 
-Most recent plugin version requires [Godot 4.1 that can be easily found on Godot's GitHub](https://github.com/godotengine/godot/tree/4.1-stable).
+Most recent plugin version requires [Godot 4.2 that can be easily found on Godot's GitHub](https://github.com/godotengine/godot/tree/4.2-stable).
 
 To start with, grab a copy of the demo project from [GitHub](https://github.com/dreadpon/godot_spatial_gardener). Open the page, go to `Releases`, find the latest version and download the `godot_spatial_gardener_demo_<version>.zip`.
 

@@ -91,7 +91,7 @@ func update_plugin_ver():
 
 
 static func get_plugin_ver():
-	return '1.3.0'
+	return '1.3.1'
 
 
 static func get_storage_ver():

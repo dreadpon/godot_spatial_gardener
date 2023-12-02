@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.3.1](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.1) - 2023-12-02
+
+### Changed
+
+#### Godot 4.2 port
+- Plugin is fully ported to Godot 4.2!
+
+<br/>
+
+### Fixed
+
+#### UX
+- Fix Issue #31 'Bad looking orange selection's bounding box when using the brush'
+
+#### Stability
+- Fix Issue #32 'Buffer argument is not a valid buffer' error spam 
+- Fix ThemeAdapter errors to work with Godot 4.2
+
+<br/><br/>
+
 ## [v1.3.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.0) - 2023-08-08
 
 ### Changed
