@@ -1,5 +1,5 @@
 @tool
-extends Node
+extends RefCounted
 
 #-------------------------------------------------------------------------------
 # A base object that gathers plant positions/overlaps

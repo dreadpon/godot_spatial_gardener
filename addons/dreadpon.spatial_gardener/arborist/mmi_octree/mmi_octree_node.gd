@@ -197,6 +197,8 @@ func destroy():
 		child.destroy()
 	child_nodes = []
 	reset_member_arrays()
+	# if is_instance_valid(MMI) && MMI.is_inside_tree():
+	# 	MMI.queue_free()
 
 
 
@@ -242,12 +244,20 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	var max_kill_dist := LOD_kill_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
 	var dist_to_node_center_bounds_estimate: float = clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
 	
+	#print(
+		#LOD_kill_distance, " + ", min_bounds_to_center_dist, " = ", max_kill_dist, "     ", 
+		#dist_to_node_center, " - ", max_bounds_to_center_dist, " = ", dist_to_node_center_bounds_estimate)
+	
 	var skip_assignment := false
 	var skip_children := false
 	var max_LOD_index = shared_LOD_variants.size() - 1
 	
+	var outside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate >= max_kill_dist
+	var inside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate < max_kill_dist
+	var outside_max_treshold: bool = dist_to_node_center_bounds_estimate >= max_LOD_dist
+	
 	# If outside the kill threshold
-	if LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate >= max_kill_dist:
+	if outside_kill_treshold:
 		# If haven't yet reset MMIs and spawned spatials, reset them
 		if active_LOD_index >= 0:
 			active_LOD_index = -1
@@ -258,7 +268,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 			skip_children = true
 		skip_assignment = true
 	# If already at max LOD and outside of the max LOD threshold
-	elif active_LOD_index == max_LOD_index && dist_to_node_center_bounds_estimate >= max_LOD_dist:
+	elif !inside_kill_treshold && active_LOD_index == max_LOD_index && outside_max_treshold:
 		# Skip assignment
 		skip_assignment = true
 		skip_children = true
@@ -529,8 +539,10 @@ func validate_MMI_multimesh():
 		if valid_mesh && MMI_multimesh.instance_count > 0:
 			if MMI.multimesh != MMI_multimesh:
 				MMI.multimesh = MMI_multimesh
-		elif MMI.multimesh != null:
-			MMI.multimesh = null
+		elif MMI_multimesh.instance_count == 0:
+			MMI_multimesh.mesh = null#DUMMY_MMI_MESH
+		# elif MMI.multimesh != null:
+		# 	MMI.multimesh = null
 
 
 # Make sure all neccessary spawned spatials exist

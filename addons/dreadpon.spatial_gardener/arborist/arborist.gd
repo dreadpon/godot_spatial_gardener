@@ -88,7 +88,6 @@ func _ready():
 		for octree_manager in octree_managers_copy:
 			octree_managers.append(octree_manager.duplicate_tree())
 	
-	
 	logger = Logger.get_for(self, name)
 	
 	owner = get_tree().get_edited_scene_root()
