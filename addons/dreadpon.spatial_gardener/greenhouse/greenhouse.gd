@@ -56,7 +56,7 @@ func _init():
 	if Engine.is_editor_hint():
 		# Editor raises error everytime you run the game with F5 because of "abstract native class"
 		# https://github.com/godotengine/godot/issues/73525
-		_file_dialog = (EditorFileDialog as Variant).new()
+		_file_dialog = DPON_FM.ED_EditorFileDialog.new()
 	else:
 		_file_dialog = FileDialog.new()
 	_file_dialog.close_requested.connect(on_file_dialog_hide)

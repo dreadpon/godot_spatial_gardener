@@ -7,21 +7,21 @@ extends Object
 
 
 static func clear_history(undo_redo):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		push_error("Unable to clear history on EditorUndoRedoManager!")
 	else:
 		undo_redo.clear_history()
 
 
 static func create_action(undo_redo, name: String, merge_mode := 0, backward_undo_ops := false, custom_context: Object = null):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		undo_redo.create_action(name, merge_mode, custom_context, backward_undo_ops)
 	else:
 		undo_redo.create_action(name, merge_mode, backward_undo_ops)
 
 
 static func add_do_method(undo_redo, callable: Callable):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		var bound_args = callable.get_bound_arguments()
 		match bound_args.size():
 			0: undo_redo.add_do_method(callable.get_object(), callable.get_method())
@@ -41,7 +41,7 @@ static func add_do_method(undo_redo, callable: Callable):
 
 
 static func add_undo_method(undo_redo, callable: Callable):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		var bound_args = callable.get_bound_arguments()
 		match bound_args.size():
 			0: undo_redo.add_undo_method(callable.get_object(), callable.get_method())
@@ -66,21 +66,21 @@ static func commit_action(undo_redo, execute := true):
 
 
 static func undo(undo_redo, custom_context: Object = null):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		undo_redo = undo_redo.get_history_undo_redo(undo_redo.get_object_history_id(custom_context))
 	
 	return undo_redo.undo()
 
 
 static func redo(undo_redo, custom_context: Object = null):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		undo_redo = undo_redo.get_history_undo_redo(undo_redo.get_object_history_id(custom_context))
 	
 	return undo_redo.redo()
 
 
 static func get_current_action_name(undo_redo, custom_context: Object = null):
-	if undo_redo is EditorUndoRedoManager:
+	if DPON_FM.is_instance_of_ed(undo_redo, "EditorUndoRedoManager"):
 		undo_redo = undo_redo.get_history_undo_redo(undo_redo.get_object_history_id(custom_context))
 	
 	return undo_redo.get_current_action_name()

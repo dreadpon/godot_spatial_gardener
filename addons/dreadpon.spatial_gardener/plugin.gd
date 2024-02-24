@@ -58,6 +58,10 @@ var undo_redo = null
 #-------------------------------------------------------------------------------
 
 
+func _init():
+	DPON_FM.setup()
+
+
 # Most lifecycle functions here and later on are restricted as editor-only
 # Editing plants without an editor is not currently supported
 func _ready():
