@@ -67,6 +67,7 @@ func _enter_tree():
 
 func _exit_tree():
 	FunLib.free_children(self)
+	gardener = null
 
 
 func dpon_testing_set_editor_selection(val):

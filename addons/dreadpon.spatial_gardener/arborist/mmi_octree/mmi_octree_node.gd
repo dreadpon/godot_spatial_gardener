@@ -193,6 +193,13 @@ func set_is_leaf(val):
 
 
 func destroy():
+	member_placeforms = []
+	parent = null
+	MMI_container = null
+	MMI = null
+	MMI_multimesh = null
+	shared_LOD_variants = []
+	
 	for child in child_nodes:
 		child.destroy()
 	child_nodes = []

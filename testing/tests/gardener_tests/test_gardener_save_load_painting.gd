@@ -75,8 +75,10 @@ func save_gardener():
 	var packed_scene = PackedScene.new()
 	packed_scene.pack(gardener)
 	FunLib.save_res(packed_scene, greenhouse_path, "gardener.tscn")
-	remove_child(gardener)
 	editor_selection.clear()
+	remove_child(gardener)
+	gardener.free()
+	gardener = null
 
 
 func load_gardener():
