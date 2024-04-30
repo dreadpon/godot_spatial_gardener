@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.3.2](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.2) - 2024-04-30
+
+### Fixed
+
+#### Stability
+- Fix Issue #38 'Errors in exported builds due to usage of editor-only scripts'
+- Fix Issue #37 'Loss of foliage data when moving outside kill treshold and saving a scene; vulkan buffer errors cause by memory leaking stroke_handler.gd, which was keeping a reference to OctreeManager resources'
+- Fix a memory leak/resource cache issue, that keeps multimeshes in memory and spams 'instance_count > 0' errors when opening a scene
+
+<br/><br/>
+
 ## [v1.3.1](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.1) - 2023-12-02
 
 ### Changed
