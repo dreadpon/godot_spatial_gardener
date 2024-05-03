@@ -185,9 +185,6 @@ func prepare_for_removal():
 	
 	# Avoid circular reference so that RefCount can properly free objects
 	parent = null
-	MMI_container = null
-	MMI = null
-	MMI_multimesh = null
 	for child in child_nodes:
 		child.prepare_for_removal()
 	child_nodes = []
