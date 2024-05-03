@@ -130,20 +130,6 @@ func safe_init_root():
 	octant = -1
 
 
-# Cleanup this this node before deletion
-# TODO: find out if I can clear the member array here as well
-func prepare_for_removal():
-	print_address("", "prepare for removal")
-	
-	# Avoid circular reference so that RefCount can properly free objects
-	parent = null
-	for child in child_nodes:
-		child.prepare_for_removal()
-	child_nodes = []
-	
-	set_is_leaf(false)
-
-
 # Restore any states that might be broken after loading this node
 func restore_after_load(__MMI_container:Node3D, LOD_variants:Array):
 	MMI_container = __MMI_container
@@ -192,7 +178,29 @@ func set_is_leaf(val):
 	active_LOD_index = -1
 
 
-func destroy():
+# Cleanup this this node before deletion
+# TODO: find out if I can clear the member array here as well
+func prepare_for_removal():
+	print_address("", "prepare for removal")
+	
+	# Avoid circular reference so that RefCount can properly free objects
+	parent = null
+	MMI_container = null
+	MMI = null
+	MMI_multimesh = null
+	for child in child_nodes:
+		child.prepare_for_removal()
+	child_nodes = []
+	
+	set_is_leaf(false)
+
+
+# Free anything that might incur a circular reference or a memory leak
+# Anything that is @export'ed is NOT touched here
+# We count on Godot's own systems to handle that in whatever way works best
+# TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
+#		will need to happen around v2.0.0, since it's a very risky change
+func free_refs():
 	member_placeforms = []
 	parent = null
 	MMI_container = null
@@ -201,11 +209,7 @@ func destroy():
 	shared_LOD_variants = []
 	
 	for child in child_nodes:
-		child.destroy()
-	child_nodes = []
-	reset_member_arrays()
-	# if is_instance_valid(MMI) && MMI.is_inside_tree():
-	# 	MMI.queue_free()
+		child.free_refs()
 
 
 

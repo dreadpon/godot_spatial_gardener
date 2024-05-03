@@ -125,7 +125,7 @@ func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
 			for octree_manager in octree_managers:
-				octree_manager.destroy()
+				octree_manager.free_refs()
 
 
 func _exit_tree():
@@ -137,7 +137,6 @@ func _exit_tree():
 	#if Engine.is_editor_hint(): return
 	#for octree_manager in octree_managers:
 		#octree_manager.destroy()
-#	octree_managers = []
 #	mutex_placement.lock()
 #	exit_instance_placement = true
 #	done_instance_placement = false

@@ -86,11 +86,6 @@ func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vecto
 	request_debug_redraw()
 
 
-func prepare_for_removal():
-	if root_octree_node:
-		root_octree_node.prepare_for_removal()
-
-
 func connect_node(octree_node:MMIOctreeNode):
 	assert(octree_node)
 	FunLib.ensure_signal(octree_node.placeforms_rejected, grow_to_members)
@@ -105,10 +100,21 @@ func disconnect_node(octree_node:MMIOctreeNode):
 	octree_node.req_debug_redraw.disconnect(request_debug_redraw)
 
 
-func destroy():
+func prepare_for_removal():
+	if root_octree_node:
+		root_octree_node.prepare_for_removal()
+
+
+# Free anything that might incur a circular reference or a memory leak
+# Anything that is @export'ed is NOT touched here
+# We count on Godot's own systems to handle that in whatever way works best
+# TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
+#		will need to happen around v2.0.0, since it's a very risky change
+func free_refs():
+	print(self, " ", resource_local_to_scene
+, " ", get_local_scene())
 	if !root_octree_node: return
-	root_octree_node.destroy()
-	root_octree_node = null
+	root_octree_node.free_refs()
 
 
 
