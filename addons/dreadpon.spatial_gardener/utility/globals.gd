@@ -29,9 +29,6 @@ static func get_err_message(err_code):
 
 
 
-# All accepted mesh classes in string format
-const MESH_CLASSES:Array = ["ArrayMesh", "CapsuleMesh", "BoxMesh", "CylinderMesh", "PlaneMesh", "PointMesh", "PrismMesh", "QuadMesh", "SphereMesh"]
-
 # Controls per how many units is density calculated
 const PLANT_DENSITY_UNITS:int = 100
 

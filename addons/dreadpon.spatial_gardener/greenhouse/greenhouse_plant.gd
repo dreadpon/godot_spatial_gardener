@@ -132,8 +132,7 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 	var input_field:UI_InputField = null
 	match prop:
 		"mesh/mesh_LOD_variants":
-			var accepted_classes := ["Greenhouse_LODVariant", "PackedScene"]
-			accepted_classes.append_array(Globals.MESH_CLASSES)
+			var accepted_classes := [Greenhouse_LODVariant, PackedScene, Mesh]
 			var settings := {
 				"add_create_inst_button": true,
 				"accepted_classes": accepted_classes,
@@ -429,11 +428,13 @@ func request_prop_action(prop_action:PropAction):
 				var new_prop_action = null
 				if is_instance_of(prop_action.val, PackedScene):
 					new_prop_action = PA_PropSet.new("spawned_spatial", prop_action.val)
-				else:
-					for mesh_class in Globals.MESH_CLASSES:
-						if FunLib.obj_is_class_string(prop_action.val, mesh_class):
-							new_prop_action = PA_PropSet.new("mesh", prop_action.val)
-							break
+				elif is_instance_of(prop_action.val, Mesh):
+					new_prop_action = PA_PropSet.new("mesh", prop_action.val)
+				# else:
+				# 	for mesh_class in Globals.MESH_CLASSES:
+				# 		if FunLib.obj_is_class_string(prop_action.val, mesh_class):
+				# 			new_prop_action = PA_PropSet.new("mesh", prop_action.val)
+				# 			break
 				
 				if new_prop_action != null:
 					mesh_LOD_variants[prop_action.index].request_prop_action(new_prop_action)

@@ -37,15 +37,14 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 	match prop:
 		"mesh":
 			var settings := {
-				# Godot really needs a proper class check
-				"accepted_classes": Globals.MESH_CLASSES,
+				"accepted_classes": [Mesh],
 				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_RESOURCE,
 				}
 			input_field = UI_IF_ThumbnailObject.new(mesh, "Mesh", prop, settings)
 		"spawned_spatial":
 			var settings := {
-				"accepted_classes": ["PackedScene"],
+				"accepted_classes": [PackedScene],
 				"element_display_size": 75 * FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/greenhouse_thumbnail_scale", 1.0),
 				"element_interaction_flags": UI_IF_ThumbnailArray.PRESET_RESOURCE,
 				}

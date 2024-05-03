@@ -92,13 +92,22 @@ func _cleanup():
 # Wish we could automatically infer extensions :/
 func add_file_dialog_filter():
 	for accepted_class in accepted_classes:
-		var extension := "tres"
-		match accepted_class:
-			"ArrayMesh":
-				extension = "mesh"
-			"PackedScene":
-				extension = "tscn"
-		file_dialog.add_filter("*.*%s ; %s" % [extension, accepted_class])
+		var extensions := ""
+		var ext_name := ""
+		var inst = accepted_class.new()
+		
+		if is_instance_of(inst, Mesh):
+			extensions = "*.tres, *.res, *.mesh, .*obj"
+			ext_name = "Mesh"
+		elif is_instance_of(inst, PackedScene):
+			extensions = "*.tscn, *.scn, *.gltf"
+			ext_name = "PackedScene"
+		elif is_instance_of(inst, Resource):
+			extensions = "*.tres, *.res"
+			ext_name = "Resource"
+		
+		if extensions != "":
+			file_dialog.add_filter("%s ; %s" % [extensions, ext_name])
 
 
 
@@ -222,8 +231,8 @@ func on_file_selected(path, thumb):
 	var res = load(path)
 	
 	var found_example = false
-	for accepted_classe in accepted_classes:
-		if FunLib.obj_is_class_string(res, accepted_classe):
+	for accepted_class in accepted_classes:
+		if is_instance_of(res, accepted_class):
 			found_example = true
 			break
 	
