@@ -111,8 +111,6 @@ func prepare_for_removal():
 # TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
 #		will need to happen around v2.0.0, since it's a very risky change
 func free_refs():
-	print(self, " ", resource_local_to_scene
-, " ", get_local_scene())
 	if !root_octree_node: return
 	root_octree_node.free_refs()
 
