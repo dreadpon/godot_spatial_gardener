@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.3.3](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.3) - 2024-05-04
+
+### Changed
+
+#### UI
+- Implement Request #47 'Add .res (and .obj) filters to open mesh dialog (+ .scn/.gltf to scene open dialog)'
+
+### Fixed
+
+#### Stability
+- Fix Issue #48: 'Arborist loses all data upon saving/changing scenes'
+
+
+<br/><br/>
+
 ## [v1.3.2](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.2) - 2024-04-30
 
 ### Fixed
