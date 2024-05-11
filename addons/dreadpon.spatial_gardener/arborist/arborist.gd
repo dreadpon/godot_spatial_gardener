@@ -556,11 +556,10 @@ func _get_property_list():
 
 
 func _get_configuration_warnings():
-	var MMI_container_check = get_node("MMI_container")
-	if MMI_container_check && is_instance_of(MMI_container_check, Node3D):
-		return ""
+	if has_node("MMI_container") && is_instance_of(get_node("MMI_container"), Node3D):
+		return PackedStringArray()
 	else:
-		return "Arborist is missing a valid MMI_container child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"
+		return PackedStringArray(["Arborist is missing a valid MMI_container child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])
 
 
 func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode=0) -> void:

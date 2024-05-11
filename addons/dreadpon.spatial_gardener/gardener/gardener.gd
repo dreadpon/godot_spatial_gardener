@@ -81,6 +81,8 @@ signal greenhouse_prop_action_executed(prop_action, final_val)
 
 func _init():
 	set_meta("class", "Gardener")
+	child_entered_tree.connect(_on_child_entered_tree)
+	child_exiting_tree.connect(_on_child_exiting_tree)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
@@ -156,9 +158,12 @@ func _apply_changes():
 	greenhouse.set_undo_redo(_undo_redo)
 
 
-func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode = 0):
-	super.add_child(node, legible_unique_name)
-	update_configuration_warnings()
+func _on_child_entered_tree(child: Node):
+	update_configuration_warnings.call_deferred()
+
+
+func _on_child_exiting_tree(child: Node):
+	update_configuration_warnings.call_deferred()
 
 
 
@@ -764,11 +769,10 @@ func _get_property_list():
 
 # Warning to be displayed in editor SceneTree
 func _get_configuration_warnings():
-	var arborist_check = get_node("Arborist")
-	if arborist_check && is_instance_of(arborist_check, Arborist):
-		return ""
+	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
+		return PackedStringArray()
 	else:
-		return "Gardener is missing a valid Arborist child\nSince it should be created automatically, try reloading a scene or recreating a Gardener"
+		return PackedStringArray(["Gardener is missing a valid Arborist child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])
 
 
 func set_refresh_octree_shared_LOD_variants(val):
