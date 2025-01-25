@@ -298,6 +298,7 @@ func update_active_brush_data(raycast_overrides: Dictionary = {}):
 	var end = project_mouse_far() if !raycast_overrides.has('end') else raycast_overrides.end
 	
 	var params = PhysicsRayQueryParameters3D.create(start, end, brush_collision_mask, [])
+	params.hit_from_inside = true
 	var ray_result:Dictionary = space_state.intersect_ray(params)
 	
 	if !ray_result.is_empty():

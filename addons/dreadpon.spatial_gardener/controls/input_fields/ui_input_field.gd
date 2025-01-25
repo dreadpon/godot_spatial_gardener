@@ -132,7 +132,7 @@ func _set_tab(index:int):
 	tab_spacer.visible = false if tab_index <= 0 else true
 	
 	if tab_index > 0:
-		var styleboxes = ThemeAdapter.lookup_sub_inspector_styleboxes(self, tab_index - 1)
+		var styleboxes = ThemeAdapter.lookup_sub_inspector_styleboxes(self, tab_index)
 		set_stylebox(styleboxes.sub_inspector_bg)
 	else:
 		var stylebox = StyleBoxFlat.new()

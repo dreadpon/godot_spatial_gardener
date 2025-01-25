@@ -201,13 +201,13 @@ static func lookup_sub_inspector_styleboxes(search_node:Node, sub_index:int):
 	var sub_inspector_property_bg = "sub_inspector_property_bg%d" % [sub_index]
 	var sub_inspector_property_bg_selected = "sub_inspector_property_bg_selected%d" % [sub_index]
 	
-	var stylebox_names := editor_theme.get_stylebox_list("Editor")
+	var stylebox_names := editor_theme.get_stylebox_list("EditorStyles")
 	for stylebox_name in stylebox_names:
 		if stylebox_name == sub_inspector_bg:
-			styleboxes.sub_inspector_bg = editor_theme.get_stylebox(sub_inspector_bg, "Editor")
+			styleboxes.sub_inspector_bg = editor_theme.get_stylebox(sub_inspector_bg, "EditorStyles")
 		elif stylebox_name == sub_inspector_property_bg:
-			styleboxes.sub_inspector_property_bg = editor_theme.get_stylebox(sub_inspector_property_bg, "Editor")
+			styleboxes.sub_inspector_property_bg = editor_theme.get_stylebox(sub_inspector_property_bg, "EditorStyles")
 		elif stylebox_name == sub_inspector_property_bg_selected:
-			styleboxes.sub_inspector_property_bg_selected = editor_theme.get_stylebox(sub_inspector_property_bg_selected, "Editor")
+			styleboxes.sub_inspector_property_bg_selected = editor_theme.get_stylebox(sub_inspector_property_bg_selected, "EditorStyles")
 	return styleboxes
 	
