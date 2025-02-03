@@ -139,5 +139,3 @@ static func combine_results(one:Dictionary, two:Dictionary) -> Dictionary:
 	for key in two.keys():
 		results[key] = two[key]
 	return results
-
-

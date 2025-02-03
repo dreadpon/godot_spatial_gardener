@@ -51,7 +51,7 @@ var is_edited: bool = false
 var toolshed:Toolshed = null
 var greenhouse:Greenhouse = null
 var painter:Painter = null
-var arborist:Arborist = null
+var arborist:Arborist = Arborist.new()
 var debug_viewer:DebugViewer = null
 
 var _resource_previewer = null
@@ -105,35 +105,21 @@ func _ready():
 	
 	logger = Logger.get_for(self, name)
 	
-	# Without editor we only care about an Arborist
-	# But it is already self-sufficient, so no need to initialize it
-	if !Engine.is_editor_hint(): return
+	painting_node = Node3D.new()
+	add_child(painting_node, false, Node.INTERNAL_MODE_FRONT)
 	
-	if has_node('painting'):
-		painting_node = get_node('painting')
-	else:
-		painting_node = Node3D.new()
-		painting_node.name = "painting"
-		add_child(painting_node)
-	
-	if has_node('debug_viewer'):
-		debug_viewer = get_node('debug_viewer')
-	else:
-		debug_viewer = DebugViewer.new()
-		debug_viewer.name = "debug_viewer"
-		add_child(debug_viewer)
+	debug_viewer = DebugViewer.new()
+	add_child(debug_viewer, false, Node.INTERNAL_MODE_FRONT)
 	
 	init_painter()
-	painter.set_brush_collision_mask(gardening_collision_mask)
+	
+	if !is_instance_valid(arborist):
+		push_warning("Arborist invalid. This should never happen. Creating a new one...")
+		arborist = Arborist.new()
 	
 	reload_resources()
 	init_arborist()
-	
 	set_gardening_collision_mask(gardening_collision_mask)
-
-
-func _enter_tree():
-	pass
 
 
 func _exit_tree():
@@ -144,10 +130,13 @@ func _exit_tree():
 
 
 func _process(delta):
-	if painter:
-		painter.update(delta)
+	#if painter:
+	arborist.update(delta)
+	painter.update(delta)
 
 
+# TODO: this will be irrelevant after we move Greenhouse to be saved with its Gardener
+#		and Toolshed shared for all Gardeners and stored in .godot folder
 func _apply_changes():
 	if !Engine.is_editor_hint(): return
 	if !FunLib.is_dir_valid(garden_work_directory): return
@@ -180,7 +169,7 @@ func forwarded_input(camera, event):
 	if !handled:
 		handled = toolshed.forwarded_input(camera, event)
 	if !handled:
-		handled = arborist._unhandled_input(event)
+		handled = arborist.forward_input(event)
 	
 	return handled
 
@@ -205,18 +194,16 @@ func restore_references():
 	logger = Logger.get_for(self, name)
 	if !Engine.is_editor_hint(): return
 	
-	if has_node('painting'):
-		painting_node = get_node('painting')
-	if has_node('debug_viewer'):
-		debug_viewer = get_node('debug_viewer')
+	#if has_node('painting'):
+		#painting_node = get_node('painting')
+	#if has_node('debug_viewer'):
+		#debug_viewer = get_node('debug_viewer')
 	
 	init_painter()
-	painter.set_brush_collision_mask(gardening_collision_mask)
-	
 	reload_resources()
 	
-	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
-		arborist = get_node("Arborist")
+	#if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
+		#arborist = get_node("Arborist")
 	
 	set_gardening_collision_mask(gardening_collision_mask)
 
@@ -224,38 +211,21 @@ func restore_references():
 # Initialize a Painter
 # Assumed to be the first manager to initialize
 func init_painter():
-	FunLib.free_children(painting_node)
 	painter = Painter.new(painting_node)
 	painter.stroke_updated.connect(on_painter_stroke_updated)
 	painter.changed_active_brush_prop.connect(on_changed_active_brush_prop)
 	painter.stroke_started.connect(on_painter_stroke_started)
 	painter.stroke_finished.connect(on_painter_stroke_finished)
+	painter.set_brush_collision_mask(gardening_collision_mask)
 
 
 # Initialize the Arborist and connect it to other objects
-# Won't be called without editor, as Arborist is already self-sufficient
 func init_arborist():
-	# A fancy way of saying
-	# "Make sure there is a correct node with a correct name"
-	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
-		arborist = get_node("Arborist")
-		logger.info("Found existing Arborist")
-	else:
-		if has_node("Arborist"):
-			var old_arborist = get_node("Arborist")
-			old_arborist.owner = null
-			remove_child(old_arborist)
-			old_arborist.queue_free()
-			logger.info("Removed invalid Arborist")
-		arborist = Arborist.new()
-		arborist.name = "Arborist"
-		add_child(arborist)
-		logger.info("Added new Arborist")
-	
+	arborist.setup(self)
 	if greenhouse:
-		pair_arborist_greenhouse()
-	pair_debug_viewer_arborist()
-	pair_debug_viewer_greenhouse()
+		reinit_arborist_with_greenhouse()
+	reinit_debug_viewer_with_arborist()
+	reinit_debug_viewer_with_greenhouse()
 
 
 # Initialize a Greenhouse and a Toolshed
@@ -313,7 +283,7 @@ func reload_resources():
 	FunLib.ensure_signal(greenhouse.req_export_greenhouse_data, on_greenhouse_req_export_greenhouse_data)
 	
 	if arborist:
-		pair_arborist_greenhouse()
+		reinit_arborist_with_greenhouse()
 	
 	if toolshed && toolshed != last_toolshed && _side_panel:
 		ui_category_brushes = toolshed.create_ui(_base_control, _resource_previewer)
@@ -323,8 +293,7 @@ func reload_resources():
 		_side_panel.set_tool_ui(ui_category_plants, 1)
 	
 	if arborist:
-		for i in range(0, arborist.octree_managers.size()):
-			arborist.emit_member_count(i)
+		arborist.emit_total_member_count()
 	
 	if created_new_toolshed:
 		save_toolshed()
@@ -334,19 +303,19 @@ func reload_resources():
 
 # It's possible we load a different Greenhouse while an Arborist is already initialized
 # So collapse that into a function
-func pair_arborist_greenhouse():
+func reinit_arborist_with_greenhouse():
 	if !arborist || !greenhouse:
 		if !arborist: logger.warn("Arborist->Greenhouse: Arborist is not initialized!")
 		if !greenhouse: logger.warn("Arborist->Greenhouse: Greenhouse is not initialized!")
 		return
 	# We could duplicate an array, but that's additional overhead so we assume Arborist won't change it
-	arborist.setup(greenhouse.greenhouse_plant_states)
+	arborist.init_with_greenhouse(greenhouse.greenhouse_plant_states)
 	
 	if !arborist.member_count_updated.is_connected(greenhouse.plant_count_updated):
 		arborist.member_count_updated.connect(greenhouse.plant_count_updated)
 
 
-func pair_debug_viewer_greenhouse():
+func reinit_debug_viewer_with_greenhouse():
 	if !debug_viewer || !greenhouse:
 		if !debug_viewer: logger.warn("DebugViewer->Greenhouse: DebugViewer is not initialized!")
 		if !greenhouse: logger.warn("DebugViewer->Greenhouse: Greenhouse is not initialized!")
@@ -356,7 +325,7 @@ func pair_debug_viewer_greenhouse():
 	reinit_debug_draw_brush_active()
 
 
-func pair_debug_viewer_arborist():
+func reinit_debug_viewer_with_arborist():
 	if !debug_viewer || !arborist:
 		if !debug_viewer: logger.warn("DebugViewer->Arborist: DebugViewer is not initialized!")
 		if !arborist: logger.warn("DebugViewer->Arborist: Arborist is not initialized!")
@@ -364,6 +333,21 @@ func pair_debug_viewer_arborist():
 	
 	if !arborist.req_debug_redraw.is_connected(debug_viewer.request_debug_redraw):
 		arborist.req_debug_redraw.connect(debug_viewer.request_debug_redraw)
+
+
+# Workaround below fixes the problem of instanced nodes "sharing" exported arrays (and resources inside them)
+# When instanced in the editor
+# See https://github.com/godotengine/godot/issues/16478
+# This fix is needed, so we can have multiple instances of same terrain with same plant placement
+# But have LOD switch independently for each of these terrains
+# func something_something_make_unique():
+# 	if octree_managers == null:
+# 		octree_managers = []
+# 	else:
+# 		var octree_managers_copy = octree_managers.duplicate()
+# 		octree_managers = []
+# 		for octree_manager in octree_managers_copy:
+# 			octree_managers.append(octree_manager.duplicate_tree())
 
 
 
@@ -396,9 +380,8 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	_side_panel.set_main_control_state(initialized_for_edit)
 
 	painter.start_editing()
-
-	for i in range(0, arborist.octree_managers.size()):
-		arborist.emit_member_count(i)
+	
+	arborist.emit_total_member_count()
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
 	set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
@@ -539,12 +522,15 @@ func on_greenhouse_prop_action_executed_on_LOD_variant(prop_action:PropAction, f
 	var mesh_index = plant.mesh_LOD_variants.find(LOD_variant)
 	
 	match prop_action.prop:
+		"mesh":
+			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
+				arborist.on_LOD_variant_prop_changed_mesh(plant_index, mesh_index, final_val)
 		"spawned_spatial":
 			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
 				arborist.on_LOD_variant_prop_changed_spawned_spatial(plant_index, mesh_index, final_val)
 		"cast_shadow":
 			if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
-				arborist.set_LODs_to_active_index(plant_index)
+				arborist.on_LOD_variant_prop_changed_cast_shadow(plant_index, mesh_index, final_val)
 
 
 # A request to reconfigure an octree
@@ -704,9 +690,6 @@ func save_greenhouse():
 
 
 
-
-
-
 #-------------------------------------------------------------------------------
 # Property export
 #-------------------------------------------------------------------------------
@@ -720,8 +703,10 @@ func _get(property):
 			return garden_work_directory
 		"gardening/gardening_collision_mask":
 			return gardening_collision_mask
+		"arborist":
+			return arborist
 		"plugin_version":
-			return 
+			return plugin_version
 		"storage_version":
 			return storage_version
 
@@ -755,6 +740,13 @@ func _get_property_list():
 			"hint": PROPERTY_HINT_LAYERS_3D_PHYSICS
 		},
 		{
+			"name": "arborist",
+			"type": TYPE_OBJECT,
+			"usage": PROPERTY_USAGE_NO_EDITOR,
+			#"hint": PROPERTY_HINT_RESOURCE_TYPE,
+			#"hint_string": "Arborist"
+		},
+		{
 			"name": "plugin_version",
 			"type": TYPE_STRING,
 			"usage": PROPERTY_USAGE_NO_EDITOR,
@@ -769,7 +761,7 @@ func _get_property_list():
 
 # Warning to be displayed in editor SceneTree
 func _get_configuration_warnings():
-	if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
+	if is_instance_valid(arborist):
 		return PackedStringArray()
 	else:
 		return PackedStringArray(["Gardener is missing a valid Arborist child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])

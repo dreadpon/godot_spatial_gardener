@@ -1,5 +1,5 @@
 @tool
-extends Node3D
+extends Resource
 
 
 #-------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ const SH_Single = preload("stroke_handler/sh_single.gd")
 const SH_Reapply = preload("stroke_handler/sh_reapply.gd")
 const SH_Manual = preload("stroke_handler/sh_manual.gd")
 
-var MMI_container:Node3D = null
+var gardener_root:Node3D = null
 var octree_managers:Array
 
 var gardening_collision_mask:int = 0
@@ -71,46 +71,17 @@ signal member_count_updated(octree_index, new_count)
 
 func _init():
 	set_meta("class", "Arborist")
+	logger = Logger.get_for(self)
 
 
 
-func _ready():
-	# Workaround below fixes the problem of instanced nodes "sharing" exported arrays (and resources inside them)
-	# When instanced in the editor
-	# See https://github.com/godotengine/godot/issues/16478
-	# This fix is needed, so we can have multiple instances of same terrain with same plant placement
-	# But have LOD switch independently for each of these terrains
-	if octree_managers == null:
-		octree_managers = []
-	else:
-		var octree_managers_copy = octree_managers.duplicate()
-		octree_managers = []
-		for octree_manager in octree_managers_copy:
-			octree_managers.append(octree_manager.duplicate_tree())
-	
-	logger = Logger.get_for(self, name)
-	
-	owner = get_tree().get_edited_scene_root()
-	
-	MMI_container = get_node_or_null("MMI_container")
-	if MMI_container && !is_instance_of(MMI_container, Node3D):
-		remove_child(MMI_container)
-		MMI_container.queue_free()
-		MMI_container = null
-	if !MMI_container:
-		FunLib.free_children(self)
-		MMI_container = Node3D.new()
-		MMI_container.name = "MMI_container"
-		add_child(MMI_container)
-	
-	MMI_container.owner = owner
+func setup(p_gardener_root: Node3D):
+	gardener_root = p_gardener_root
+	FunLib.free_children(gardener_root)
 	
 	for octree_manager in octree_managers:
-		octree_manager.restore_after_load(MMI_container)
+		octree_manager.restore_after_load(gardener_root)
 
-
-func _enter_tree():
-	pass
 #	thread_instance_placement = Thread.new()
 #	mutex_placement = Mutex.new()
 #	semaphore_instance_placement = Semaphore.new()
@@ -126,44 +97,40 @@ func _notification(what):
 		NOTIFICATION_PREDELETE:
 			for octree_manager in octree_managers:
 				octree_manager.free_refs()
-
-
-func _exit_tree():
-	pass
-	# This is... weird
-	# Apparently I need to free any Resources that are left after closing a scene
-	# I'm not exactly sure why
-	# And it *might* be destructive to do so in editor
-	#if Engine.is_editor_hint(): return
-	#for octree_manager in octree_managers:
-		#octree_manager.destroy()
-#	mutex_placement.lock()
-#	exit_instance_placement = true
-#	done_instance_placement = false
-#	mutex_placement.unlock()
-#
-#	semaphore_instance_placement.post()
-#	thread_instance_placement.wait_to_finish()
-#
-#	thread_instance_placement = null
-#	mutex_placement = null
-#	semaphore_instance_placement = null
+			
+			# This is... weird
+			# Apparently I need to free any Resources that are left after closing a scene
+			# I'm not exactly sure why
+			# And it *might* be destructive to do so in editor
+			#if Engine.is_editor_hint(): return
+			#for octree_manager in octree_managers:
+				#octree_manager.destroy()
+		#	mutex_placement.lock()
+		#	exit_instance_placement = true
+		#	done_instance_placement = false
+		#	mutex_placement.unlock()
+		#
+		#	semaphore_instance_placement.post()
+		#	thread_instance_placement.wait_to_finish()
+		#
+		#	thread_instance_placement = null
+		#	mutex_placement = null
+		#	semaphore_instance_placement = null
 
 
 # Expected to be called inside or after a parent's _ready()
-func setup(plant_states):
+func init_with_greenhouse(plant_states):
 	verify_all_plants(plant_states)
 
 
 # Restore all OctreeManager objects after load
 # Create missing ones
 func verify_all_plants(plant_states_to_verify:Array):
-	if !is_inside_tree(): return
 	debug_print_lifecycle("verifying for plant_states: " + str(plant_states_to_verify))
 	
 	for plant_index in range(0, plant_states_to_verify.size()):
 		if octree_managers.size() - 1 >= plant_index:
-			octree_managers[plant_index].restore_after_load(MMI_container)
+			octree_managers[plant_index].restore_after_load(gardener_root)
 			connect_octree_manager(octree_managers[plant_index])
 		else:
 			add_plant_octree_manager(plant_states_to_verify[plant_index], plant_index)
@@ -219,8 +186,19 @@ func on_LOD_variant_set(plant_index:int, mesh_index:int, LOD_variant):
 func on_LOD_variant_prop_changed_spawned_spatial(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s spawned spatial changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
-	octree_manager.set_LOD_variant_spawned_spatial(LOD_variant, mesh_index)
-	octree_manager.reset_member_spatials()
+	octree_manager.on_lod_variant_spatial_changed(mesh_index)
+
+
+func on_LOD_variant_prop_changed_mesh(plant_index:int, mesh_index:int, LOD_variant):
+	debug_print_lifecycle("LOD Variant: %s mesh changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
+	octree_manager.on_lod_variant_mesh_changed(mesh_index)
+
+
+func on_LOD_variant_prop_changed_cast_shadow(plant_index:int, mesh_index:int, LOD_variant):
+	debug_print_lifecycle("LOD Variant: %s cast shadow changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
+	octree_manager.on_lod_variant_shadow_changed(mesh_index)
 
 
 # Make sure LODs in OctreeNodes correspond to their active_LOD_index
@@ -235,7 +213,7 @@ func add_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = MMIOctreeManager.new()
 	octree_manager.init_octree(
 		plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size,
-		Vector3.ZERO, MMI_container, plant_state.plant.mesh_LOD_min_size)
+		Vector3.ZERO, gardener_root, plant_state.plant.mesh_LOD_min_size)
 	octree_manager.LOD_max_distance = plant_state.plant.mesh_LOD_max_distance
 	octree_manager.LOD_kill_distance = plant_state.plant.mesh_LOD_kill_distance
 	octree_managers.insert(plant_index, octree_manager)
@@ -311,7 +289,7 @@ func set_gardening_collision_mask(_gardening_collision_mask):
 
 # Create PaintingChanges and a StrokeHandler for this specific brush stroke
 func on_stroke_started(brush:Toolshed_Brush, plant_states:Array):
-	var space_state := get_world_3d().direct_space_state
+	var space_state := gardener_root.get_world_3d().direct_space_state
 	var camera = get_camera_3d()
 	active_painting_changes = PaintingChanges.new()
 	match brush.behavior_brush_type:
@@ -339,7 +317,7 @@ func on_stroke_updated(brush_data:Dictionary):
 	var msec_start = FunLib.get_msec()
 	
 #	mutex_placement.lock()
-	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, global_transform)
+	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, gardener_root.global_transform)
 	apply_stroke_update_changes(changes)
 #	mutex_placement.unlock()
 	active_painting_changes.append_changes(changes)
@@ -417,13 +395,18 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 	debug_print_lifecycle("	Applying stroke changes took: %s" % [FunLib.msec_to_time(msec_end - msec_start)])
 
 
+func emit_total_member_count():
+	for i in range(0, octree_managers.size()):
+		emit_member_count(i)
+
+
 func emit_member_count(octree_index:int):
 	member_count_updated.emit(octree_index, octree_managers[octree_index].root_octree_node.get_nested_member_count())
 
 
-func _process(delta):
+func update(delta):
 #	try_update_LODs()
-	if visible:
+	if gardener_root.visible:
 		update_LODs()
 		request_debug_redraw()
 
@@ -466,7 +449,7 @@ func update_LODs():
 	if camera_to_use:
 		var camera_pos := camera_to_use.global_transform.origin
 		for octree_manager in octree_managers:
-			octree_manager.update_LODs(camera_pos, global_transform)
+			octree_manager.update_LODs(camera_pos, gardener_root.global_transform)
 	# This exists to properly render instances in editor even if there is no forwarded_input()
 	else:
 		for octree_manager in octree_managers:
@@ -492,7 +475,7 @@ func batch_add_instances(placeforms: Array, plant_idx: int):
 #-------------------------------------------------------------------------------
 
 
-func _unhandled_input(event):
+func forward_input(event):
 	if is_instance_of(event, InputEventKey) && !event.pressed:
 		if event.keycode == debug_get_dump_tree_key():
 			for octree_manager in octree_managers:
@@ -514,7 +497,7 @@ func get_camera_3d():
 		return active_camera_override
 	else:
 		active_camera_override = null
-		return get_viewport().get_camera_3d()
+		return gardener_root.get_viewport().get_camera_3d()
 
 
 
@@ -553,18 +536,6 @@ func _get_property_list():
 		},
 	]
 	return props
-
-
-func _get_configuration_warnings():
-	if has_node("MMI_container") && is_instance_of(get_node("MMI_container"), Node3D):
-		return PackedStringArray()
-	else:
-		return PackedStringArray(["Arborist is missing a valid MMI_container child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])
-
-
-func add_child(node:Node, legible_unique_name:bool = false, internal:InternalMode=0) -> void:
-	super.add_child(node, legible_unique_name)
-	update_configuration_warnings()
 
 
 

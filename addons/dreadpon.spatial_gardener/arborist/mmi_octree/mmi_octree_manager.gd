@@ -73,15 +73,15 @@ func deep_copy():
 
 
 # Restore any states that might be broken after loading OctreeNode objects
-func restore_after_load(__MMI_container:Node3D):
+func restore_after_load(__gardener_root:Node3D):
 	if is_instance_valid(root_octree_node):
-		root_octree_node.restore_after_load(__MMI_container, LOD_variants)
+		root_octree_node.restore_after_load(__gardener_root, LOD_variants)
 		connect_node(root_octree_node)
 		request_debug_redraw()
 
 
-func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, MMI_container:Node3D = null, min_leaf_extent:float = 0.0):
-	root_octree_node = MMIOctreeNode.new(null, members_per_node, root_extent, center, -1, min_leaf_extent, MMI_container, LOD_variants)
+func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, gardener_root:Node3D = null, min_leaf_extent:float = 0.0):
+	root_octree_node = MMIOctreeNode.new(null, members_per_node, root_extent, center, -1, min_leaf_extent, gardener_root, LOD_variants)
 	connect_node(root_octree_node)
 	request_debug_redraw()
 
@@ -133,7 +133,7 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 	root_octree_node.prepare_for_removal()
 	
 	init_octree(members_per_node, min_leaf_extent, Vector3.ZERO,
-		root_octree_node.MMI_container, min_leaf_extent)
+		root_octree_node.gardener_root, min_leaf_extent)
 
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
@@ -165,7 +165,7 @@ func recenter_octree():
 			new_extent = max(new_extent, max(delta_pos.x, max(delta_pos.y, delta_pos.z)))
 	
 	init_octree(last_root.max_members, new_extent, new_center,
-		root_octree_node.MMI_container, last_root.min_leaf_extent)
+		root_octree_node.gardener_root, last_root.min_leaf_extent)
 
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
@@ -187,7 +187,7 @@ func grow_to_members(placeforms:Array):
 	var last_octant = last_root._map_point_to_opposite_octant(target_point)
 	var new_center = last_root.center_pos - last_root._get_octant_center_offset(last_octant)
 	
-	init_octree(last_root.max_members, last_root.extent * 2.0, new_center, last_root.MMI_container, last_root.min_leaf_extent)
+	init_octree(last_root.max_members, last_root.extent * 2.0, new_center, last_root.gardener_root, last_root.min_leaf_extent)
 	debug_manual_root_logger("grew to members")
 	root_octree_node.adopt_child(last_root, last_octant)
 	var root_copy = root_octree_node
@@ -268,7 +268,7 @@ func add_placeforms(placeforms:Array):
 	assert(placeforms.size() > 0) # 'placeforms' is empty
 	
 	root_octree_node.add_members(placeforms)
-	root_octree_node.MMI_refresh_instance_placements_recursive()
+	#root_octree_node.MMI_refresh_instance_placements_recursive()
 	request_debug_redraw()
 
 
@@ -279,7 +279,7 @@ func remove_placeforms(placeforms:Array):
 	root_octree_node.remove_members(placeforms)
 	root_octree_node.process_collapse_children()
 	root_octree_node.process_collapse_self()
-	root_octree_node.MMI_refresh_instance_placements_recursive()
+	#root_octree_node.MMI_refresh_instance_placements_recursive()
 	request_debug_redraw()
 	
 #	if root_octree_node.child_nodes.size() <= 0 && root_octree_node.members.size() <= 0:
@@ -322,18 +322,20 @@ func set_LOD_variant(variant, index:int):
 
 
 # Up-to-date LOD variants of an OctreeNode
-func set_LOD_variant_spawned_spatial(variant, index:int):
+func on_lod_variant_spatial_changed(index:int):
+	root_octree_node.on_lod_variant_spatial_changed(index)
 	# No need to manually set spawned_spatial, it will be inherited from parent resource
 	
 	# /\ I don't quite remember what this comment meant, but since LOD_Variants are shared
 	# It seems to imply that the line below in not neccessary
 	# So I commented it out for now
 #	LOD_variants[index].spawned_spatial = variant
-	pass
 
+func on_lod_variant_mesh_changed(index:int):
+	root_octree_node.on_lod_variant_mesh_changed(index)
 
-func reset_member_spatials():
-	root_octree_node.reset_member_spatials()
+func on_lod_variant_shadow_changed(index:int):
+	root_octree_node.on_lod_variant_shadow_changed(index)
 
 
 # Make sure LODs in OctreeNodes correspond to their active_LOD_index

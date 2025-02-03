@@ -255,7 +255,7 @@ func set_debug_redraw_instance_count(octree_node:MMIOctreeNode, MMI:MultiMeshIns
 		MMI.multimesh.instance_count += 1
 	
 	if octree_node.is_leaf && draw_members:
-		MMI.multimesh.instance_count += octree_node.member_count()
+		MMI.multimesh.instance_count += octree_node.get_member_count()
 	
 	for child in octree_node.child_nodes:
 		set_debug_redraw_instance_count(child, MMI, draw_node, draw_members)

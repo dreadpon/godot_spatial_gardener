@@ -202,7 +202,7 @@ func get_overlap_member_data(octree_node:MMIOctreeNode, max_dist:float):
 	else:
 		var max_dist_squared = pow(max_dist, 2.0)
 		var node_address = octree_node.get_address()
-		for member_idx in range(0, octree_node.member_count()):
+		for member_idx in range(0, octree_node.get_member_count()):
 			var placeform = octree_node.get_placeform(member_idx)
 			var placement = placeform[0] - sphere_pos
 			var dist_squared = placement.length_squared()

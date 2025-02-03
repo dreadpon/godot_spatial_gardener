@@ -1,0 +1,477 @@
+@tool
+extends Resource # TODO 1.3.4 explore changing this to Object
+
+const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
+const FunLib = preload("../../utility/fun_lib.gd")
+#const MMIOctreeNode = preload("mmi_octree_node.gd")
+
+const multimesh_buffer_size: int = 12
+
+#var _octree_node: MMIOctreeNode = null
+var _octree_node = null
+var _is_leaf: bool = false
+var _active_LOD_index: int = -1
+
+var _spawned_spatial_container: Node3D = null
+var _RID_instance: RID = RID()
+var _RID_multimesh: RID = RID()
+
+var _mesh: Mesh = null
+var _spawned_spatial: PackedScene = null
+var _cast_shadow: RenderingServer.ShadowCastingSetting = RenderingServer.SHADOW_CASTING_SETTING_OFF
+
+var _current_state: StateType = 0
+
+enum StateType {
+	INSTANCES_PERMITTED				= 0b0000_0000_0000_0000_0000_0000_0000_0001,
+	MESH_VALID 						= 0b0000_0000_0000_0000_0000_0000_0000_0010,
+	SPATIAL_VALID 					= 0b0000_0000_0000_0000_0000_0000_0000_0100,
+	MESH_DEPS_INITIALIZED 			= 0b0000_0000_0000_0000_0000_0000_0000_1000,
+	SPATIAL_DEPS_INITIALIZED 		= 0b0000_0000_0000_0000_0000_0000_0001_0000,
+}
+
+enum LODVariantParam {
+	MESH, SPATIAL, SHADOW
+}
+
+
+
+
+func clone(p_octree_node) -> Resource:
+	var clone = self.duplicate()
+	clone.free_refs()
+	clone.set_octree_node(p_octree_node)
+	return clone
+
+
+func _update_state(p_single_state_type: StateType):
+	match p_single_state_type:
+		StateType.INSTANCES_PERMITTED:
+			if is_instance_valid(_octree_node) && _octree_node.is_leaf && is_instance_valid(_octree_node.gardener_root) && _octree_node.get_member_count():
+				_current_state |= StateType.INSTANCES_PERMITTED
+			else:
+				_current_state &= ~StateType.INSTANCES_PERMITTED
+		StateType.MESH_VALID:
+			if is_instance_valid(_mesh):
+				_current_state |= StateType.MESH_VALID
+			else:
+				_current_state &= ~StateType.MESH_VALID
+		StateType.SPATIAL_VALID:
+			if is_instance_valid(_spawned_spatial):
+				_current_state |= StateType.SPATIAL_VALID
+			else:
+				_current_state &= ~StateType.SPATIAL_VALID
+		StateType.MESH_DEPS_INITIALIZED:
+			if _RID_instance.is_valid() && _RID_multimesh.is_valid():
+				_current_state |= StateType.MESH_DEPS_INITIALIZED
+			else:
+				_current_state &= ~StateType.MESH_DEPS_INITIALIZED
+		StateType.SPATIAL_DEPS_INITIALIZED:
+			if is_instance_valid(_spawned_spatial_container) && _spawned_spatial_container.is_inside_tree():
+				_current_state |= StateType.SPATIAL_DEPS_INITIALIZED
+			else:
+				_current_state &= ~StateType.SPATIAL_DEPS_INITIALIZED
+
+
+func _get_variant_param(p_param: LODVariantParam, p_default_val = null):
+	# NOTE: _octree_node assumed valid at this point
+	if _octree_node.active_LOD_index < 0 || _octree_node.shared_LOD_variants.size() <= _octree_node.active_LOD_index:
+		return p_default_val
+	var lod_variant = _octree_node.shared_LOD_variants[_octree_node.active_LOD_index]
+	if !is_instance_valid(lod_variant):
+		return p_default_val
+	match p_param:
+		LODVariantParam.MESH:
+			return lod_variant.mesh
+		LODVariantParam.SPATIAL:
+			return lod_variant.spawned_spatial
+		LODVariantParam.SHADOW:
+			return lod_variant.cast_shadow
+
+
+#func restore_all_instances():
+	# If instances can exist
+		# If mesh valid
+			# If mesh deps not initialized
+				# Initialize mesh deps
+			# Set mesh 
+			# Set shadow
+			# Replace all mesh instances (assume might already have lefovers)
+		# Elif mesh deps initialized
+			# Deitialize mesh deps
+		# If spatial valid
+			# If spatial deps not initialized
+				# Initialize spatial deps
+			# Replace all spatial instances (assume might already have lefovers)
+		# Elif spatial deps initialized
+			# Deitialize spatial deps
+	# Else
+		# If mesh deps initialized
+			# Deitialize mesh deps
+		# If spatial deps initialized
+			# Deitialize spatial deps
+#	pass
+
+
+func set_octree_node(p_octree_node):
+	#print("set_octree_node")
+	if _octree_node == p_octree_node: return
+	_octree_node = p_octree_node
+	_init_with_octree_node()
+
+
+func restore_after_load():
+	#print("restore_after_load")
+	_init_with_octree_node()
+
+
+func _init_with_octree_node():
+	#print("_init_with_octree_node")
+	# Inherit leaf, mesh, spawned spatial, shadow, create new spatial container if necessary
+	if _octree_node == null:
+		_is_leaf = false
+		_active_LOD_index = -1
+		_mesh = null
+		_spawned_spatial = null
+		_cast_shadow = RenderingServer.SHADOW_CASTING_SETTING_OFF
+	else:
+		_is_leaf = _octree_node.is_leaf
+		_active_LOD_index = _octree_node.active_LOD_index
+		_mesh = _get_variant_param(LODVariantParam.MESH)
+		_spawned_spatial = _get_variant_param(LODVariantParam.SPATIAL)
+		_cast_shadow = _get_variant_param(LODVariantParam.SHADOW, RenderingServer.SHADOW_CASTING_SETTING_OFF)
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+			if _octree_node.gardener_root != _spawned_spatial_container.get_parent(): # And new gardener root is different from current spatial container
+				_deinit_spawned_spatial_dependencies() # Deitialize spatial deps (they will be reinitialized further down)
+	_update_state(StateType.INSTANCES_PERMITTED)
+	_update_state(StateType.MESH_VALID)
+	_update_state(StateType.SPATIAL_VALID)
+
+	if _current_state & StateType.INSTANCES_PERMITTED: # If instances can exist
+		# Multimesh
+		if _current_state & StateType.MESH_VALID: # If mesh valid
+			if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+				_init_mesh_dependencies() # Initialize mesh deps
+			_update_mesh() # Set mesh 
+			_update_shadow() # Set shadow
+			_replace_all_mesh_instances() # Replace all mesh instances (assume might already have lefovers)
+		elif _current_state & StateType.MESH_DEPS_INITIALIZED: # Elif mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+		# Spatials
+		if _current_state & StateType.SPATIAL_VALID: # If spatial valid
+			if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
+				_init_spawned_spatial_dependencies() # Initialize spatial deps
+			_replace_all_spatial_instances() # Replace all spatial instances (assume might already have lefovers)
+		elif _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # Elif spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+	# Cleanup
+	else: # Else
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+
+
+func on_is_leaf_changed(p_is_leaf: bool):
+	if _is_leaf == p_is_leaf: return
+	_is_leaf = p_is_leaf
+
+	_update_state(StateType.INSTANCES_PERMITTED)
+
+	if _current_state & StateType.INSTANCES_PERMITTED: # If instances can exist
+		# Multimesh
+		if _current_state & StateType.MESH_VALID: # If mesh valid
+			if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+				_init_mesh_dependencies() # Initialize mesh deps
+			_update_mesh() # Set mesh 
+			_update_shadow() # Set shadow
+			_replace_all_mesh_instances() # Replace all mesh instances (assume might already have lefovers)
+		elif _current_state & StateType.MESH_DEPS_INITIALIZED: # Elif mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+		# Spatials
+		if _current_state & StateType.SPATIAL_VALID: # If spatial valid
+			if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
+				_init_spawned_spatial_dependencies() # Initialize spatial deps
+			_replace_all_spatial_instances() # Replace all spatial instances (assume might already have lefovers)
+		elif _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # Elif spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+	# Cleanup
+	else: # Else
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+
+
+func on_active_lod_index_changed():
+	if _active_LOD_index == _octree_node.active_LOD_index: return
+	_active_LOD_index = _octree_node.active_LOD_index
+
+	# Inherit mesh, spawned spatial, shadow
+	var change_flags: int = 0
+	var new_mesh = _get_variant_param(LODVariantParam.MESH)
+	var new_shadow = _get_variant_param(LODVariantParam.SHADOW, RenderingServer.SHADOW_CASTING_SETTING_OFF)
+	var new_spatial = _get_variant_param(LODVariantParam.SPATIAL)
+
+	if _mesh != new_mesh:
+		_mesh = new_mesh
+		change_flags |= 0b001
+	if _cast_shadow != new_shadow:
+		_cast_shadow = new_shadow
+		change_flags |= 0b010
+	if _spawned_spatial != new_spatial:
+		_spawned_spatial = new_spatial
+		change_flags |= 0b100
+	_update_state(StateType.MESH_VALID)
+	_update_state(StateType.SPATIAL_VALID)
+
+	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
+		return # Return (current function couldn't have altered this)
+	
+	# Multimesh
+	if change_flags & 0b001: # If mesh changed
+		if _current_state & StateType.MESH_VALID: # If mesh valid
+			if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+				_init_mesh_dependencies() # Initialize mesh deps
+				_add_all_mesh_instances() # Add all mesh instances (assume we're currently empty)
+				_update_shadow() # Set shadow
+			_update_mesh() # Set mesh 
+		elif _current_state & StateType.MESH_DEPS_INITIALIZED: # Elif mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+	if change_flags & 0b010: # If shadow changed
+		if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps initialized
+			_update_shadow() # Set shadow
+	# Spatials
+	if change_flags & 0b100: # If spatial changed
+		if _current_state & StateType.SPATIAL_VALID: # If spatial valid
+			if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
+				_init_spawned_spatial_dependencies() # Initialize spatial deps
+			_replace_all_spatial_instances() # Replace all spatial instances (full replacement is the only way to update them)
+		elif _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # Elif spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+
+
+func on_active_lod_variant_mesh_changed():
+	var new_mesh = _get_variant_param(LODVariantParam.MESH)
+	if _mesh == new_mesh: return
+
+	# Inherit mesh
+	_mesh = new_mesh
+	_update_state(StateType.MESH_VALID)
+
+	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
+		return # Return (current function couldn't have altered this)
+	
+	if _current_state & StateType.MESH_VALID: # If mesh valid
+		if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+			_init_mesh_dependencies() # Initialize mesh deps
+			_add_all_mesh_instances() # Add all mesh instances (assume we're currently empty)
+			_update_shadow() # Set shadow
+		_update_mesh() # Set mesh 
+	elif _current_state & StateType.MESH_DEPS_INITIALIZED: # Elif mesh deps initialized
+		_deinit_mesh_dependencies() # Deitialize mesh deps
+
+
+func on_active_lod_variant_shadow_changed():
+	var new_shadow = _get_variant_param(LODVariantParam.SHADOW, RenderingServer.SHADOW_CASTING_SETTING_OFF)
+	if _cast_shadow == new_shadow: return
+
+	# Inherit shadow
+	_cast_shadow = new_shadow
+
+	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
+		return # Return (current function couldn't have altered this)
+	
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+		_update_shadow() # Set shadow 
+	pass
+
+
+func on_active_lod_variant_spatial_changed():
+	var new_spatial = _get_variant_param(LODVariantParam.SPATIAL)
+	if _spawned_spatial == new_spatial: return
+
+	# Inherit spawned spatial
+	_spawned_spatial = new_spatial
+	_update_state(StateType.SPATIAL_VALID)
+
+	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
+		return # Return (current function couldn't have altered this)
+	
+	if _current_state & StateType.SPATIAL_VALID: # If spatial valid
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
+			_init_spawned_spatial_dependencies() # Initialize spatial deps
+		_replace_all_spatial_instances() # Replace all spatial instances (full replacement is the only way to update them)
+	elif _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # Elif spatial deps initialized
+		_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+
+
+func on_appended_placeforms(p_placeforms: Array):
+	# Multimesh
+	if _current_state & StateType.MESH_VALID: # If mesh valid
+		if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+			_init_mesh_dependencies() # Initialize mesh deps
+			_update_mesh() # Set mesh 
+			_update_shadow() # Set shadow
+		_add_mesh_instances(p_placeforms) # Add mesh instances (assume other instances are already up to date)
+	# Spatials
+	if _current_state & StateType.SPATIAL_VALID: # If spatial valid
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
+			_init_spawned_spatial_dependencies() # Initialize spatial deps
+		_replace_all_spatial_instances() # Add spatial instances (assume other instances are already up to date)
+
+
+func on_removed_placeform_at(p_idx: int):
+	_update_state(StateType.INSTANCES_PERMITTED)
+	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
+		_deinit_mesh_dependencies() # Deitialize mesh deps
+		_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+	else: # Else
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+			_remove_mesh_instance(p_idx) # Remove mesh instance (assume other instances are already up to date)
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+			_remove_spatial_instance(p_idx) # Remove spatial instance (assume other instances are already up to date)
+
+
+func on_set_placeform_at(p_idx: int, p_placeform: Array):
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+		_set_mesh_instance(p_idx, p_placeform) # Set mesh instance (assume other instances are already up to date)
+	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+		_set_spatial_instance(p_idx, p_placeform) # Set spatial instance (assume other instances are already up to date)
+	pass
+
+
+func free_refs():
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: 
+		_deinit_mesh_dependencies()
+	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: 
+		_deinit_spawned_spatial_dependencies()
+	_nullify_all_variables()
+
+
+
+
+func _init_mesh_dependencies():
+	var rendering_scenario_RID = _octree_node.gardener_root.get_world_3d().scenario
+	_RID_multimesh = RenderingServer.multimesh_create()
+	_RID_instance = RenderingServer.instance_create2(_RID_multimesh, rendering_scenario_RID)
+	_update_state(StateType.MESH_DEPS_INITIALIZED)
+
+
+func _init_spawned_spatial_dependencies():
+	_spawned_spatial_container = Node3D.new()
+	_octree_node.gardener_root.add_child(_spawned_spatial_container)
+	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
+
+
+func _deinit_mesh_dependencies():
+	RenderingServer.free_rid(_RID_multimesh)
+	RenderingServer.free_rid(_RID_instance)
+	_update_state(StateType.MESH_DEPS_INITIALIZED)
+
+
+func _deinit_spawned_spatial_dependencies():
+	FunLib.free_children(_spawned_spatial_container)
+	_spawned_spatial_container.get_parent().remove_child(_spawned_spatial_container)
+	_spawned_spatial_container.queue_free()
+	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
+
+
+func _update_mesh():
+	RenderingServer.multimesh_set_mesh(_RID_multimesh, _mesh.get_rid())
+
+
+func _update_shadow():
+	RenderingServer.instance_geometry_set_cast_shadows_setting(_RID_instance, _cast_shadow)
+
+
+func _add_all_mesh_instances():
+	var instance_count = _octree_node.get_member_count()
+	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
+	for i in range(0, instance_count):
+		RenderingServer.multimesh_instance_set_transform(_RID_multimesh, i, _octree_node.member_placeforms[i][2])
+
+
+func _add_all_spatial_instances():
+	var instance_count = _octree_node.get_member_count()
+	var spatial = null
+	for i in range(0, instance_count):
+		spatial = _spawned_spatial.instantiate()
+		_spawned_spatial_container.add_child(spatial)
+		spatial.global_transform = _octree_node.member_placeforms[i][2]
+
+
+func _replace_all_mesh_instances():
+	_add_all_mesh_instances() # Multimesh needs no additional cleanup for replacing existing instances
+
+
+func _replace_all_spatial_instances():
+	FunLib.free_children(_spawned_spatial_container)
+	_add_all_spatial_instances()
+
+
+func _add_mesh_instances(p_placeforms: Array):
+	var instance_count = RenderingServer.multimesh_get_instance_count(_RID_multimesh)
+	var buffer = RenderingServer.multimesh_get_buffer(_RID_multimesh)
+	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count + p_placeforms.size(), RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
+	var trans: Transform3D
+	for i in range(0, p_placeforms.size()):
+		trans = p_placeforms[i][2]
+		buffer.append_array([
+			trans.basis.x.x, trans.basis.y.x, trans.basis.z.x, trans.origin.x,
+			trans.basis.x.y, trans.basis.y.y, trans.basis.z.y, trans.origin.y,
+			trans.basis.x.z, trans.basis.y.z, trans.basis.z.z, trans.origin.z
+		])
+	RenderingServer.multimesh_set_buffer(_RID_multimesh, buffer)
+
+
+func _add_spatial_instances(p_placeforms: Array):
+	var spatial = null
+	for i in range(0, p_placeforms.size()):
+		spatial = _spawned_spatial.instantiate()
+		_spawned_spatial_container.add_child(spatial)
+		spatial.global_transform = p_placeforms[i][2]
+
+
+func _remove_mesh_instance(p_idx: int):
+	var buffer = RenderingServer.multimesh_get_buffer(_RID_multimesh)
+	var instance_count = RenderingServer.multimesh_get_instance_count(_RID_multimesh)
+
+	# TODO: slice and append operations might be costly
+	#		need to benchmark their speed and memory footprint against loop-based in place modifications
+	if p_idx == 0:
+		buffer = buffer.slice(12)
+	elif p_idx == instance_count - 1:
+		buffer = buffer.slice(0, -12)
+	else:
+		buffer = buffer.slice(0, p_idx) + buffer.slice(p_idx + 1)
+
+	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count - 1, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
+	RenderingServer.multimesh_set_buffer(_RID_multimesh, buffer)
+
+
+func _remove_spatial_instance(p_idx: int):
+	_spawned_spatial_container.remove_child(_spawned_spatial_container.get_child(p_idx))
+
+
+func _set_mesh_instance(p_idx: int, p_placeform: Array):
+	RenderingServer.multimesh_instance_set_transform(_RID_multimesh, p_idx, p_placeform[2])
+
+
+func _set_spatial_instance(p_idx: int, p_placeform: Array):
+	_spawned_spatial_container.get_child(p_idx).global_transform = p_placeform[2]
+
+
+# Except mesh/spatial deps
+func _nullify_all_variables():
+	_octree_node = null
+	_is_leaf = false
+	_active_LOD_index = -1
+
+	_spawned_spatial_container = null
+	_RID_instance = RID()
+	_RID_multimesh = RID()
+
+	_mesh = null
+	_spawned_spatial = null
+	_current_state = 0
