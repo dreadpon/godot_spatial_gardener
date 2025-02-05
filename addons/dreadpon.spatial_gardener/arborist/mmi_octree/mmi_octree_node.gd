@@ -32,6 +32,9 @@ var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
 
 # An array for looking up placements conviniently
 # Since a member placement is practically it's ID
+# TODO: this can be rewritten to use PackedFloat32Array to reduce scene filesize
+#		but that would require us to write a search function in C++ (used when removing members from nodes)
+#		as GDScript is too slow for this bruteforce method
 @export var member_placeforms: Array = []
 
 @export var child_nodes:Array = [] # (Array, Resource)
@@ -47,12 +50,11 @@ var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
 @export var max_bounds_to_center_dist:float
 @export var min_bounds_to_center_dist:float
 
+@export var active_LOD_index:int = -1
+
 var parent:Resource
 var gardener_root: Node3D
 var leaf: OctreeLeaf = OctreeLeaf.new()
-
-@export var active_LOD_index:int = -1
-
 var shared_LOD_variants:Array = []
 
 var logger = null
@@ -147,21 +149,25 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	shared_LOD_variants = LOD_variants
 	
 	if shared_LOD_variants.size() <= active_LOD_index:
-		active_LOD_index = shared_LOD_variants.size() - 1
+		_set_active_LOD_index(shared_LOD_variants.size() - 1, true)
 
 	if leaf == null:
 		leaf = OctreeLeaf.new()
 	#print("restore")
-	leaf.restore_after_load()
+	# No need to explicitly call on_active_lod_index_changed, since it's accounted for in restore_after_load
+	leaf.restore_after_load() 
 
-	# if is_leaf && active_LOD_index >= 0:
-	# 	leaf.restore_all_instances()
-	
 	for child in child_nodes:
 		child.parent = self
 		child.restore_after_load(__gardener_root, LOD_variants)
 	
 	print_address("", "restored after load")
+
+
+func propagate_transform(global_transform: Transform3D):
+	leaf.on_root_transform_changed(global_transform)
+	for child in child_nodes:
+		child.propagate_transform(global_transform)
 
 
 # Mark node as having or not having any members
@@ -170,21 +176,21 @@ func set_is_leaf(val):
 	is_leaf = val
 	
 	# NOTE: this was previously under 'elif' check. Look out for unexpected behavior
-	active_LOD_index = -1
+	#active_LOD_index = -1
 
 	leaf.on_is_leaf_changed(is_leaf)
-	leaf.on_active_lod_index_changed()
+	#leaf.on_active_lod_index_changed()
 
 
 # Cleanup this this node before deletion
 # TODO: find out if I can clear the member array here as well
-func prepare_for_removal():
+func free_octree_relationship_refs():
 	print_address("", "prepare for removal")
 	
 	# Avoid circular reference so that RefCount can properly free objects
 	parent = null
 	for child in child_nodes:
-		child.prepare_for_removal()
+		child.free_octree_relationship_refs()
 	child_nodes.clear()
 	
 	set_is_leaf(false)
@@ -195,14 +201,27 @@ func prepare_for_removal():
 # We count on Godot's own systems to handle that in whatever way works best
 # TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
 #		will need to happen around v2.0.0, since it's a very risky change
-func free_refs():
-	member_placeforms.clear()
-	parent = null
-	leaf.free_refs()
-	shared_LOD_variants.clear()
-	
+func free_circular_refs():
 	for child in child_nodes:
-		child.free_refs()
+		child.free_circular_refs()
+	if is_instance_valid(leaf):
+		leaf.free_circular_refs()
+
+	parent = null
+	gardener_root = null
+	leaf = null
+
+
+func restore_circular_refs(p_parent: Resource, p_gardener_root: Node3D):
+	if p_parent:
+		safe_inherit(p_parent)
+	gardener_root = p_gardener_root
+	if !is_instance_valid(leaf):
+		leaf = OctreeLeaf.new()
+
+	for child in child_nodes:
+		child.restore_circular_refs(self, p_gardener_root)
+	leaf.restore_circular_refs(self)
 
 
 
@@ -216,16 +235,7 @@ func free_refs():
 func set_LODs_to_active_index():
 	if is_leaf:
 		if shared_LOD_variants.size() <= active_LOD_index:
-			active_LOD_index = shared_LOD_variants.size() - 1
-
-		leaf.on_active_lod_index_changed()
-
-		# # We have LOD variants to choose from and an active_LOD_index is set
-		# if active_LOD_index >= 0:
-		# 	leaf.on_active_lod_index_changed()
-		# else:
-		# 	# Reset LODS and spawned spatials
-		# 	leaf.reset_lod_variant()
+			_set_active_LOD_index(shared_LOD_variants.size() - 1)
 	else:
 		for child in child_nodes:
 			child.set_LODs_to_active_index()
@@ -235,6 +245,7 @@ func set_LODs_to_active_index():
 func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float):
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
+	#print(self.leaf, " update_LODs")
 	if shared_LOD_variants.is_empty(): return
 	
 	var dist_to_node_center := (center_pos - camera_pos).length()
@@ -259,9 +270,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	if outside_kill_treshold:
 		# If haven't yet reset MMIs and spawned spatials, reset them
 		if active_LOD_index >= 0:
-			active_LOD_index = -1
-			if is_leaf:
-				leaf.on_active_lod_index_changed()
+			_set_active_LOD_index(-1)
 		# If up-to-date, skip assignment
 		else:
 			skip_children = true
@@ -293,16 +302,21 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 	if LOD_max_distance > 0:
 		LOD_index = clamp(floor(dist_to_node_center_bounds_estimate / LOD_max_distance * max_LOD_index), 0, max_LOD_index)
 	
-	# Skip if already assigned this LOD_index
+	# Skip if already assigned this LOD_index and not marked as dirty
 	if active_LOD_index == LOD_index: return
 	
-	var last_LOD_index = active_LOD_index
-	active_LOD_index = LOD_index
+	_set_active_LOD_index(LOD_index)
 	
 	# We need to set active_LOD_index on both leaves/non-leaves
 	# But non-leaves do not have an MMI and can't spawn spatials
-	if is_leaf:
+	#if is_leaf:
 		#print(MMI_multimesh)
+		#leaf.on_active_lod_index_changed()
+
+
+func _set_active_LOD_index(p_active_LOD_index: int, p_skip_leaf_update: bool = false):
+	active_LOD_index = p_active_LOD_index
+	if !p_skip_leaf_update:
 		leaf.on_active_lod_index_changed()
 
 
@@ -316,18 +330,13 @@ func assign_LOD_variant(max_LOD_index:int, LOD_max_distance:float, LOD_kill_dist
 # Reset all arrays storing the member data
 func reset_placeforms():
 	member_placeforms.clear()
+	leaf.on_reset_placeforms()
 
 
 # Add new member data
 func append_placeforms(p_placeforms: Array):
 	member_placeforms.append_array(p_placeforms)
 	leaf.on_appended_placeforms(p_placeforms)	
-
-
-# Remove member data by placeform
-func erase_placeform(placeform: Array):
-	var idx = member_placeforms.find(placeform)
-	remove_placeform_at(idx)
 
 
 # Remove member data by index
@@ -360,8 +369,6 @@ func add_members(new_placeforms:Array):
 		return []
 	
 	if new_placeforms.is_empty(): return []
-	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
-	active_LOD_index = 0
 	
 	var mapped_placeforms = assign_octants_to_placeforms(new_placeforms)
 	
@@ -385,8 +392,6 @@ func add_members(new_placeforms:Array):
 			for placeform in new_placeforms:
 				print_address("", "adding placeform " + Placeform.to_str(placeform))
 	
-	leaf.on_active_lod_index_changed()
-
 	if members_changed && parent:
 		parent._child_added_members(octant)
 
@@ -398,8 +403,6 @@ func add_members(new_placeforms:Array):
 #		with obvious/straightforward implementation of bulk edits
 func remove_members(old_placeforms:Array):
 	if old_placeforms.is_empty(): return
-	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
-	active_LOD_index = 0
 	
 	# Presumably, it's ok to overwrite the members' octants
 	# Since we WILL remove them and won't ever need to reference previous positions inside a node
@@ -416,8 +419,6 @@ func remove_members(old_placeforms:Array):
 				print_address("", "erased placeform " + Placeform.to_str(placeform))
 				members_changed = true
 	
-	leaf.on_active_lod_index_changed()
-	
 	if members_changed && parent:
 		parent._child_removed_members(octant)
 
@@ -425,13 +426,11 @@ func remove_members(old_placeforms:Array):
 # Update members' Transforms at given address
 func set_members(changes:Array):
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
-	active_LOD_index = 0
+	#active_LOD_index = -1
 	
 	for change in changes:
 		var octree_node = find_child_by_address(change.address)
 		octree_node.set_placeform_at(change.index, change.placeform)
-	
-	leaf.on_active_lod_index_changed()
 
 
 # Rejects members outside the bounds
@@ -499,11 +498,34 @@ func get_member_transform(member_idx: int):
 	return member_placeforms[member_idx][2]
 
 
+# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
+func on_lod_variant_inserted(index:int):
+	if active_LOD_index >= index:
+		leaf.on_preceeding_lod_variant_changed()
+	for child in child_nodes:
+		child.on_lod_variant_inserted(index)
+
+
+# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
+func on_lod_variant_removed(index:int):
+	if active_LOD_index >= index:
+		leaf.on_preceeding_lod_variant_changed()
+	for child in child_nodes:
+		child.on_lod_variant_removed(index)
+
+
+func on_lod_variant_set(index:int):
+	if active_LOD_index == index:
+		leaf.on_preceeding_lod_variant_changed()
+	for child in child_nodes:
+		child.on_lod_variant_set(index)
+
+
 func on_lod_variant_spatial_changed(index:int):
 	if active_LOD_index == index:
 		leaf.on_active_lod_variant_spatial_changed()
 	for child in child_nodes:
-		child.set_LOD_variant_spawned_spatial(index)
+		child.on_lod_variant_spatial_changed(index)
 
 
 func on_lod_variant_mesh_changed(index:int):
@@ -533,7 +555,11 @@ func _make_children():
 	for octant in range(0, 8):
 		var child = self_class.new(self, max_members, 0.0, Vector3.ZERO, octant)
 		child_nodes.append(child)
+		# NOTE: line below is essential for properly initializing instances 
+		#		when passing them down to newly created children
+		child._set_active_LOD_index(active_LOD_index)
 	set_is_leaf(false)
+	#print(self, " _make_children")
 
 
 # Adopt another OctreeNode as a child in a given octant
@@ -541,7 +567,7 @@ func adopt_child(child, octant:int):
 	if child_nodes.is_empty():
 		_make_children()
 	
-	child_nodes[octant].prepare_for_removal()
+	child_nodes[octant].free_octree_relationship_refs()
 	child_nodes[octant] = child
 	child.octant = octant
 	child.safe_inherit(self)
@@ -648,12 +674,12 @@ func _collapse_children():
 	for child in child_nodes:
 		if child.is_leaf:
 			total_placeforms.append_array(child.get_placeforms())
-		child.prepare_for_removal()
+		child.free_octree_relationship_refs()
 	child_nodes.clear()
+	
 	set_is_leaf(true)
-	
 	add_members(total_placeforms)
-	
+
 	if parent:
 		parent.try_collapse_children(0)
 	
@@ -665,7 +691,7 @@ func _collapse_children():
 func collapse_self(new_root_octant:int):
 	child_nodes.remove_at(new_root_octant)
 	print_address("", "collapsed self")
-	prepare_for_removal()
+	free_octree_relationship_refs()
 
 
 

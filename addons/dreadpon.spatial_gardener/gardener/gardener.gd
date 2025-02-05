@@ -38,7 +38,7 @@ const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 var plugin_version: String = ""
 var storage_version: int = 0
 #export
-var refresh_octree_shared_LOD_variants:bool = false : set = set_refresh_octree_shared_LOD_variants
+#var refresh_octree_shared_LOD_variants:bool = false : set = set_refresh_octree_shared_LOD_variants
 
 # file_management
 var garden_work_directory:String : set = set_garden_work_directory
@@ -83,6 +83,7 @@ func _init():
 	set_meta("class", "Gardener")
 	child_entered_tree.connect(_on_child_entered_tree)
 	child_exiting_tree.connect(_on_child_exiting_tree)
+	set_notify_transform(true)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
@@ -122,11 +123,28 @@ func _ready():
 	set_gardening_collision_mask(gardening_collision_mask)
 
 
+func _enter_tree() -> void:
+	arborist.restore_circular_refs(self)
+
+
 func _exit_tree():
+	# NOTE: we assume these refs are recreated whenever the tree is entered again
+	arborist.free_circular_refs()
+
 	if !Engine.is_editor_hint(): return
 	
 	_apply_changes()
 	stop_editing()
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_TRANSFORM_CHANGED:
+			_propagate_transform()
+
+
+func _propagate_transform():
+	arborist.propagate_transform(global_transform)
 
 
 func _process(delta):
@@ -221,7 +239,7 @@ func init_painter():
 
 # Initialize the Arborist and connect it to other objects
 func init_arborist():
-	arborist.setup(self)
+	arborist.init_with_gardeener_root(self)
 	if greenhouse:
 		reinit_arborist_with_greenhouse()
 	reinit_debug_viewer_with_arborist()
@@ -383,7 +401,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	
 	arborist.emit_total_member_count()
 	# Make sure LOD_Variants in a shared Octree array are up-to-date
-	set_refresh_octree_shared_LOD_variants(true)
+	#set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
 
 
@@ -767,8 +785,8 @@ func _get_configuration_warnings():
 		return PackedStringArray(["Gardener is missing a valid Arborist child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])
 
 
-func set_refresh_octree_shared_LOD_variants(val):
-	refresh_octree_shared_LOD_variants = false
-	if val && arborist && greenhouse:
-		for i in range(0, greenhouse.greenhouse_plant_states.size()):
-			arborist.refresh_octree_shared_LOD_variants(i, greenhouse.greenhouse_plant_states[i].plant.mesh_LOD_variants)
+# func set_refresh_octree_shared_LOD_variants(val):
+# 	refresh_octree_shared_LOD_variants = false
+# 	if val && arborist && greenhouse:
+# 		for i in range(0, greenhouse.greenhouse_plant_states.size()):
+# 			arborist.refresh_octree_shared_LOD_variants(i, greenhouse.greenhouse_plant_states[i].plant.mesh_LOD_variants)

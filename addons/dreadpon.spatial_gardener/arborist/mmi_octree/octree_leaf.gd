@@ -12,6 +12,8 @@ var _octree_node = null
 var _is_leaf: bool = false
 var _active_LOD_index: int = -1
 
+# TODO: to properly place spatial instances we need to manually account for _spawned_spatial_container's transform
+#		this is counterintuitive, we should switch to local transforms across the whole plugin around 2.0.0
 var _spawned_spatial_container: Node3D = null
 var _RID_instance: RID = RID()
 var _RID_multimesh: RID = RID()
@@ -89,34 +91,12 @@ func _get_variant_param(p_param: LODVariantParam, p_default_val = null):
 			return lod_variant.cast_shadow
 
 
-#func restore_all_instances():
-	# If instances can exist
-		# If mesh valid
-			# If mesh deps not initialized
-				# Initialize mesh deps
-			# Set mesh 
-			# Set shadow
-			# Replace all mesh instances (assume might already have lefovers)
-		# Elif mesh deps initialized
-			# Deitialize mesh deps
-		# If spatial valid
-			# If spatial deps not initialized
-				# Initialize spatial deps
-			# Replace all spatial instances (assume might already have lefovers)
-		# Elif spatial deps initialized
-			# Deitialize spatial deps
-	# Else
-		# If mesh deps initialized
-			# Deitialize mesh deps
-		# If spatial deps initialized
-			# Deitialize spatial deps
-#	pass
-
-
 func set_octree_node(p_octree_node):
 	#print("set_octree_node")
 	if _octree_node == p_octree_node: return
 	_octree_node = p_octree_node
+	
+	if _octree_node.gardener_root == null: return # We assume this means restore_after_load() will be called afterwards
 	_init_with_octree_node()
 
 
@@ -126,6 +106,7 @@ func restore_after_load():
 
 
 func _init_with_octree_node():
+	#print(self, " _init_with_octree_node ", String.num_int64(_current_state, 2))
 	#print("_init_with_octree_node")
 	# Inherit leaf, mesh, spawned spatial, shadow, create new spatial container if necessary
 	if _octree_node == null:
@@ -173,6 +154,7 @@ func _init_with_octree_node():
 
 
 func on_is_leaf_changed(p_is_leaf: bool):
+	#print(self, " on_is_leaf_changed ", String.num_int64(_current_state, 2))
 	if _is_leaf == p_is_leaf: return
 	_is_leaf = p_is_leaf
 
@@ -207,6 +189,14 @@ func on_active_lod_index_changed():
 	if _active_LOD_index == _octree_node.active_LOD_index: return
 	_active_LOD_index = _octree_node.active_LOD_index
 
+	_update_with_active_lod_variant()
+
+
+func on_preceeding_lod_variant_changed():
+	_update_with_active_lod_variant()
+
+
+func _update_with_active_lod_variant():
 	# Inherit mesh, spawned spatial, shadow
 	var change_flags: int = 0
 	var new_mesh = _get_variant_param(LODVariantParam.MESH)
@@ -239,7 +229,7 @@ func on_active_lod_index_changed():
 		elif _current_state & StateType.MESH_DEPS_INITIALIZED: # Elif mesh deps initialized
 			_deinit_mesh_dependencies() # Deitialize mesh deps
 	if change_flags & 0b010: # If shadow changed
-		if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps initialized
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
 			_update_shadow() # Set shadow
 	# Spatials
 	if change_flags & 0b100: # If spatial changed
@@ -306,7 +296,17 @@ func on_active_lod_variant_spatial_changed():
 		_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
 
 
+func on_reset_placeforms():
+	_update_state(StateType.INSTANCES_PERMITTED)
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+		_deinit_mesh_dependencies() # Deitialize mesh deps
+	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+		_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+
+
 func on_appended_placeforms(p_placeforms: Array):
+	_update_state(StateType.INSTANCES_PERMITTED) # These could be the first instances we add, make sure flags update if so
+
 	# Multimesh
 	if _current_state & StateType.MESH_VALID: # If mesh valid
 		if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
@@ -318,14 +318,17 @@ func on_appended_placeforms(p_placeforms: Array):
 	if _current_state & StateType.SPATIAL_VALID: # If spatial valid
 		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
 			_init_spawned_spatial_dependencies() # Initialize spatial deps
-		_replace_all_spatial_instances() # Add spatial instances (assume other instances are already up to date)
+		_add_spatial_instances(p_placeforms) # Add spatial instances (assume other instances are already up to date)
+	#print(self, " on_appended_placeforms ", p_placeforms.size(), " ", String.num_int64(_current_state, 2))
 
 
 func on_removed_placeform_at(p_idx: int):
 	_update_state(StateType.INSTANCES_PERMITTED)
 	if _current_state & StateType.INSTANCES_PERMITTED == 0: # If instances can't exist
-		_deinit_mesh_dependencies() # Deitialize mesh deps
-		_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
+		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
+			_deinit_spawned_spatial_dependencies() # Deitialize spatial deps
 	else: # Else
 		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
 			_remove_mesh_instance(p_idx) # Remove mesh instance (assume other instances are already up to date)
@@ -338,15 +341,28 @@ func on_set_placeform_at(p_idx: int, p_placeform: Array):
 		_set_mesh_instance(p_idx, p_placeform) # Set mesh instance (assume other instances are already up to date)
 	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: # If spatial deps initialized
 		_set_spatial_instance(p_idx, p_placeform) # Set spatial instance (assume other instances are already up to date)
-	pass
 
 
-func free_refs():
+func on_root_transform_changed(p_global_transform: Transform3D):
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+		_set_mesh_root_transform(p_global_transform)
+
+
+
+
+func free_circular_refs():
 	if _current_state & StateType.MESH_DEPS_INITIALIZED: 
 		_deinit_mesh_dependencies()
 	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: 
 		_deinit_spawned_spatial_dependencies()
-	_nullify_all_variables()
+
+	_octree_node = null
+	#_nullify_all_variables()
+
+
+func restore_circular_refs(p_octree_node: Resource):
+	set_octree_node(p_octree_node)
+
 
 
 
@@ -355,18 +371,22 @@ func _init_mesh_dependencies():
 	var rendering_scenario_RID = _octree_node.gardener_root.get_world_3d().scenario
 	_RID_multimesh = RenderingServer.multimesh_create()
 	_RID_instance = RenderingServer.instance_create2(_RID_multimesh, rendering_scenario_RID)
+	RenderingServer.instance_set_transform(_RID_instance, _octree_node.gardener_root.global_transform)
 	_update_state(StateType.MESH_DEPS_INITIALIZED)
 
 
 func _init_spawned_spatial_dependencies():
 	_spawned_spatial_container = Node3D.new()
 	_octree_node.gardener_root.add_child(_spawned_spatial_container)
+	_spawned_spatial_container.transform = Transform3D()
 	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
 
 
 func _deinit_mesh_dependencies():
 	RenderingServer.free_rid(_RID_multimesh)
 	RenderingServer.free_rid(_RID_instance)
+	_RID_multimesh = RID()
+	_RID_instance = RID()
 	_update_state(StateType.MESH_DEPS_INITIALIZED)
 
 
@@ -374,7 +394,12 @@ func _deinit_spawned_spatial_dependencies():
 	FunLib.free_children(_spawned_spatial_container)
 	_spawned_spatial_container.get_parent().remove_child(_spawned_spatial_container)
 	_spawned_spatial_container.queue_free()
+	_spawned_spatial_container = null
 	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
+
+
+func _set_mesh_root_transform(p_global_transform: Transform3D):
+	RenderingServer.instance_set_transform(_RID_instance, p_global_transform)
 
 
 func _update_mesh():
@@ -390,6 +415,7 @@ func _add_all_mesh_instances():
 	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
 	for i in range(0, instance_count):
 		RenderingServer.multimesh_instance_set_transform(_RID_multimesh, i, _octree_node.member_placeforms[i][2])
+	#print(self, " _add_all_mesh_instances ", instance_count, " ", String.num_int64(_current_state, 2))
 
 
 func _add_all_spatial_instances():
@@ -398,7 +424,7 @@ func _add_all_spatial_instances():
 	for i in range(0, instance_count):
 		spatial = _spawned_spatial.instantiate()
 		_spawned_spatial_container.add_child(spatial)
-		spatial.global_transform = _octree_node.member_placeforms[i][2]
+		spatial.global_transform = _spawned_spatial_container.global_transform * _octree_node.member_placeforms[i][2]
 
 
 func _replace_all_mesh_instances():
@@ -423,6 +449,7 @@ func _add_mesh_instances(p_placeforms: Array):
 			trans.basis.x.z, trans.basis.y.z, trans.basis.z.z, trans.origin.z
 		])
 	RenderingServer.multimesh_set_buffer(_RID_multimesh, buffer)
+	#print(self, " _add_mesh_instances ", p_placeforms.size(), " ", String.num_int64(_current_state, 2))
 
 
 func _add_spatial_instances(p_placeforms: Array):
@@ -430,21 +457,21 @@ func _add_spatial_instances(p_placeforms: Array):
 	for i in range(0, p_placeforms.size()):
 		spatial = _spawned_spatial.instantiate()
 		_spawned_spatial_container.add_child(spatial)
-		spatial.global_transform = p_placeforms[i][2]
+		spatial.global_transform = _spawned_spatial_container.global_transform * p_placeforms[i][2]
 
 
 func _remove_mesh_instance(p_idx: int):
 	var buffer = RenderingServer.multimesh_get_buffer(_RID_multimesh)
 	var instance_count = RenderingServer.multimesh_get_instance_count(_RID_multimesh)
 
-	# TODO: slice and append operations might be costly
-	#		need to benchmark their speed and memory footprint against loop-based in place modifications
+	# TODO: this can probably be sped up if done in-place in C++
+	#		GDScript was not tested, but I don't expect it to be fast at this sort of thing
 	if p_idx == 0:
 		buffer = buffer.slice(12)
 	elif p_idx == instance_count - 1:
 		buffer = buffer.slice(0, -12)
 	else:
-		buffer = buffer.slice(0, p_idx) + buffer.slice(p_idx + 1)
+		buffer = buffer.slice(0, p_idx * 12) + buffer.slice((p_idx + 1) * 12)
 
 	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count - 1, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
 	RenderingServer.multimesh_set_buffer(_RID_multimesh, buffer)
@@ -459,7 +486,7 @@ func _set_mesh_instance(p_idx: int, p_placeform: Array):
 
 
 func _set_spatial_instance(p_idx: int, p_placeform: Array):
-	_spawned_spatial_container.get_child(p_idx).global_transform = p_placeform[2]
+	_spawned_spatial_container.get_child(p_idx).global_transform = _spawned_spatial_container.global_transform * p_placeform[2]
 
 
 # Except mesh/spatial deps

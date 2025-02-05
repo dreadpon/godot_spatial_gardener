@@ -75,7 +75,7 @@ func _init():
 
 
 
-func setup(p_gardener_root: Node3D):
+func init_with_gardeener_root(p_gardener_root: Node3D):
 	gardener_root = p_gardener_root
 	FunLib.free_children(gardener_root)
 	
@@ -92,11 +92,11 @@ func setup(p_gardener_root: Node3D):
 #	thread_instance_placement.start(Callable(self,"thread_update_LODs"))
 
 
-func _notification(what):
-	match what:
-		NOTIFICATION_PREDELETE:
-			for octree_manager in octree_managers:
-				octree_manager.free_refs()
+# func _notification(what):
+# 	match what:
+# 		NOTIFICATION_PREDELETE:
+# 			for octree_manager in octree_managers:
+# 				octree_manager.free_refs(true)
 			
 			# This is... weird
 			# Apparently I need to free any Resources that are left after closing a scene
@@ -118,22 +118,38 @@ func _notification(what):
 		#	semaphore_instance_placement = null
 
 
+# Free/nullify all references that may cause memory leaks
+# NOTE: we assume these refs are recreated whenever the tree is entered again
+func free_circular_refs():
+	for octree_manager in octree_managers:
+		octree_manager.free_circular_refs()
+	gardener_root = null
+
+
+# Restore all references might have been freed in free_circular_refs()
+func restore_circular_refs(p_gardener_root: Node3D):
+	gardener_root = p_gardener_root
+	for octree_manager in octree_managers:
+		octree_manager.restore_circular_refs(gardener_root)
+
+
 # Expected to be called inside or after a parent's _ready()
-func init_with_greenhouse(plant_states):
-	verify_all_plants(plant_states)
-
-
 # Restore all OctreeManager objects after load
 # Create missing ones
-func verify_all_plants(plant_states_to_verify:Array):
-	debug_print_lifecycle("verifying for plant_states: " + str(plant_states_to_verify))
+# TODO: 1.3.4 doesn't seem to actually update instances to plant meshes/spatials???
+func init_with_greenhouse(plant_states):
+	debug_print_lifecycle("verifying for plant_states: " + str(plant_states))
 	
-	for plant_index in range(0, plant_states_to_verify.size()):
+	for plant_index in range(0, plant_states.size()):
 		if octree_managers.size() - 1 >= plant_index:
-			octree_managers[plant_index].restore_after_load(gardener_root)
-			connect_octree_manager(octree_managers[plant_index])
+			_setup_octree_manager(plant_states[plant_index], plant_index)
 		else:
-			add_plant_octree_manager(plant_states_to_verify[plant_index], plant_index)
+			add_plant_octree_manager(plant_states[plant_index], plant_index)
+
+
+func propagate_transform(global_transform: Transform3D):
+	for octree_manager in octree_managers:
+		octree_manager.propagate_transform(global_transform)
 
 
 
@@ -163,7 +179,6 @@ func on_LOD_variant_added(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s added at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.insert_LOD_variant(LOD_variant, mesh_index)
-	octree_manager.set_LODs_to_active_index()
 
 
 # Up-to-date LOD variants of an OctreeManager
@@ -171,7 +186,6 @@ func on_LOD_variant_removed(plant_index:int, mesh_index:int):
 	debug_print_lifecycle("LOD Variant: removed at plant_index %d and mesh_index %d" % [plant_index, mesh_index])
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.remove_LOD_variant(mesh_index)
-	octree_manager.set_LODs_to_active_index()
 
 
 # Up-to-date LOD variants of an OctreeManager
@@ -179,7 +193,6 @@ func on_LOD_variant_set(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s set at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.set_LOD_variant(LOD_variant, mesh_index)
-	octree_manager.set_LODs_to_active_index()
 
 
 # Up-to-date LOD variants of an OctreeManager
@@ -201,26 +214,39 @@ func on_LOD_variant_prop_changed_cast_shadow(plant_index:int, mesh_index:int, LO
 	octree_manager.on_lod_variant_shadow_changed(mesh_index)
 
 
-# Make sure LODs in OctreeNodes correspond to their active_LOD_index
-# This is the preffered way to 'refresh' MMIs inside OctreeNodes
-func set_LODs_to_active_index(plant_index:int):
-	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
-	octree_manager.set_LODs_to_active_index()
-
-
 # Initialize an OctreeManager for a given plant
 func add_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = MMIOctreeManager.new()
 	octree_manager.init_octree(
 		plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size,
 		Vector3.ZERO, gardener_root, plant_state.plant.mesh_LOD_min_size)
-	octree_manager.LOD_max_distance = plant_state.plant.mesh_LOD_max_distance
-	octree_manager.LOD_kill_distance = plant_state.plant.mesh_LOD_kill_distance
 	octree_managers.insert(plant_index, octree_manager)
 	
+	_setup_octree_manager(plant_state, plant_index)
+
 	for mesh_index in range (0, plant_state.plant.mesh_LOD_variants.size()):
 		var LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
 		octree_manager.insert_LOD_variant(LOD_variant, mesh_index)
+
+
+func _setup_octree_manager(plant_state, plant_index:int):
+	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
+	octree_manager.LOD_max_distance = plant_state.plant.mesh_LOD_max_distance
+	octree_manager.LOD_kill_distance = plant_state.plant.mesh_LOD_kill_distance
+
+	var LOD_variant
+	for mesh_index in range(0, min(plant_state.plant.mesh_LOD_variants.size(), octree_manager.LOD_variants.size())):
+		LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
+		octree_manager.set_LOD_variant(LOD_variant, mesh_index)
+
+	if plant_state.plant.mesh_LOD_variants.size() > octree_manager.LOD_variants.size():
+		for mesh_index in range(octree_manager.LOD_variants.size(), plant_state.plant.mesh_LOD_variants.size()):
+			LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
+			octree_manager.insert_LOD_variant(LOD_variant, mesh_index)
+	elif octree_manager.LOD_variants.size() > plant_state.plant.mesh_LOD_variants.size():
+		for mesh_index in range(plant_state.plant.mesh_LOD_variants.size(), octree_manager.LOD_variants.size()):
+			octree_manager.remove_LOD_variant(mesh_index)
+
 	connect_octree_manager(octree_manager)
 
 
@@ -228,7 +254,7 @@ func add_plant_octree_manager(plant_state, plant_index:int):
 func remove_plant_octree_manager(plant_state, plant_index:int):
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	disconnect_octree_manager(octree_manager)
-	octree_manager.prepare_for_removal()
+	octree_manager.free_refs(true)
 	octree_managers.remove_at(plant_index)
 
 
@@ -359,9 +385,9 @@ func _action_apply_changes(changes):
 
 
 # Replace LOD_Variants inside of a shared array owned by this OctreeManager
-func refresh_octree_shared_LOD_variants(plant_index:int, LOD_variants:Array):
-	if octree_managers.size() > plant_index:
-		octree_managers[plant_index].set_LOD_variants(LOD_variants)
+# func refresh_octree_shared_LOD_variants(plant_index:int, LOD_variants:Array):
+# 	if octree_managers.size() > plant_index:
+# 		octree_managers[plant_index].set_LOD_variants(LOD_variants)
 
 
 # Add changes to corresponding OctreeManager queues

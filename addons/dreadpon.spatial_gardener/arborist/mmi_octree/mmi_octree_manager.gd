@@ -17,14 +17,14 @@ const GreenhouseLODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd
 
 
 @export var root_octree_node: Resource = null
-@export var LOD_variants : Array[GreenhouseLODVariant] : set = set_LOD_variants
-@export var LOD_max_distance:float
-@export var LOD_kill_distance:float
+var LOD_variants : Array[GreenhouseLODVariant] : set = set_LOD_variants
+var LOD_max_distance:float
+var LOD_kill_distance:float
 
 var add_placeforms_queue:Array
 var remove_placeforms_queue:Array
 var set_placeforms_queue:Array
-
+var gardener_root: Node3D
 
 signal req_debug_redraw
 
@@ -48,11 +48,11 @@ func _init():
 	set_placeforms_queue = []
 
 
-func _notification(what):
-	if what == NOTIFICATION_PREDELETE:
-		if is_instance_valid(root_octree_node):
-			# Avoid memory leaks when OctreeNode leaks MMI nodes and spawned spatials
-			root_octree_node.prepare_for_removal()
+# func _notification(what):
+# 	if what == NOTIFICATION_PREDELETE:
+# 		if is_instance_valid(root_octree_node):
+# 			# Avoid memory leaks when OctreeNode leaks MMI nodes and spawned spatials
+# 			root_octree_node.f()
 
 
 # Duplictes the octree structure
@@ -61,6 +61,7 @@ func duplicate_tree():
 	copy.root_octree_node = copy.root_octree_node.duplicate_tree()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
+	# TODO: 1.3.4 actually pass LOD_variants and other changes to the octree
 	return copy
 
 
@@ -69,18 +70,26 @@ func deep_copy():
 	copy.root_octree_node = copy.root_octree_node.deep_copy()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
+	# TODO: 1.3.4 actually pass LOD_variants and other changes to the octree
 	return copy
 
 
 # Restore any states that might be broken after loading OctreeNode objects
 func restore_after_load(__gardener_root:Node3D):
+	gardener_root = __gardener_root
 	if is_instance_valid(root_octree_node):
-		root_octree_node.restore_after_load(__gardener_root, LOD_variants)
+		root_octree_node.restore_after_load(gardener_root, LOD_variants)
 		connect_node(root_octree_node)
 		request_debug_redraw()
 
 
-func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, gardener_root:Node3D = null, min_leaf_extent:float = 0.0):
+func propagate_transform(global_transform: Transform3D):
+	if is_instance_valid(root_octree_node):
+		root_octree_node.propagate_transform(global_transform)
+
+
+func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, __gardener_root:Node3D = null, min_leaf_extent:float = 0.0):
+	gardener_root = __gardener_root
 	root_octree_node = MMIOctreeNode.new(null, members_per_node, root_extent, center, -1, min_leaf_extent, gardener_root, LOD_variants)
 	connect_node(root_octree_node)
 	request_debug_redraw()
@@ -100,19 +109,21 @@ func disconnect_node(octree_node:MMIOctreeNode):
 	octree_node.req_debug_redraw.disconnect(request_debug_redraw)
 
 
-func prepare_for_removal():
-	if root_octree_node:
-		root_octree_node.prepare_for_removal()
-
-
 # Free anything that might incur a circular reference or a memory leak
 # Anything that is @export'ed is NOT touched here
 # We count on Godot's own systems to handle that in whatever way works best
 # TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
 #		will need to happen around v2.0.0, since it's a very risky change
-func free_refs():
-	if !root_octree_node: return
-	root_octree_node.free_refs()
+func free_circular_refs():
+	if root_octree_node:
+		root_octree_node.free_circular_refs()
+	gardener_root = null
+
+
+func restore_circular_refs(p_gardener_root: Node3D):
+	gardener_root = p_gardener_root
+	if root_octree_node:
+		root_octree_node.restore_circular_refs(null, gardener_root)
 
 
 
@@ -130,10 +141,10 @@ func rebuild_octree(members_per_node:int, min_leaf_extent:float):
 	assert(root_octree_node)
 	var all_placeforms:Array = []
 	root_octree_node.get_nested_placeforms(all_placeforms)
-	root_octree_node.prepare_for_removal()
+	root_octree_node.free_octree_relationship_refs()
 	
 	init_octree(members_per_node, min_leaf_extent, Vector3.ZERO,
-		root_octree_node.gardener_root, min_leaf_extent)
+		gardener_root, min_leaf_extent)
 
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
@@ -150,7 +161,7 @@ func recenter_octree():
 	var last_root:MMIOctreeNode = root_octree_node
 	var all_placeforms:Array = []
 	last_root.get_nested_placeforms(all_placeforms)
-	last_root.prepare_for_removal()
+	last_root.free_octree_relationship_refs()
 	
 	var new_center:Vector3 = Vector3.ZERO
 	var new_extent:float = last_root.min_leaf_extent
@@ -165,7 +176,7 @@ func recenter_octree():
 			new_extent = max(new_extent, max(delta_pos.x, max(delta_pos.y, delta_pos.z)))
 	
 	init_octree(last_root.max_members, new_extent, new_center,
-		root_octree_node.gardener_root, last_root.min_leaf_extent)
+		gardener_root, last_root.min_leaf_extent)
 
 	if !all_placeforms.is_empty():
 		queue_placeforms_add_bulk(all_placeforms)
@@ -187,7 +198,7 @@ func grow_to_members(placeforms:Array):
 	var last_octant = last_root._map_point_to_opposite_octant(target_point)
 	var new_center = last_root.center_pos - last_root._get_octant_center_offset(last_octant)
 	
-	init_octree(last_root.max_members, last_root.extent * 2.0, new_center, last_root.gardener_root, last_root.min_leaf_extent)
+	init_octree(last_root.max_members, last_root.extent * 2.0, new_center, gardener_root, last_root.min_leaf_extent)
 	debug_manual_root_logger("grew to members")
 	root_octree_node.adopt_child(last_root, last_octant)
 	var root_copy = root_octree_node
@@ -260,7 +271,7 @@ func process_queues():
 	
 	# Make sure we update LODs even for nodes at max LOD index
 	# Since we changed their children most likely
-	set_LODs_to_active_index()
+	#set_LODs_to_active_index()
 
 
 func add_placeforms(placeforms:Array):
@@ -307,18 +318,23 @@ func set_LOD_variants(val):
 
 
 # Up-to-date LOD variants of an OctreeNode
+# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
 func insert_LOD_variant(variant, index:int):
 	LOD_variants.insert(index, variant)
+	root_octree_node.on_lod_variant_inserted(index)
 
 
 # Up-to-date LOD variants of an OctreeNode
+# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
 func remove_LOD_variant(index:int):
 	LOD_variants.remove_at(index)
+	root_octree_node.on_lod_variant_removed(index)
 
 
 # Up-to-date LOD variants of an OctreeNode
 func set_LOD_variant(variant, index:int):
 	LOD_variants[index] = variant
+	root_octree_node.on_lod_variant_set(index)
 
 
 # Up-to-date LOD variants of an OctreeNode
