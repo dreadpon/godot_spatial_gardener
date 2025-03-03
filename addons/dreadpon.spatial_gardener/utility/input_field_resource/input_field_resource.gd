@@ -25,8 +25,8 @@ const PA_PropEdit = preload("pa_prop_edit.gd")
 const PA_ArrayInsert = preload("pa_array_insert.gd")
 const PA_ArrayRemove = preload("pa_array_remove.gd")
 const PA_ArraySet = preload("pa_array_set.gd")
-const UI_ActionThumbnail_GD = preload("../../controls/input_fields/action_thumbnail/ui_action_thumbnail.gd")
 
+const UI_ActionThumbnail_GD = preload("../../controls/input_fields/action_thumbnail/ui_action_thumbnail.gd")
 const UI_InputField = preload("../../controls/input_fields/ui_input_field.gd")
 const UI_IF_Bool = preload("../../controls/input_fields/ui_if_bool.gd")
 const UI_IF_Enum = preload("../../controls/input_fields/ui_if_enum.gd")
@@ -39,6 +39,7 @@ const UI_IF_Button = preload("../../controls/input_fields/ui_if_button.gd")
 const UI_IF_PlainText = preload("../../controls/input_fields/ui_if_plain_text.gd")
 const UI_IF_Object = preload("../../controls/input_fields/ui_if_object.gd")
 const UI_IF_ThumbnailObject = preload("../../controls/input_fields/ui_if_thumbnail_object.gd")
+const UI_IF_IntFlags = preload("../../controls/input_fields/ui_if_int_flags.gd")
 const UndoRedoInterface = preload("../../utility/undo_redo_interface.gd")
 
 

@@ -67,6 +67,7 @@ var camera_to_use
 
 signal req_debug_redraw(octree_managers, requested_indexes)
 signal member_count_updated(octree_index, new_count)
+signal transplanted_member(plant_index: int, new_address: PackedByteArray, new_idx: int, old_address: PackedByteArray, old_idx: int)
 
 
 
@@ -296,6 +297,8 @@ func connect_octree_manager(plant_index:int):
 	var octree_manager = octree_managers[plant_index]
 	if !octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
 		octree_manager.req_debug_redraw.connect(on_req_debug_redraw.bind(octree_manager))
+	if !octree_manager.transplanting_requested.is_connected(request_transplanting_from_index):
+		octree_manager.transplanting_requested.connect(request_transplanting_from_index.bind(plant_index))
 	#mutex_octree.unlock()
 
 
@@ -305,6 +308,8 @@ func disconnect_octree_manager(plant_index:int):
 	var octree_manager = octree_managers[plant_index]
 	if octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
 		octree_manager.req_debug_redraw.disconnect(on_req_debug_redraw)
+	if octree_manager.transplanting_requested.is_connected(request_transplanting_from_index):
+		octree_manager.transplanting_requested.disconnect(request_transplanting_from_index)
 	#mutex_octree.unlock()
 
 
@@ -376,7 +381,8 @@ func on_stroke_updated(brush_data:Dictionary):
 	var msec_start = FunLib.get_msec()
 	
 	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, gardener_root.global_transform)
-	apply_stroke_update_changes(changes)
+	#print(1)
+	apply_member_update_changes(changes)
 	active_painting_changes.append_changes(changes)
 	
 	var msec_end = FunLib.get_msec()
@@ -403,7 +409,8 @@ func on_stroke_finished():
 
 # A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
 func _action_apply_changes(changes):
-	apply_stroke_update_changes(changes)
+	#print(2)
+	apply_member_update_changes(changes)
 
 
 
@@ -421,7 +428,8 @@ func _action_apply_changes(changes):
 
 # Add changes to corresponding OctreeManager queues
 # Then process them all at once
-func apply_stroke_update_changes(changes:PaintingChanges):
+func apply_member_update_changes(changes:PaintingChanges):
+	#print("apply_member_update_changes")
 	debug_print_lifecycle("	Applying %d stroke changes" % [changes.changes.size()])
 	var msec_start = FunLib.get_msec()
 	
@@ -429,8 +437,8 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 	var affected_octree_managers := []
 	
 	for change in changes.changes:
+		#print("Change: ", change.change_type)
 		var octree_manager:MMIOctreeManager = octree_managers[change.at_index]
-		
 		match change.change_type:
 			0:
 				octree_manager.queue_placeforms_add(change.new_val)
@@ -566,7 +574,8 @@ func batch_add_instances(placeforms: Array, plant_idx: int):
 		active_stroke_handler.add_instance_placeform(placeform, plant_idx, active_painting_changes)
 	mutex_octree.unlock()
 	
-	apply_stroke_update_changes(active_painting_changes)
+	#print(3)
+	apply_member_update_changes(active_painting_changes)
 	on_stroke_finished()
 
 
@@ -602,6 +611,28 @@ func get_camera_3d():
 	else:
 		active_camera_override = null
 		return gardener_root.get_viewport().get_camera_3d()
+
+
+# NOTE: do not perform structural changes to the octrees retrieved without locking/unlocking a mutex
+#		default use case asuumes query *only*, use start_octree_modification() and finish_octree_modification()
+#		if you plan of changing octree structure (nodes, individual instances, meshes, spawned spatials)
+func get_all_octree_root_nodes():
+	var nodes = []
+	for manager in octree_managers:
+		nodes.append(manager.root_octree_node)
+	return nodes
+
+
+# Makes sure all asynchornous operations are synchronized when performing destructive changes to octrees
+# (nodes, individual instances, meshes, spawned spatials)
+func start_octree_modification():
+	mutex_octree.lock()
+
+
+# Makes sure all asynchornous operations are synchronized when performing destructive changes to octrees
+# (nodes, individual instances, meshes, spawned spatials)
+func finish_octree_modification():
+	mutex_octree.unlock()
 
 
 
@@ -655,6 +686,24 @@ func request_debug_redraw_from_index(plant_index):
 	for index in range(plant_index, octree_managers.size()):
 		on_req_debug_redraw(octree_managers[index], true)
 	#mutex_octree.unlock()
+
+
+func request_transplanting_from_index(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array, plant_index):
+	#print(p_address, " ", p_member_idx, " ", p_new_placeform, " ", p_old_placeform, " ", plant_index)
+	#mutex_octree.lock()
+	var changes = PaintingChanges.new()
+	changes.add_change(PaintingChanges.ChangeType.ERASE, plant_index, p_old_placeform, p_old_placeform)
+	#print(4)
+	apply_member_update_changes(changes)
+	
+	changes = PaintingChanges.new()
+	changes.add_change(PaintingChanges.ChangeType.APPEND, plant_index, p_new_placeform, p_new_placeform)
+	#print(5)
+	apply_member_update_changes(changes)
+	#mutex_octree.unlock()
+	
+	var result = octree_managers[plant_index].find_member(p_new_placeform)
+	transplanted_member.emit(plant_index, result.address, result.member_idx, p_address, p_member_idx)
 
 
 # Add an OctreeManager to the debug redraw waiting list

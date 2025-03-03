@@ -63,6 +63,7 @@ var logger = null
 signal placeforms_rejected(new_placeforms) 	# (new_placeforms: Array<Array>)
 signal collapse_self_possible(octant)	# (octant: int)
 signal req_debug_redraw()
+signal transplanting_requested(address: PackedByteArray, idx: int, new_placeform: Array, old_placeform: Array)
 
 
 
@@ -154,7 +155,7 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	if shared_LOD_variants.size() <= active_LOD_index:
 		_set_active_LOD_index_skip_leaf(shared_LOD_variants.size() - 1)
 
-	if leaf == null:
+	if !is_instance_valid(leaf):
 		leaf = OctreeLeaf.new()
 	#print("restore")
 	# No need to explicitly call on_active_lod_index_changed, since it's accounted for in restore_after_load
@@ -252,7 +253,6 @@ func set_LODs_to_active_index():
 
 
 # Update LOD depending on node's distance to camera
-# TODO: 1.3.4 don't forget to fix weird killed nodes that appear only on LOD1 instead of LOD2
 func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float):
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
@@ -390,6 +390,12 @@ func remove_placeform_at(idx: int):
 
 # Set member data by index
 func set_placeform_at(idx:int, placeform: Array):
+	if member_placeforms.size() <= idx: return
+	if !bounds.has_point(placeform[2].origin):
+		var address = PackedByteArray()
+		#print("set_placeform_at", " ", address, " ", idx)
+		request_transplanting(get_address(), idx, placeform, member_placeforms[idx])
+		return
 	member_placeforms[idx] = placeform
 	leaf.on_set_placeform_at(idx, placeform)
 
@@ -470,10 +476,21 @@ func remove_members(old_placeforms:Array):
 func set_members(changes:Array):
 	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
 	#active_LOD_index = -1
-	
 	for change in changes:
 		var octree_node = find_child_by_address(change.address)
 		octree_node.set_placeform_at(change.index, change.placeform)
+
+
+func find_member(p_placeform: Array) -> Dictionary:
+	assign_octants_to_placeforms([p_placeform])
+	if child_nodes.size() > 0:
+		return child_nodes[p_placeform[3]].find_member(p_placeform)
+	var found_member_idx := member_placeforms.find(p_placeform)
+	var address := PackedByteArray()
+	get_address(address)
+	if found_member_idx >= 0:
+		return {"address": address, "member_idx": found_member_idx}
+	return {}
 
 
 # Rejects members outside the bounds
@@ -879,6 +896,14 @@ func request_debug_redraw():
 		parent.request_debug_redraw()
 	else:
 		req_debug_redraw.emit()
+
+
+func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
+	if parent:
+		parent.request_transplanting(p_address, p_member_idx, p_new_placeform, p_old_placeform)
+	else:
+		#print("request_transplanting", " ", p_address, " ", p_member_idx)
+		transplanting_requested.emit(p_address, p_member_idx, p_new_placeform, p_old_placeform)
 
 
 # Get a color depending on address length

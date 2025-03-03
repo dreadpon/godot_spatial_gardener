@@ -25,6 +25,7 @@ const UI_SidePanel_SCN = preload("../controls/side_panel/ui_side_panel.tscn")
 const UI_SidePanel = preload("../controls/side_panel/ui_side_panel.gd")
 const Globals = preload("../utility/globals.gd")
 const DataImportExport = preload("data_import_export.gd")
+const Transplanter = preload("../transplanter/transplanter.gd")
 
 const PropAction = preload("../utility/input_field_resource/prop_action.gd")
 const PA_PropSet = preload("../utility/input_field_resource/pa_prop_set.gd")
@@ -52,6 +53,7 @@ var toolshed:Toolshed = null
 var greenhouse:Greenhouse = null
 var painter:Painter = null
 var arborist:Arborist = Arborist.new()
+var transplanter:Transplanter = null
 var debug_viewer:DebugViewer = null
 
 var _resource_previewer = null
@@ -90,6 +92,7 @@ func _init():
 func _setup_configuration_statics():
 	Globals.is_threaded_LOD_update = 		FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
 	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", false)
+	Globals.use_precise_camera_frustum = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_camera_frustum", true)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
@@ -119,6 +122,7 @@ func _ready():
 	add_child(debug_viewer, false, Node.INTERNAL_MODE_FRONT)
 	
 	init_painter()
+	init_transplanter()
 	
 	if !is_instance_valid(arborist):
 		push_warning("Arborist invalid. This should never happen. Creating a new one...")
@@ -165,6 +169,7 @@ func _process(delta):
 	#if painter:
 	arborist.update(delta)
 	painter.update(delta)
+	transplanter.update(delta)
 
 
 # TODO: this will be irrelevant after we move Greenhouse to be saved with its Gardener
@@ -198,6 +203,8 @@ func forwarded_input(camera, event):
 	if !forward_input_events: return false
 	
 	var handled = painter.forwarded_input(camera, event)
+	if !handled:
+		handled = transplanter.forwarded_input(camera, event)
 	if !handled:
 		handled = toolshed.forwarded_input(camera, event)
 	if !handled:
@@ -258,6 +265,12 @@ func init_arborist():
 		reinit_arborist_with_greenhouse()
 	reinit_debug_viewer_with_arborist()
 	reinit_debug_viewer_with_greenhouse()
+
+
+func init_transplanter():
+	transplanter = Transplanter.new(self)
+	transplanter.member_transformed.connect(on_transplanter_member_transformed)
+	arborist.transplanted_member.connect(transplanter.on_transplanted_member)
 
 
 # Initialize a Greenhouse and a Toolshed
@@ -409,6 +422,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 
 #	# Making sure we and UI are on the same page (setting property values and checkboxes/tabs)
 	painter_update_to_active_brush(toolshed.active_brush)
+	transplanter_update_to_active_brush(toolshed.active_brush)
 	_side_panel.set_main_control_state(initialized_for_edit)
 
 	painter.start_editing()
@@ -643,6 +657,10 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 	arborist.on_stroke_updated(brush_data)
 
 
+func on_transplanter_member_transformed(changes):
+	#print(0)
+	arborist.apply_member_update_changes(changes)
+
 
 
 #-------------------------------------------------------------------------------
@@ -653,6 +671,7 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 # Changed active brush from Toolshed. Update the painter
 func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 	assert(painter)
+	assert(transplanter)
 	if prop_action.prop != "brush/active_brush": return
 	if !(is_instance_of(prop_action, PA_PropSet)) && !(is_instance_of(prop_action, PA_PropEdit)): return
 	if final_val != toolshed.active_brush:
@@ -660,11 +679,17 @@ func on_toolshed_prop_action_executed(prop_action:PropAction, final_val):
 		return
 	
 	painter_update_to_active_brush(final_val)
+	transplanter_update_to_active_brush(final_val)
 
 
 func painter_update_to_active_brush(active_brush):
 	assert(active_brush)
 	painter.queue_call_when_camera('update_all_props_to_active_brush', [active_brush])
+
+
+func transplanter_update_to_active_brush(active_brush):
+	assert(active_brush)
+	transplanter.update_all_props_to_active_brush(active_brush)
 
 
 
@@ -701,6 +726,12 @@ func on_toolshed_prop_action_executed_on_brush(prop_action:PropAction, final_val
 			painter.set_active_brush_strength(final_val)
 		"behavior/behavior_overlap_mode":
 			painter_update_to_active_brush(brush)
+		"behavior/behavior_selection_mode":
+			transplanter_update_to_active_brush(brush)
+		"behavior/behavior_selection_collision_mask":
+			transplanter_update_to_active_brush(brush)
+		"behavior/behavior_enable_selection_preprocess":
+			transplanter_update_to_active_brush(brush)
 
 
 

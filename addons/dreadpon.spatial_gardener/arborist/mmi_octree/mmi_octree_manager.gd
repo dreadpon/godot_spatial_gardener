@@ -27,7 +27,10 @@ var remove_placeforms_queue:Array
 var set_placeforms_queue:Array
 var gardener_root: Node3D
 
+var transplanting_queue:Dictionary = {}
+
 signal req_debug_redraw
+signal transplanting_requested(address: PackedByteArray, idx: int, new_placeform: Array, old_placeform: Array)
 
 
 
@@ -106,6 +109,7 @@ func connect_node(octree_node:MMIOctreeNode):
 	FunLib.ensure_signal(octree_node.placeforms_rejected, grow_to_members)
 	FunLib.ensure_signal(octree_node.collapse_self_possible, collapse_root)
 	FunLib.ensure_signal(octree_node.req_debug_redraw, request_debug_redraw)
+	FunLib.ensure_signal(octree_node.transplanting_requested, request_transplanting)
 
 
 func disconnect_node(octree_node:MMIOctreeNode):
@@ -113,6 +117,7 @@ func disconnect_node(octree_node:MMIOctreeNode):
 	octree_node.placeforms_rejected.disconnect(grow_to_members)
 	octree_node.collapse_self_possible.disconnect(collapse_root)
 	octree_node.req_debug_redraw.disconnect(request_debug_redraw)
+	octree_node.transplanting_requested.disconnect(request_transplanting)
 
 
 # Free anything that might incur a circular reference or a memory leak
@@ -308,6 +313,7 @@ func set_placeforms(changes:Array):
 	assert(changes.size() > 0) # 'changes' is empty
 	
 	root_octree_node.set_members(changes)
+	request_debug_redraw()
 
 
 
@@ -391,6 +397,26 @@ func update_LODs_no_camera():
 	else:
 		root_octree_node.update_LODs_legacy(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
 	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
+
+
+func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
+	# NOTE: this is largely unnecessary right now, but might be useful in the future for bulk or threaded updates
+	var key := "%s:%d" % [p_address.hex_encode(), p_member_idx]
+	if transplanting_queue.has(key): return
+	transplanting_queue[key] = [p_address, p_member_idx, p_new_placeform, p_old_placeform]
+	
+	_notify_transplanting_requested.call_deferred(p_address, p_member_idx, p_new_placeform, p_old_placeform)
+
+
+func _notify_transplanting_requested(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
+	var key := "%s:%d" % [p_address.hex_encode(), p_member_idx]
+	transplanting_queue.erase(key)
+	transplanting_requested.emit(p_address, p_member_idx, p_new_placeform, p_old_placeform)
+
+
+func find_member(p_placeform: Array) -> Dictionary:
+	if !is_instance_valid(root_octree_node): return {}
+	return root_octree_node.find_member(p_placeform)
 
 
 

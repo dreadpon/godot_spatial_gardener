@@ -21,5 +21,6 @@ static func DEFAULT_TOOLSHED():
 		Toolshed_Brush.new(Toolshed_Brush.BrushType.PAINT, 1.0, 10.0),
 		Toolshed_Brush.new(Toolshed_Brush.BrushType.ERASE, 1.0, 10.0, 100.0),
 		Toolshed_Brush.new(Toolshed_Brush.BrushType.SINGLE, 1.0, 1.0),
-		Toolshed_Brush.new(Toolshed_Brush.BrushType.REAPPLY, 1.0, 10.0, 100.0)
+		Toolshed_Brush.new(Toolshed_Brush.BrushType.REAPPLY, 1.0, 10.0, 100.0),
+		Toolshed_Brush.new(Toolshed_Brush.BrushType.TRANSFORM, 1.0, 0.00001, 0.00001)
 	])

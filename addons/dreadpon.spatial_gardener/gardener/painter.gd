@@ -49,6 +49,7 @@ var active_brush_data:Dictionary = {'brush_pos': Vector3.ZERO, 'brush_normal': V
 
 # Variables to sync quick brush property edit with UI and vice-versa
 # And also for keeping brush state up-to-date without needing a reference to actual active brush
+var active_brush_type: int = Toolshed_Brush.BrushType.PAINT
 var active_brush_overlap_mode: int = Toolshed_Brush.OverlapMode.VOLUME
 var active_brush_size:float : set = set_active_brush_size
 var active_brush_strength:float : set = set_active_brush_strength
@@ -86,7 +87,7 @@ func _init(_owned_spatial):
 #
 	paint_brush_node = MeshInstance3D.new()
 	paint_brush_node.name = "active_brush"
-	set_brush_mesh()
+	set_brush_mesh(Toolshed_Brush.BrushShape.SPHERE)
 	
 	#owned_spatial.add_child(paint_brush_node)
 	detached_paint_brush_container = Node.new()
@@ -104,17 +105,20 @@ func update(delta):
 	consume_brush_drawing_update(delta)
 
 
-func set_brush_mesh(is_sphere: bool = false):
-	if is_sphere:
-		paint_brush_node.mesh = SphereMesh.new()
-		paint_brush_node.mesh.radial_segments = 32
-		paint_brush_node.mesh.rings = 16
-		paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		paint_brush_node.material_override = sphere_brush_material.duplicate()
-	else:
-		paint_brush_node.mesh = QuadMesh.new()
-		paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		paint_brush_node.material_override = circle_brush_material.duplicate()
+func set_brush_mesh(shape: Toolshed_Brush.BrushShape):
+	match shape:
+		Toolshed_Brush.BrushShape.SPHERE:
+			paint_brush_node.mesh = SphereMesh.new()
+			paint_brush_node.mesh.radial_segments = 32
+			paint_brush_node.mesh.rings = 16
+			paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			paint_brush_node.material_override = sphere_brush_material.duplicate()
+		Toolshed_Brush.BrushShape.CIRCLE:
+			paint_brush_node.mesh = QuadMesh.new()
+			paint_brush_node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			paint_brush_node.material_override = circle_brush_material.duplicate()
+		Toolshed_Brush.BrushShape.POINTER:
+			paint_brush_node.mesh = null
 
 
 # Queue a call to method that needs a _cached_camera to be set
@@ -146,7 +150,8 @@ func stop_editing():
 
 
 func forwarded_input(camera:Camera3D, event):
-	if !can_draw: return
+	if !can_draw: return false
+	if !active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return false
 	
 	_cached_camera = camera
 	var handled = false
@@ -294,6 +299,8 @@ func move_brush():
 # Update brush data that is passed through signals to Gardener/Arborist
 # Raycast overrides exist for compatability with gardener tests
 func update_active_brush_data(raycast_overrides: Dictionary = {}):
+	#if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM:
+	
 	var space_state = paint_brush_node.get_world_3d().direct_space_state
 	var start = project_mouse_near() if !raycast_overrides.has('start') else raycast_overrides.start
 	var end = project_mouse_far() if !raycast_overrides.has('end') else raycast_overrides.end
@@ -322,6 +329,7 @@ func update_active_brush_data(raycast_overrides: Dictionary = {}):
 # Update transform of a paint brush 3D node
 func refresh_brush_transform():
 	if active_brush_data.is_empty(): return
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return
 	
 	match active_brush_overlap_mode:
 		Toolshed_Brush.OverlapMode.VOLUME:
@@ -443,6 +451,7 @@ func update_all_props_to_active_brush(brush: Toolshed_Brush):
 			max_size = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_projection_size_slider_max_value", 1000.0)
 			curr_size = brush.shape_projection_size
 	
+	set_active_brush_type(brush.behavior_brush_type)
 	set_active_brush_overlap_mode(brush.behavior_overlap_mode)
 	set_active_brush_max_size(max_size)
 	set_active_brush_max_strength(max_strength)
@@ -453,6 +462,8 @@ func update_all_props_to_active_brush(brush: Toolshed_Brush):
 # Update helper variables and visuals
 func set_active_brush_size(val):
 	active_brush_size = val
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return
+	
 	paint_brush_node.material_override.set_shader_parameter("proximity_multiplier", active_brush_size * 0.5)
 	queue_call_when_camera('set_brush_diameter', [active_brush_size])
 
@@ -460,6 +471,8 @@ func set_active_brush_size(val):
 # Update helper variables and visuals
 func set_active_brush_max_size(val):
 	active_brush_max_size = val
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return
+	
 	queue_call_when_camera('set_brush_diameter', [active_brush_size])
 
 
@@ -475,6 +488,8 @@ func set_active_brush_max_strength(val):
 
 # Update visuals
 func set_brush_diameter(diameter: float):
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return
+	
 	match active_brush_overlap_mode:
 		
 		Toolshed_Brush.OverlapMode.VOLUME:
@@ -505,13 +520,27 @@ func set_brush_collision_mask(val):
 # Update helper variables and visuals
 func set_active_brush_overlap_mode(val):
 	active_brush_overlap_mode = val
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return
 	
 	match active_brush_overlap_mode:
 		Toolshed_Brush.OverlapMode.VOLUME:
-			set_brush_mesh(true)
+			set_brush_mesh(Toolshed_Brush.BrushShape.SPHERE)
 		Toolshed_Brush.OverlapMode.PROJECTION:
-			set_brush_mesh(false)
+			set_brush_mesh(Toolshed_Brush.BrushShape.CIRCLE)
 	
+	# Since we are rebuilding the mesh here
+	# It means that we need to move it in a proper position as well
+	move_brush()
+
+
+func set_active_brush_type(val):
+	active_brush_type = val
+	
+	match active_brush_type:
+		Toolshed_Brush.BrushType.TRANSFORM:
+			set_brush_mesh(Toolshed_Brush.BrushShape.POINTER)
+		_:
+			set_active_brush_overlap_mode(active_brush_overlap_mode)
 	# Since we are rebuilding the mesh here
 	# It means that we need to move it in a proper position as well
 	move_brush()

@@ -1,13 +1,11 @@
 @tool
-extends Resource # TODO 1.3.4 explore changing this to Object
+extends RefCounted # TODO 1.3.4 explore changing this to Object
 
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
-#const MMIOctreeNode = preload("mmi_octree_node.gd")
 
 const multimesh_buffer_size: int = 12
 
-#var _octree_node: MMIOctreeNode = null
 var _octree_node = null
 var _is_leaf: bool = false
 var _active_LOD_index: int = -1
@@ -39,10 +37,34 @@ enum LODVariantParam {
 
 
 
-func clone(p_octree_node) -> Resource:
-	var clone = self.duplicate()
-	clone.free_refs()
-	clone.set_octree_node(p_octree_node)
+func _init(
+	p_octree_node = null, p_is_leaf: bool = false, p_active_LOD_index: int = -1,
+	p_spawned_spatial_container: Node3D = null, p_RID_instance: RID = RID(), p_RID_multimesh: RID = RID(),
+	p_mesh: Mesh = null, p_spawned_spatial: PackedScene = null, p_cast_shadow: RenderingServer.ShadowCastingSetting = RenderingServer.SHADOW_CASTING_SETTING_OFF,
+	p_current_state: StateType = 0
+	):
+		_octree_node = p_octree_node
+		_is_leaf = p_is_leaf
+		_active_LOD_index = p_active_LOD_index
+		_spawned_spatial_container = p_spawned_spatial_container
+		_RID_instance = _RID_instance
+		_RID_multimesh = p_RID_multimesh
+		_mesh = p_mesh
+		_spawned_spatial = p_spawned_spatial
+		_cast_shadow = p_cast_shadow
+		_current_state = p_current_state
+
+
+func get_current_state() -> StateType:
+	return _current_state
+
+
+func clone(p_octree_node) -> RefCounted:
+	var clone = get_script().new(
+		p_octree_node, _is_leaf, _active_LOD_index,
+		null, RID(), RID(),
+		_mesh, _spawned_spatial, _cast_shadow,
+		_current_state)
 	return clone
 
 
@@ -372,7 +394,6 @@ func free_circular_refs():
 		_deinit_spawned_spatial_dependencies()
 
 	_octree_node = null
-	#_nullify_all_variables()
 
 
 func restore_circular_refs(p_octree_node: Resource):
@@ -391,6 +412,7 @@ func _init_mesh_dependencies():
 
 func _init_spawned_spatial_dependencies():
 	_spawned_spatial_container = Node3D.new()
+	_spawned_spatial_container.set_meta("octree_address", _octree_node.get_address())
 	_octree_node.gardener_root.add_child(_spawned_spatial_container)
 	_spawned_spatial_container.transform = Transform3D()
 	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
@@ -501,18 +523,3 @@ func _set_mesh_instance(p_idx: int, p_placeform: Array):
 
 func _set_spatial_instance(p_idx: int, p_placeform: Array):
 	_spawned_spatial_container.get_child(p_idx).global_transform = _spawned_spatial_container.global_transform * p_placeform[2]
-
-
-# Except mesh/spatial deps
-func _nullify_all_variables():
-	_octree_node = null
-	_is_leaf = false
-	_active_LOD_index = -1
-
-	_spawned_spatial_container = null
-	_RID_instance = RID()
-	_RID_multimesh = RID()
-
-	_mesh = null
-	_spawned_spatial = null
-	_current_state = 0
