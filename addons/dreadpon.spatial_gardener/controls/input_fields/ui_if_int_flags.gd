@@ -4,7 +4,7 @@ extends "ui_input_field.gd"
 
 #-------------------------------------------------------------------------------
 # Stores an int value
-# Has a slider + line_edit for convinience
+# Uses a bitfield selector akin to Godot's own
 #-------------------------------------------------------------------------------
 
 const EditorPropertyLayersGrid = preload("../extensions/ui_layers_grid.gd")
@@ -37,9 +37,6 @@ var button: TextureButton = null
 func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
 	super(__init_val, __labelText, __prop_name, settings)
 	
-	#bool_check.size_flags_horizontal = SIZE_EXPAND_FILL
-	#bool_check.size_flags_vertical = SIZE_SHRINK_CENTER
-	
 	var hb = HBoxContainer.new()
 	hb.set_clip_contents(true)
 	container_box.add_child(hb)
@@ -56,7 +53,7 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	button.pressed.connect(_button_pressed)
 	hb.add_child(button)
 
-	# Fuuuuuuuuck!
+	# Idk what exactly it did in source, but just adding it as a child of container_box seems to work
 	#set_bottom_editor(hb)
 
 	layers = PopupMenu.new()
@@ -86,22 +83,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 			_layer_type = LayerType.LAYER_AVOIDANCE
 	setup(_layer_type)
 
-# func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", settings:Dictionary = {}):
-# 	super(__init_val, __labelText, __prop_name, settings)
-# 	set_meta("class", "UI_IF_IntFlags")
-	
-# 	# value_input = LineEdit.new()
-# 	# value_input.name = "value_input"
-# 	# value_input.size_flags_horizontal = SIZE_EXPAND_FILL
-# 	# value_input.custom_minimum_size.x = 25.0
-# 	# value_input.size_flags_vertical = SIZE_SHRINK_CENTER
-# 	# # focus_exited is our main signal to commit the value in LineEdit
-# 	# # release_focus() is expected to be called when pressing enter and only then we commit the value
-# 	# value_input.gui_input.connect(on_node_received_input.bind(value_input))
-# 	# value_input.theme_type_variation = "IF_LineEdit"
-	
-# 	container_box.add_child(value_input)
-
 
 func _cleanup():
 	super()
@@ -126,9 +107,6 @@ func _update_ui_to_prop_action(prop_action:PropAction, final_val):
 
 
 func _update_ui_to_val(val):
-	#val = _string_to_val(val)
-	#value_input.text = str(val)
-	# var value := get_edited_property_value()
 	grid.set_flag(val)
 	super._update_ui_to_val(val)
 
@@ -157,19 +135,6 @@ func _string_to_val(string) -> int:
 
 func _grid_changed(p_grid: int) -> void:
 	_request_prop_action(p_grid, "PA_PropSet")
-	pass
-	# Emit signal that property changed in UI
-	#emit_changed(get_edited_property(), p_grid)
-
-
-func update_property() -> void: # override
-	pass
-	# Update UI from property
-	# var value := get_edited_property_value()
-	# grid.set_flag(value)
-
-
-
 
 
 func _button_pressed() -> void:
@@ -190,7 +155,7 @@ func _button_pressed() -> void:
 		layers.set_item_disabled(0, true)
 	
 	layers.add_separator()
-	# TODO: can't use this to open ProjectSettings, Godot doesn't expose this function
+	# TODO: can't use this to open ProjectSettings, Godot doesn't expose this function to plugins
 	#		removing for now
 	#layers.add_icon_item(get_theme_icon("Edit", "EditorIcons"), "Edit Layer Names", grid.layer_count)
 	layers.add_item("Plugins can't open Project Settings")

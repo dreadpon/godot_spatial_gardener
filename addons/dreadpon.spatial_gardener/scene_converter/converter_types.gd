@@ -68,7 +68,6 @@ static func get_val_for_export(val):
 		TYPE_STRING:
 			return '"%s"' % [val]
 		TYPE_STRING_NAME:
-			#print("TYPE_STRING_NAME ", val)
 			return '&"%s"' % [val]
 		TYPE_FLOAT:
 			if is_equal_approx(val - int(val), 0.0):
@@ -152,7 +151,6 @@ class SubResource extends PropStruct:
 	func _init(__id: String = ""):
 		id = __id.trim_prefix('SubResource("').trim_suffix('")')
 	func _to_string():
-		#return '%s' % [id]
 		return 'SubResource("%s")' % [id]
 
 
@@ -160,7 +158,6 @@ class ExtResource extends SubResource:
 	func _init(__id: String = ""):
 		id = __id.trim_prefix('ExtResource("').trim_suffix('")')
 	func _to_string():
-		#return '%s' % [id]
 		return 'ExtResource("%s")' % [id]
 
 

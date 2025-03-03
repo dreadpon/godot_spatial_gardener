@@ -1,11 +1,3 @@
-# TODO: it's a mess
-#		need to stricly define places where we
-#			load from disk
-#			switch container/mmi on and off (in response to LOD change or member addition/removal)
-#			actually add new members
-#			refreshing existing members on LOD change
-#			TBA after looking at the code again
-
 @tool
 extends Resource
 
@@ -102,7 +94,6 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 		gardener_root = __gardener_root
 		shared_LOD_variants = __LOD_variants
 
-	#print("init")
 	# NOTE: intentionally after safe_inherit() so that we always have gardener_root available	
 	leaf.set_octree_node(self)
 
@@ -147,6 +138,8 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	gardener_root = __gardener_root
 	shared_LOD_variants = LOD_variants
 	
+	# NOTE: Theoretically this would not be needed if we could be sure no outdated OctreeNodes were used
+	#		We can't be because of different Storage Versions
 	max_bounds_to_center_dist = sqrt(pow(extent, 2) * 3)
 	min_bounds_to_center_dist = extent
 	
@@ -156,7 +149,6 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	if shared_LOD_variants.size() <= active_LOD_index:
 		_set_active_LOD_index_skip_leaf(shared_LOD_variants.size() - 1)
 	
-	#print("restore")
 	# No need to explicitly call on_active_lod_index_changed, since it's accounted for in restore_after_load
 	leaf.restore_after_load() 
 	_set_active_LOD_index(0, false)
@@ -168,12 +160,14 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	print_address("", "restored after load")
 
 
+# Propagate Gardener root transform to all instances
 func propagate_transform(global_transform: Transform3D):
 	leaf.on_root_transform_changed(global_transform)
 	for child in child_nodes:
 		child.propagate_transform(global_transform)
 
 
+# Propagate Gardener root visibility change to all instances
 func propagate_visibility(p_visible: bool):
 	leaf.on_root_visibility_changed(p_visible)
 	for child in child_nodes:
@@ -185,15 +179,12 @@ func propagate_visibility(p_visible: bool):
 func set_is_leaf(val):
 	is_leaf = val
 	
-	# NOTE: this was previously under 'elif' check. Look out for unexpected behavior
-	#active_LOD_index = -1
 
 	leaf.on_is_leaf_changed(is_leaf)
-	#leaf.on_active_lod_index_changed()
 
 
-# Cleanup this this node before deletion
-# TODO: find out if I can clear the member array here as well
+# Free any relationships this node might have with other nodes
+# E.g. when deleting it
 func free_octree_relationship_refs():
 	print_address("", "prepare for removal")
 	
@@ -209,8 +200,6 @@ func free_octree_relationship_refs():
 # Free anything that might incur a circular reference or a memory leak
 # Anything that is @export'ed is NOT touched here
 # We count on Godot's own systems to handle that in whatever way works best
-# TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
-#		will need to happen around v2.0.0, since it's a very risky change
 func free_circular_refs():
 	for child in child_nodes:
 		child.free_circular_refs()
@@ -222,6 +211,8 @@ func free_circular_refs():
 	leaf = null
 
 
+# "Restore" circular references freed in free_circular_refs() 
+# (e.g. when exiting and then entering the tree again)
 func restore_circular_refs(p_parent: Resource, p_gardener_root: Node3D):
 	if p_parent:
 		safe_inherit(p_parent)
@@ -252,10 +243,11 @@ func set_LODs_to_active_index():
 
 
 # Update LOD depending on node's distance to camera
+# This is a precise algorithm which is way slower than the legacy one
+# But it's compensated by having threaded LOD updates, so...
+# We also try to reduce function calls by NOT using a recursive function
+# But the gains are miniscule compared to how long the math itself takes
 func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float, p_force_synchronous: bool):
-	# If we don't have any LOD variants, abort the entire update process
-	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
-	#print(self.leaf, " update_LODs")
 	var lifo_nodes: Array[Resource] = [self]
 	var node: Resource
 	
@@ -267,6 +259,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	var a
 	var b
 	
+	# We use "Last In - First Out" container to process nodes depth-first
 	while !lifo_nodes.is_empty():
 		node = lifo_nodes.pop_back()
 		
@@ -283,6 +276,9 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 			elif camera_pos[i] > bmax[i]:
 				dmin += b
 		
+		# Below is the most naive version of LOD selection logic
+		# Surprisingly, it's kinda fast (compared to everything else)
+		# Without all the smartass optimizations that I tried in the legacy method
 		if LOD_kill_distance >= 0.0:
 			if dmin >= LOD_kill_distance:
 				LOD_index = -1
@@ -316,10 +312,6 @@ func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_dis
 	var outside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate >= max_kill_dist
 	var inside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate < max_kill_dist
 	var outside_max_treshold: bool = dist_to_node_center_bounds_estimate >= max_LOD_dist
-	
-	#print(
-		#LOD_kill_distance, " + ", min_bounds_to_center_dist, " = ", max_kill_dist, "     ", 
-		#dist_to_node_center, " - ", max_bounds_to_center_dist, " = ", dist_to_node_center_bounds_estimate)
 	
 	# If outside the kill threshold
 	if outside_kill_treshold:
@@ -359,6 +351,9 @@ func _set_active_LOD_index_skip_leaf(p_active_LOD_index: int):
 
 func _set_active_LOD_index(p_active_LOD_index: int, p_force_synchronous: bool):
 	active_LOD_index = p_active_LOD_index
+	# By default we assume this method is called from a separate thread
+	# So we use call_deferred() to synchronize in the next frame
+	# But we can force a synchronous update ASAP if needed (e.g. for Baking)
 	if p_force_synchronous:
 		leaf.on_active_lod_index_changed()
 	else:
@@ -393,9 +388,11 @@ func remove_placeform_at(idx: int):
 # Set member data by index
 func set_placeform_at(idx:int, placeform: Array):
 	if member_placeforms.size() <= idx: return
+	# Check below is needed to handle any Transplanter changes that go out of this Node's bounds
+	# It's not ideal to run it on EVERY instance, but honestly, mass set_placeform_at() is rare enough
+	# So we'll KISS (UwU)
 	if !bounds.has_point(placeform[0]):
 		var address = PackedByteArray()
-		#print("set_placeform_at", " ", address, " ", idx)
 		request_transplanting(get_address(), idx, placeform, member_placeforms[idx])
 		return
 	member_placeforms[idx] = placeform
@@ -476,8 +473,6 @@ func remove_members(old_placeforms:Array):
 
 # Update members' Transforms at given address
 func set_members(changes:Array):
-	# Mark this node as 'dirty' to make sure it gets update in the next update_LODs()
-	#active_LOD_index = -1
 	for change in changes:
 		var octree_node = find_child_by_address(change.address)
 		octree_node.set_placeform_at(change.index, change.placeform)
@@ -539,21 +534,6 @@ func _remove_member_from_child(old_placeform: Array):
 #-------------------------------------------------------------------------------
 # MMI and spawned spatial management
 #-------------------------------------------------------------------------------
-
-
-# # A workaround, since in Godot 4.0 multimesh breaks 
-# # If it has transforms set but no mesh assigned or zero instances
-# # With resource_local_to_scene set to true
-# func validate_MMI_multimesh():
-# 	if MMI:
-# 		var valid_mesh = is_instance_valid(MMI_multimesh.mesh) && MMI_multimesh.mesh != DUMMY_MMI_MESH
-# 		if valid_mesh && MMI_multimesh.instance_count > 0:
-# 			if MMI.multimesh != MMI_multimesh:
-# 				MMI.multimesh = MMI_multimesh
-# 		elif MMI_multimesh.instance_count == 0:
-# 			MMI_multimesh.mesh = null#DUMMY_MMI_MESH
-# 		# elif MMI.multimesh != null:
-# 		# 	MMI.multimesh = null
 
 
 func get_member_transform(member_idx: int):
@@ -621,7 +601,6 @@ func _make_children():
 		#		when passing them down to newly created children
 		child._set_active_LOD_index(active_LOD_index, false)
 	set_is_leaf(false)
-	#print(self, " _make_children")
 
 
 # Adopt another OctreeNode as a child in a given octant
@@ -900,11 +879,12 @@ func request_debug_redraw():
 		req_debug_redraw.emit()
 
 
+# Some OctreeNode detected an out-of-bounds instance (moved by Transplanter)
+# Notify OctreeManager of this (to instigate a structural change)
 func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
 	if parent:
 		parent.request_transplanting(p_address, p_member_idx, p_new_placeform, p_old_placeform)
 	else:
-		#print("request_transplanting", " ", p_address, " ", p_member_idx)
 		transplanting_requested.emit(p_address, p_member_idx, p_new_placeform, p_old_placeform)
 
 

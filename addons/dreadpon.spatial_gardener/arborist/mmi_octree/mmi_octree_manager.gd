@@ -52,13 +52,6 @@ func _init():
 	set_placeforms_queue = []
 
 
-# func _notification(what):
-# 	if what == NOTIFICATION_PREDELETE:
-# 		if is_instance_valid(root_octree_node):
-# 			# Avoid memory leaks when OctreeNode leaks MMI nodes and spawned spatials
-# 			root_octree_node.f()
-
-
 # Duplictes the octree structure
 func duplicate_tree():
 	var copy = duplicate(false)
@@ -87,11 +80,13 @@ func restore_after_load(__gardener_root:Node3D):
 		request_debug_redraw()
 
 
+# Propagate Gardener root transform to all instances
 func propagate_transform(global_transform: Transform3D):
 	if is_instance_valid(root_octree_node):
 		root_octree_node.propagate_transform(global_transform)
 
 
+# Propagate Gardener root visibility change to all instances
 func propagate_visibility(p_visible: bool):
 	if is_instance_valid(root_octree_node):
 		root_octree_node.propagate_visibility(p_visible)
@@ -123,14 +118,14 @@ func disconnect_node(octree_node:MMIOctreeNode):
 # Free anything that might incur a circular reference or a memory leak
 # Anything that is @export'ed is NOT touched here
 # We count on Godot's own systems to handle that in whatever way works best
-# TODO: this is very similar to prepare_for_removal(), need to determine how best to combine the two
-#		will need to happen around v2.0.0, since it's a very risky change
 func free_circular_refs():
 	if root_octree_node:
 		root_octree_node.free_circular_refs()
 	gardener_root = null
 
 
+# "Restore" circular references freed in free_circular_refs() 
+# (e.g. when exiting and then entering the tree again)
 func restore_circular_refs(p_gardener_root: Node3D):
 	gardener_root = p_gardener_root
 	if root_octree_node:
@@ -279,10 +274,6 @@ func process_queues():
 	add_placeforms_queue = []
 	remove_placeforms_queue = []
 	set_placeforms_queue = []
-	
-	# Make sure we update LODs even for nodes at max LOD index
-	# Since we changed their children most likely
-	#set_LODs_to_active_index()
 
 
 func add_placeforms(placeforms:Array):
@@ -290,7 +281,6 @@ func add_placeforms(placeforms:Array):
 	assert(placeforms.size() > 0) # 'placeforms' is empty
 	
 	root_octree_node.add_members(placeforms)
-	#root_octree_node.MMI_refresh_instance_placements_recursive()
 	request_debug_redraw()
 
 
@@ -301,7 +291,6 @@ func remove_placeforms(placeforms:Array):
 	root_octree_node.remove_members(placeforms)
 	root_octree_node.process_collapse_children()
 	root_octree_node.process_collapse_self()
-	#root_octree_node.MMI_refresh_instance_placements_recursive()
 	request_debug_redraw()
 	
 #	if root_octree_node.child_nodes.size() <= 0 && root_octree_node.members.size() <= 0:
@@ -362,6 +351,7 @@ func on_lod_variant_spatial_changed(index:int):
 func on_lod_variant_mesh_changed(index:int):
 	root_octree_node.on_lod_variant_mesh_changed(index)
 
+
 func on_lod_variant_shadow_changed(index:int):
 	root_octree_node.on_lod_variant_shadow_changed(index)
 
@@ -377,6 +367,7 @@ func update_LODs(camera_pos:Vector3, container_transform:Transform3D, p_force_sy
 	update_LODs_override_kill_distance(camera_pos, LOD_kill_distance, container_transform, p_force_synchronous)
 
 
+# Same as update_LODs but allows p_kill_distance override (e.g. for Baking)
 func update_LODs_override_kill_distance(camera_pos:Vector3, p_kill_distance: float, container_transform:Transform3D, p_force_synchronous: bool):
 	if LOD_variants.is_empty(): return
 	if LOD_max_distance <= 0:
@@ -384,7 +375,6 @@ func update_LODs_override_kill_distance(camera_pos:Vector3, p_kill_distance: flo
 	camera_pos = container_transform.affine_inverse() * camera_pos
 	var max_LOD_index = LOD_variants.size() - 1
 	
-	#print("update_LODs_override_kill_distance ", max_LOD_index)
 	if Globals.use_precise_LOD_distances:
 		var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
 		root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, p_kill_distance ** 2 if p_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
@@ -401,9 +391,10 @@ func update_LODs_no_camera(p_force_synchronous: bool):
 		root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
 	else:
 		root_octree_node.update_LODs_legacy(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
-	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
 
 
+# Some OctreeNode detected an out-of-bounds instance (moved by Transplanter)
+# Remove this instance and add anew to assign to a proper OctreeNode
 func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
 	# NOTE: this is largely unnecessary right now, but might be useful in the future for bulk or threaded updates
 	var key := "%s:%d" % [p_address.hex_encode(), p_member_idx]

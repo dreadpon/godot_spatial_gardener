@@ -11,20 +11,14 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 	
 	var to_erase = []
 	
-	#for section in ext_res.values():
-		#if section.header.path.ends_with('dreadpon.spatial_gardener/arborist/placement_transform.gd'):
-			#to_erase.append(section)
-	
 	var total_sections = float(parsed_scene.size())
 	var progress_milestone = 0
 	var section_num = 0
 	var found_octree_nodes = 0
-	#var found_placement_transforms = 0
 	var found_multimeshes = 0
 	var found_multimesh_instances = 0
 	var found_refd_multimesh = 0
 	
-	#var gardener_paths := []
 	var octree_nodes_by_gardener := {}
 	var multimeshes_by_gardener := {}
 	var temp_octree_nodes := [[]]
@@ -34,8 +28,6 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 	var arborist_placeholders := []
 	var arborist_sections := []
 	
-	#var instance_names_and_multimeshes := {}
-	#var instance_names_and_octree_nodes := {}
 	# Gather objects
 	for section_idx in range(0, parsed_scene.size()):
 		var section = parsed_scene[section_idx]
@@ -48,8 +40,6 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 		if section.props.get('metadata/class') == 'Gardener':
 			section.props['storage_version'] = 4
 			gardeners.append(section)
-			#var node_path: String = section.header.parent.path_join(section.header.name).trim_prefix("./")
-			#gardener_paths.append(node_path)
 			continue
 		
 		if section.props.get('metadata/class') == 'MMIOctreeNode': 
@@ -64,7 +54,6 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 		
 		if section.props.get('metadata/class') == 'Arborist': 
 			octree_nodes_by_gardener[section.header.parent] = {}
-			#print(section.props.octree_managers.size(), " ", temp_octree_nodes.size())
 			for i in range(0, section.props.octree_managers.size()):
 				for octree_node in temp_octree_nodes[i]:
 					octree_nodes_by_gardener[section.header.parent][octree_node.props.MMI_name] = octree_node
@@ -80,11 +69,6 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 					to_erase.append(section)
 					break
 		
-		#if section.header.has("type") && section.header.type == 'MultiMesh': 
-			#found_multimeshes += 1
-			#instance_names_and_multimeshes[section.header.id] = section
-			#continue
-		
 		if section.header.has("type") && section.header.type == 'MultiMeshInstance3D': 
 			for gardener_path in octree_nodes_by_gardener:
 				if section.header.parent.begins_with(gardener_path):
@@ -94,19 +78,9 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 							multimeshes_by_gardener[gardener_path] = {}
 						var multimesh_id = section.props.multimesh.id
 						multimeshes_by_gardener[gardener_path][section.header.name] = sub_res[multimesh_id]
+						found_refd_multimesh += 1
 						to_erase.append(sub_res[multimesh_id])
-					#if section.props.has("multimesh"):
-						#var multimesh_id = section.props.multimesh.id
-						#if instance_names_and_multimeshes.has(multimesh_id):
-							#instance_names_and_multimeshes[section.header.name] = instance_names_and_multimeshes[multimesh_id]
-							#instance_names_and_multimeshes.erase(multimesh_id)
 					break
-	#print(octree_nodes_by_gardener.keys())
-	
-	#var json = JSON.new()
-	#print(json.stringify(octree_nodes_by_gardener, "	", true, true))
-	#print(json.stringify(multimeshes_by_gardener, "	", true, true))
-	
 	
 	for gardener_path in octree_nodes_by_gardener:
 		if !multimeshes_by_gardener.has(gardener_path): continue
@@ -148,68 +122,11 @@ func convert_gardener(parsed_scene: Array, run_mode: int, ext_res: Dictionary, s
 			octree_section.props.erase("member_octants")
 			octree_section.props.erase("MMI_name")
 			
-			#var new_props := {}
-			#var keys = octree_section.props.keys()
-			#keys.sort()
-			#for key in keys:
-				#new_props[key] = octree_section.props[key]
-			#
-			#octree_section.props = new_props
-			#print(octree_section.props.member_placeforms)
-			
-			#print("%s/%s: %s %s" % [gardener_path, MMI_name, str(octree_section), str(multimesh)])
-		#return Transform3D(Vector3(split[0], split[3], split[6]), Vector3(split[1], split[4], split[7]), Vector3(split[2], split[5], split[8]), Vector3(split[9], split[10], split[11]))
-
-	# Iterate instance_names_and_multimeshes
-	# Find out which are referenced by Octree Nodes
-	# to_erase add MultiMeshes that are references (not MMIs!)
-	
-	# Create member_placeforms array
-	# Extract transform from MMI
-	# Extract Packed Arrays from Node
-	# Combine them
-	# Initialize member_placeforms
-		
-		
-		
-		
-		
-		
-		#section.props.member_origin_offsets = Types.PropStruct.new('PackedFloat32Array( ')
-		#section.props.member_surface_normals = Types.PropStruct.new('PackedVector3Array( ')
-		#section.props.member_octants = Types.PropStruct.new('PackedByteArray( ')
-		#
-		#found_placement_transforms += section.props.members.size()
-		#for member_ref in section.props.members:
-			#var placeform_section = sub_res[member_ref.id]
-			#to_erase.append(placeform_section)
-			#
-			#var placeform := Placeform.mk(
-				#placeform_section.props.placement.variant(),
-				#placeform_section.props.surface_normal.variant(),
-				#placeform_section.props.transform.variant(),
-				#placeform_section.props.octree_octant
-			#)
-			#section.props.member_origin_offsets.content += Types.get_val_for_export(Placeform.get_origin_offset(placeform)) + ', '
-			#section.props.member_surface_normals.content += '%s, %s, %s, ' % [placeform[1][0], placeform[1][1], placeform[1][2]]
-			#section.props.member_octants.content += Types.get_val_for_export(placeform[3]) + ', '
-		#section.props.member_origin_offsets.content = section.props.member_origin_offsets.content.trim_suffix(', ') + ' )'
-		#section.props.member_surface_normals.content = section.props.member_surface_normals.content.trim_suffix(', ') + ' )'
-		#section.props.member_octants.content = section.props.member_octants.content.trim_suffix(', ') + ' )'
-		#section.props.erase('members')
-	
-	#print(gardener_paths)
-	#for section in to_erase:
-		#print(section)
-	#for key in instance_names_and_multimeshes:
-		#print(key, ": ", instance_names_and_multimeshes[key])
-	
 	logger.info('Found OctreeNode objects: %d' % [found_octree_nodes])
 	logger.info('Found MultiMesh objects: %d' % [found_multimeshes])
 	logger.info('Found MultiMeshInstance3D objects: %d' % [found_multimesh_instances])
-	#logger.info('Found PlacementTransform objects: %d' % [found_placement_transforms])
+	logger.info('Found referenced MultiMeshe objects: %d' % [found_refd_multimesh])
 	
-	print(arborist_placeholders, " ", arborist_sections.size())
 	for i in range(arborist_placeholders.size() - 1, -1, -1):
 		var section_idx = arborist_placeholders[i]
 		var section = arborist_sections[i]

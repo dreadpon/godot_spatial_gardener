@@ -3,13 +3,12 @@ extends Node3D
 
 
 #-------------------------------------------------------------------------------
-# A previewer for octree structure
+# A Node responsible for baking a Gardener to user-editable Nodes
 #-------------------------------------------------------------------------------
 
 
 const FunLib = preload("../utility/fun_lib.gd")
 const BakerPlantSettings = preload("baker_plant_settings.gd")
-const MMIOctreeManager = preload("../arborist/mmi_octree/mmi_octree_manager.gd")
 const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
 const OctreeLeaf = preload("../arborist/mmi_octree/octree_leaf.gd")
 const UndoRedoInterface = preload("../utility/undo_redo_interface.gd")
@@ -26,11 +25,11 @@ signal LOD_bake_finished
 
 
 #-------------------------------------------------------------------------------
-# Debug view menu
+# Bake menu
 #-------------------------------------------------------------------------------
 
 
-# Create and initialize a debug view menu
+# Create and initialize a bake menu
 static func make_bake_menu():
 	var bake_menu := Button.new()
 	bake_menu.text = "Bake Gardener"
@@ -52,12 +51,12 @@ static func make_bake_menu():
 	popup_button_bake_gardener.pressed.connect(func (): bake_menu.emit_signal("bake_requested"))
 	popup_tab.custom_minimum_size.x = 400
 	
-	bake_menu.add_child(popup)#, false, Node.INTERNAL_MODE_FRONT)
-	popup.add_child(popup_vb)#, false, Node.INTERNAL_MODE_FRONT)
-	popup_vb.add_child(popup_tab)#, false, Node.INTERNAL_MODE_FRONT)
-	popup_vb.add_child(popup_separator)#, false, Node.INTERNAL_MODE_FRONT)
-	popup_vb.add_child(popup_check_keep_gardener)#, false, Node.INTERNAL_MODE_FRONT)
-	popup_vb.add_child(popup_button_bake_gardener)#, false, Node.INTERNAL_MODE_FRONT)
+	bake_menu.add_child(popup)
+	popup.add_child(popup_vb)
+	popup_vb.add_child(popup_tab)
+	popup_vb.add_child(popup_separator)
+	popup_vb.add_child(popup_check_keep_gardener)
+	popup_vb.add_child(popup_button_bake_gardener)
 	
 	return bake_menu
 
@@ -164,6 +163,9 @@ func request_bake(bake_menu: Button, gardener: Node3D):
 				for child in node.child_nodes:
 					lifo_nodes.append(child)
 			
+			# If we forced any synchonous LOD updates in the Arborist
+			# First we gather the data ('while' loop above)
+			# Then we notify the Arborist that we're done working with this data
 			if external_baking_requested:
 				LOD_bake_finished.emit()
 	
@@ -208,7 +210,10 @@ func request_bake(bake_menu: Button, gardener: Node3D):
 				
 				for child in node.child_nodes:
 					lifo_nodes.append(child)
-			
+		
+		# If we forced any synchonous LOD updates in the Arborist
+		# First we gather the data ('while' loop above)
+		# Then we notify the Arborist that we're done working with this data
 		if external_baking_requested:
 			LOD_bake_finished.emit()
 	

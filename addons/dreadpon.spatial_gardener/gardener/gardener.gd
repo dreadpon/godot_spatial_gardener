@@ -39,8 +39,6 @@ const PA_ArraySet = preload("../utility/input_field_resource/pa_array_set.gd")
 
 var plugin_version: String = ""
 var storage_version: int = 0
-#export
-#var refresh_octree_shared_LOD_variants:bool = false : set = set_refresh_octree_shared_LOD_variants
 
 # file_management
 var garden_work_directory:String : set = set_garden_work_directory
@@ -95,8 +93,6 @@ func _setup_configuration_statics():
 	Globals.is_threaded_LOD_update = 		FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
 	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", true)
 	Globals.use_precise_camera_frustum = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_camera_frustum", true)
-	#print(Globals.use_precise_LOD_distances)
-	#Globals.force_readable_node_names = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/force_readable_node_names", false)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
@@ -141,14 +137,12 @@ func _ready():
 
 
 func _enter_tree() -> void:
-	#if arborist.initialized_with_gardener:
 	arborist.restore_circular_refs(self)
 	arborist.start_threaded_processes()
 
 
 func _exit_tree():
 	# NOTE: we assume these refs are recreated whenever the tree is entered again
-	#if arborist.initialized_with_gardener:
 	arborist.free_circular_refs()
 	arborist.finish_threaded_processes()
 	
@@ -175,7 +169,6 @@ func _propagate_visibility():
 
 
 func _process(delta):
-	#if painter:
 	arborist.update(delta)
 	painter.update(delta)
 	transplanter.update(delta)
@@ -242,16 +235,8 @@ func restore_references():
 	logger = Logger.get_for(self, name)
 	if !Engine.is_editor_hint(): return
 	
-	#if has_node('painting'):
-		#painting_node = get_node('painting')
-	#if has_node('debug_viewer'):
-		#debug_viewer = get_node('debug_viewer')
-	
 	init_painter()
 	reload_resources()
-	
-	#if has_node("Arborist") && is_instance_of(get_node("Arborist"), Arborist):
-		#arborist = get_node("Arborist")
 	
 	set_gardening_collision_mask(gardening_collision_mask)
 
@@ -389,21 +374,6 @@ func reinit_debug_viewer_with_arborist():
 		arborist.req_debug_redraw.connect(debug_viewer.request_debug_redraw)
 
 
-# Workaround below fixes the problem of instanced nodes "sharing" exported arrays (and resources inside them)
-# When instanced in the editor
-# See https://github.com/godotengine/godot/issues/16478
-# This fix is needed, so we can have multiple instances of same terrain with same plant placement
-# But have LOD switch independently for each of these terrains
-# func something_something_make_unique():
-# 	if octree_managers == null:
-# 		octree_managers = []
-# 	else:
-# 		var octree_managers_copy = octree_managers.duplicate()
-# 		octree_managers = []
-# 		for octree_manager in octree_managers_copy:
-# 			octree_managers.append(octree_manager.duplicate_tree())
-
-
 
 
 #-------------------------------------------------------------------------------
@@ -438,8 +408,6 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	painter.start_editing()
 	
 	arborist.emit_total_member_count()
-	# Make sure LOD_Variants in a shared Octree array are up-to-date
-	#set_refresh_octree_shared_LOD_variants(true)
 	is_edited = true
 
 
@@ -688,7 +656,6 @@ func on_painter_stroke_updated(brush_data:Dictionary):
 
 
 func on_transplanter_member_transformed(changes):
-	#print(0)
 	arborist.apply_member_update_changes(changes)
 
 
@@ -858,10 +825,3 @@ func _get_configuration_warnings():
 		return PackedStringArray()
 	else:
 		return PackedStringArray(["Gardener is missing a valid Arborist child", "Since it should be created automatically, try reloading a scene or recreating a Gardener"])
-
-
-# func set_refresh_octree_shared_LOD_variants(val):
-# 	refresh_octree_shared_LOD_variants = false
-# 	if val && arborist && greenhouse:
-# 		for i in range(0, greenhouse.greenhouse_plant_states.size()):
-# 			arborist.refresh_octree_shared_LOD_variants(i, greenhouse.greenhouse_plant_states[i].plant.mesh_LOD_variants)

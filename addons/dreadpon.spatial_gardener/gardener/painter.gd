@@ -84,12 +84,11 @@ func _init(_owned_spatial):
 	
 	owned_spatial = _owned_spatial
 	FunLib.free_children(owned_spatial)
-#
+
 	paint_brush_node = MeshInstance3D.new()
 	paint_brush_node.name = "active_brush"
 	set_brush_mesh(Toolshed_Brush.BrushShape.SPHERE)
 	
-	#owned_spatial.add_child(paint_brush_node, true)
 	detached_paint_brush_container = Node.new()
 	owned_spatial.add_child(detached_paint_brush_container, true)
 	detached_paint_brush_container.add_child(paint_brush_node, true)
@@ -299,8 +298,6 @@ func move_brush():
 # Update brush data that is passed through signals to Gardener/Arborist
 # Raycast overrides exist for compatability with gardener tests
 func update_active_brush_data(raycast_overrides: Dictionary = {}):
-	#if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM:
-	
 	var space_state = paint_brush_node.get_world_3d().direct_space_state
 	var start = project_mouse_near() if !raycast_overrides.has('start') else raycast_overrides.start
 	var end = project_mouse_far() if !raycast_overrides.has('end') else raycast_overrides.end

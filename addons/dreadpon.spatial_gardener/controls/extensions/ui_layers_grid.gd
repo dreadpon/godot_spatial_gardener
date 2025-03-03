@@ -1,6 +1,9 @@
 @tool
 extends Control
 
+# NOTE: this is a direct port from Godot's source code
+#		I will not pretend to have understood all its ins and outs and will just leave it as it is
+
 const EditorInterfaceInterface = preload("../../utility/editor_interface_interface.gd")
 
 const INT32_MAX = 2147483647

@@ -83,10 +83,8 @@ static func analyze_octree_scene_tree(octree_node:OctreeNode, gardener_root:Node
 	var node_results := {}
 	node_results.missing_multimeshes = []
 	node_results.extra_multimeshes = []
-	#node_results.misnamed_multimeshes = []
 	node_results.node_missing_spawned_spatials = []
 	node_results.node_with_extra_spawned_spatials = []
-	#node_results.accounted_multimeshes = []
 	
 	if octree_node.child_nodes.size() > 0:
 		for child_node in octree_node.child_nodes:
@@ -101,7 +99,6 @@ static func analyze_octree_scene_tree(octree_node:OctreeNode, gardener_root:Node
 				node_results.extra_multimeshes.append(
 					"at %s, %s" % [str(octree_node.get_address()), str(octree_node.leaf._RID_multimesh)])
 		else:
-			#node_results.accounted_multimeshes.append(octree_node.leaf._RID_multimesh)
 			if spawns_spatial:
 				if octree_node.leaf._spawned_spatial_container.get_children(true).size() < octree_node.get_member_count():
 					node_results.node_missing_spawned_spatials.append(

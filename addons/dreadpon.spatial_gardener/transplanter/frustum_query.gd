@@ -1,14 +1,22 @@
 @tool
 extends RefCounted
 
+#-------------------------------------------------------------------------------
+# This script is responsible for querying octree instances within a camera frustum
+# Used as a first step in picking an instance during Transplanter transformations
+# 
+# TODO: some code here duplicates code in stroke_handler.gd due to how development process was structured
+#		this needs to be extracted in a function library to be shared anong these two scripts
+# TODO: it makes sense to re-implement debug drawing in some capacity
+#-------------------------------------------------------------------------------
+
+
 const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
 
 var camera: Camera3D
 var queried_screen_pos: Vector2
 var radius: float
 var simplify_projection_frustum: bool = false
-
-#var debug_draw_enabled: bool = false
 
 var frustum_planes: Array
 
@@ -19,7 +27,6 @@ func _init(__camera: Camera3D, __radius: float, __simplify_projection_frustum :=
 	camera = __camera
 	radius = __radius
 	simplify_projection_frustum = __simplify_projection_frustum
-	#debug_draw_enabled = __debug_draw_enabled
 
 
 
@@ -76,11 +83,6 @@ static func is_box_line_intersecting(box_transform: Transform3D, box_size: Vecto
 		#DebugDraw3D.draw_box(box_transform.origin, box_transform.basis.get_rotation_quaternion(), box_size, Color.BLUE, true, 1/60.0)
 	#if draw_line:
 		#DebugDraw3D.draw_line(line_origin, line_end, Color.BLUE, 60.0)#1/60.0)
-	
-	#invMatrix = Matrix4x4.identity;
-	#AddPosition(ref invMatrix, -position); // translate in world space
-	#invMatrix = rotMatrix.inverse * invMatrix;
-	#AddPosition(ref invMatrix, position);
 	
 	var rot_matrix = Transform3D()
 	rot_matrix.basis = box_transform.basis.orthonormalized()
@@ -197,59 +199,6 @@ static func point_inside_triangle(point: Vector3, t0: Vector3, t1: Vector3, t2: 
 	var inside := bary.x >= 0.0 && bary.y >= 0.0 && bary.z >= 0.0
 	return inside
 
-
-
-
-
-
-
-
-func proj_filter_placeforms_to_brush_circle(placeforms_data_in_frustum: Array, container_transform:Transform3D):
-	var brush_radius_squared: float = pow(radius, 2.0)
-	var viewport_size: Vector2i = camera.get_viewport().size
-	
-	for i in range(placeforms_data_in_frustum.size() -1, -1, -1):
-		var placeform_data = placeforms_data_in_frustum[i]
-		var placement = container_transform * placeform_data.placeform[0]
-		var screen_space_pos := camera.unproject_position(placement)
-		var dist_squared = (screen_space_pos - queried_screen_pos).length_squared()
-		
-		# Remove those outside brush radius
-		if dist_squared > brush_radius_squared:
-			placeforms_data_in_frustum.remove_at(i)
-		# Remove those outside viewport
-		elif screen_space_pos.x < 0 || screen_space_pos.y < 0 || screen_space_pos.x > viewport_size.x || screen_space_pos.y > viewport_size.y:
-			placeforms_data_in_frustum.remove_at(i)
-
-
-
-# This is an approximation (but THIS frustum check IS MEANT to be an approximation, so it's fine)
-# This WILL fail on cube's screen-projected 'corners'
-# Since technically it will intersect some planes of our frustum
-# Which is fine because we perform distance checks to individual members later on
-func is_box_intersecting_frustum(frustum_planes: Array, box_transform: Transform3D, box_extents: Vector3):
-	# Extents == half-size
-	var oriented_box_extents = [box_extents.x * box_transform.basis.x, box_extents.y * box_transform.basis.y, box_extents.z * box_transform.basis.z]
-	var box_points := [
-		box_transform.origin + oriented_box_extents[0] + oriented_box_extents[1] + oriented_box_extents[2],
-		box_transform.origin + oriented_box_extents[0] + oriented_box_extents[1] - oriented_box_extents[2],
-		box_transform.origin + oriented_box_extents[0] - oriented_box_extents[1] + oriented_box_extents[2],
-		box_transform.origin + oriented_box_extents[0] - oriented_box_extents[1] - oriented_box_extents[2],
-		box_transform.origin - oriented_box_extents[0] + oriented_box_extents[1] + oriented_box_extents[2],
-		box_transform.origin - oriented_box_extents[0] - oriented_box_extents[1] + oriented_box_extents[2],
-		box_transform.origin - oriented_box_extents[0] + oriented_box_extents[1] - oriented_box_extents[2],
-		box_transform.origin - oriented_box_extents[0] - oriented_box_extents[1] - oriented_box_extents[2],
-	]
-	#debug_draw_point_array(box_points, Color.YELLOW)
-	
-	for plane in frustum_planes:
-		var points_inside := 0
-		for point in box_points:
-			points_inside += 1 if plane.is_point_over(point) else 0
-		
-		if points_inside == 0:
-			return false
-	return true
 
 
 

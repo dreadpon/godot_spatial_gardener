@@ -1,6 +1,23 @@
 @tool
 extends RefCounted # TODO: explore changing this to Object
 
+#-------------------------------------------------------------------------------
+# This is a sort of "blackbox" that handles ALL logic for actually placing instances
+# Changing their LODs and keeping track of used resources (RenderServer RIDs, NOdes, etc.)
+#
+# Our motivation with this is to isolate highly situational logic of allocating
+# Resources and drawing instances from the logic of managing an octree
+# It means we can add instances and move them around the octree
+# Without having to depend in any way on MultiMeshes and Nodes
+# (This makes it trivial to place Node3D instances without a Mesh being assigned)
+# (Or having some other weird AF configuration of LODVariants)
+#
+# The architecture of this object relies on "events" happening ( func on_*() )and OctreeLeaf
+# Checking all relevant conditions and deciding which operations can be performed
+# (If a given change allows us to spawn Mesh instances or demands we remove all Spawned Spatials, for example)
+#-------------------------------------------------------------------------------
+
+
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
 const Globals = preload("../../utility/globals.gd")
@@ -69,6 +86,7 @@ func clone(p_octree_node) -> RefCounted:
 	return clone
 
 
+# Check conditions for a single state and turn it on/off
 func _update_state(p_single_state_type: StateType):
 	match p_single_state_type:
 		StateType.INSTANCES_PERMITTED:
@@ -96,9 +114,9 @@ func _update_state(p_single_state_type: StateType):
 				_current_state |= StateType.SPATIAL_DEPS_INITIALIZED
 			else:
 				_current_state &= ~StateType.SPATIAL_DEPS_INITIALIZED
-	#print(self, " ", String.num_int64(_current_state, 2), " ", _spawned_spatial_container.get_parent() if _spawned_spatial_container else null)
 
 
+# Getting LODVariant values in a safe way (avoiding invalid access, null pointers, etc.)
 func _get_variant_param(p_param: LODVariantParam, p_default_val = null):
 	# NOTE: _octree_node assumed valid at this point
 	if _octree_node.active_LOD_index < 0 || _octree_node.shared_LOD_variants.size() <= _octree_node.active_LOD_index:
@@ -116,7 +134,6 @@ func _get_variant_param(p_param: LODVariantParam, p_default_val = null):
 
 
 func set_octree_node(p_octree_node):
-	#print("set_octree_node")
 	if _octree_node == p_octree_node: return
 	_octree_node = p_octree_node
 	
@@ -125,12 +142,12 @@ func set_octree_node(p_octree_node):
 
 
 func restore_after_load():
-	#print("restore_after_load")
 	_init_with_octree_node()
 
 
+# This can be called by both set_octree_node() and restore_after_load()
+# We need this to ensure we can avoid double-initialization when e.g. loading from disk
 func _init_with_octree_node():
-	#print("_init_with_octree_node")
 	# Inherit leaf, mesh, spawned spatial, shadow, create new spatial container if necessary
 	if _octree_node == null:
 		_is_leaf = false
@@ -177,7 +194,6 @@ func _init_with_octree_node():
 
 
 func on_is_leaf_changed(p_is_leaf: bool):
-	#print(self, " on_is_leaf_changed ", String.num_int64(_current_state, 2))
 	if _is_leaf == p_is_leaf: return
 	_is_leaf = p_is_leaf
 
@@ -219,6 +235,9 @@ func on_preceeding_lod_variant_changed():
 	_update_with_active_lod_variant()
 
 
+# This method may have multiple points of entry
+# Basically called in response that may cause ANY change to the active LODVariant
+# (LODVariant itself or its Mesh/Spatial/Shadow)
 func _update_with_active_lod_variant():
 	# Inherit mesh, spawned spatial, shadow
 	var change_flags: int = 0
@@ -342,7 +361,6 @@ func on_appended_placeforms(p_placeforms: Array):
 		if _current_state & StateType.SPATIAL_DEPS_INITIALIZED == 0: # If spatial deps not initialized
 			_init_spawned_spatial_dependencies() # Initialize spatial deps
 		_add_spatial_instances(p_placeforms) # Add spatial instances (assume other instances are already up to date)
-	#print(self, " on_appended_placeforms ", p_placeforms.size(), " ", String.num_int64(_current_state, 2))
 
 
 func on_removed_placeform_at(p_idx: int):
@@ -388,6 +406,9 @@ func on_root_visibility_changed(p_visible: bool):
 
 
 
+# Free anything that might incur a circular reference or a memory leak
+# Anything that is @export'ed is NOT touched here
+# We count on Godot's own systems to handle that in whatever way works best
 func free_circular_refs():
 	if _current_state & StateType.MESH_DEPS_INITIALIZED: 
 		_deinit_mesh_dependencies()
@@ -397,8 +418,9 @@ func free_circular_refs():
 	_octree_node = null
 
 
+# "Restore" circular references freed in free_circular_refs() 
+# (e.g. when exiting and then entering the tree again)
 func restore_circular_refs(p_octree_node: Resource):
-	#print(self, " restore_circular_refs")
 	set_octree_node(p_octree_node)
 
 
@@ -430,7 +452,6 @@ func _deinit_mesh_dependencies():
 
 
 func _deinit_spawned_spatial_dependencies():
-	#if is_instance_valid(_spawned_spatial_container.get_parent()): # When Gardener exits tree, all chidlren are already freed afaik
 	FunLib.free_children(_spawned_spatial_container)
 	_spawned_spatial_container.get_parent().remove_child(_spawned_spatial_container)
 	_spawned_spatial_container.queue_free()
@@ -455,7 +476,6 @@ func _add_all_mesh_instances():
 	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
 	for i in range(0, instance_count):
 		RenderingServer.multimesh_instance_set_transform(_RID_multimesh, i, _octree_node.member_placeforms[i][2])
-	#print(self, " _add_all_mesh_instances ", instance_count, " ", String.num_int64(_current_state, 2))
 
 
 func _add_all_spatial_instances():
@@ -490,7 +510,6 @@ func _add_mesh_instances(p_placeforms: Array):
 			trans.basis.x.z, trans.basis.y.z, trans.basis.z.z, trans.origin.z
 		])
 	RenderingServer.multimesh_set_buffer(_RID_multimesh, buffer)
-	#print(self, " _add_mesh_instances ", p_placeforms.size(), " ", String.num_int64(_current_state, 2))
 
 
 func _add_spatial_instances(p_placeforms: Array):

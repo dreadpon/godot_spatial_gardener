@@ -9,6 +9,7 @@
 #-------------------------------------------------------------------------------
 
 
+# Globally accessible parameters loaded from ProjectSettings
 static var is_threaded_LOD_update: bool = false
 static var use_precise_LOD_distances: bool = false
 static var use_precise_camera_frustum: bool = false

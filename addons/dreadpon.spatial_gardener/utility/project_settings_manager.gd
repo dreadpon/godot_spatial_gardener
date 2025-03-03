@@ -133,6 +133,7 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/debug/stroke_handler_debug_draw",
 		false,
 		TYPE_BOOL)
+	# NOTE: this was removed because users shouldn't need acces to this variable, it's for internal and testing use only
 	#add_project_setting(
 		#"dreadpons_spatial_gardener/debug/force_readable_node_names",
 		#false,

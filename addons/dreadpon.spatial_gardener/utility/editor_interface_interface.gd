@@ -1,5 +1,11 @@
 extends Object
 
+#-------------------------------------------------------------------------------
+# This is an interface to allow EditorInterface-like functionality at runtime
+# Through a common interface
+#-------------------------------------------------------------------------------
+
+
 # TODO: this is a stub that we'll use when/if implementing runtime Gardener editing
 static var _selected_nodes: Array[Node3D]
 

@@ -59,11 +59,10 @@ func _init():
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
+			# Avoid memory leaks
 			if is_instance_valid(_file_dialog):
-				# Avoid memory leaks
 				_file_dialog.queue_free()
 			if is_instance_valid(_replace_dialog):
-				# Avoid memory leaks
 				_replace_dialog.queue_free()
 
 
@@ -283,8 +282,6 @@ func on_import_export_file_selected(file_path: String, is_import: bool, is_plant
 		FunLib.disconnect_all(_replace_dialog.canceled)
 		_replace_dialog.confirmed.connect(on_req_import_export_file_confirmed.bind(file_path, is_import, is_plant_data, true, plant_idx))
 		_replace_dialog.custom_action.connect(on_replace_dialog_custom_action.bind(file_path, is_import, is_plant_data, plant_idx))
-		# On cancel just hide it
-		#_replace_dialog.canceled.connect()
 	else:
 		on_req_import_export_file_confirmed(file_path, is_import, is_plant_data, false, plant_idx)
 

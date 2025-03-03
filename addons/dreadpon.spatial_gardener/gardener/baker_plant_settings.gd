@@ -3,7 +3,7 @@ extends "../utility/input_field_resource/input_field_resource.gd"
 
 
 #-------------------------------------------------------------------------------
-# All the data that reflects a brush behavior
+# All the data that configures how Bake to Nodes should behave
 #-------------------------------------------------------------------------------
 
 enum LODPickingType { MANUAL, CURRENT_CAMERA, SCENE_ORIGIN, NONE }
@@ -30,8 +30,6 @@ func _init(
 	p_mesh_lod_picking: LODPickingType = LODPickingType.MANUAL, p_mesh_lod_idx: int = 0, p_mesh_kill_instances: bool = true,
 	p_node3d_lod_picking: LODPickingType = LODPickingType.MANUAL, p_node3d_lod_idx: int = 0, p_node3d_kill_instances: bool = true
 	):
-	
-	#input_field_blacklist = ['behavior/behavior_brush_type']
 	
 	super()
 	set_meta("class", "BakerPlantSettings")

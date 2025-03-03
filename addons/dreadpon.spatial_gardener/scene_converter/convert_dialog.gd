@@ -1,8 +1,6 @@
 @tool
 extends ConfirmationDialog
 
-const ThemeAdapter = preload("../controls/theme_adapter.gd")
-
 signal confirm_pressed
 signal cancel_pressed
 signal dont_ask_again_toggled(state)
@@ -21,13 +19,10 @@ func _ready():
 func _on_tree_item_selected():
 	var selected_item: TreeItem = $'%TreeScenes'.get_selected()
 	if !selected_item: return
-	#selected_item.set_checked(0, !selected_item.is_checked(0))
-	#selected_item.deselect(0)
 
 
 func add_scenes(scenes: Array):
 	$'%TreeScenes'.clear()
-	#$'%TreeScenes'.hide_root = true
 	var root = $'%TreeScenes'.create_item()
 	for scene in scenes:
 		var item: TreeItem = $'%TreeScenes'.create_item(root)
@@ -54,7 +49,6 @@ func should_mk_backups():
 
 
 func _on_ButtonConfirm_pressed():
-	print("_on_ButtonConfirm_pressed")
 	confirm_pressed.emit()
 
 

@@ -237,11 +237,9 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 		var sub_res := {}
 		logger.info('Parsing scene...')
 		var parsed_scene = parse_scene(in_filepath, ext_res, sub_res)
-		#print(parsed_scene)
 		
 		if run_mode == RunMode.CONVERT || run_mode == RunMode.DRY:
 			var storage_vers = get_vers(parsed_scene)
-			#print("storage_vers ", storage_vers)
 			if storage_vers.size() < 1:
 				logger.warn('No Gardeners found in this scene')
 				continue
@@ -410,7 +408,6 @@ func parse_resource(res_string: String, separator: String = '\n') -> Dictionary:
 	if res_string.is_empty(): return {}
 	var result := {}
 	var tokens := tokenize_string(res_string, separator)
-	#print(tokens)
 	result = tokens_to_dict(tokens)
 	return result
 
@@ -447,7 +444,6 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 				if str_last_inclusive(status_bundle).ends_with("](["):
 					tokens.append(Types.TokenVal.new(Types.Tokens.OPEN_TYPED_ARRAY, str_last_inclusive_stripped(status_bundle)))
 					status_bundle.last_tokenized_idx = idx + 1
-					#current_token = Types.Tokens.VAL_STRUCT
 			elif character == ']' && string[idx + 1] == ')':
 					tokens.append(Types.TokenVal.new(Types.Tokens.CLSD_TYPED_ARRAY, str_last_inclusive_stripped(status_bundle)))
 					status_bundle.last_tokenized_idx = idx + 2
@@ -503,20 +499,12 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 			elif character == separator:
 				tokens.append(Types.TokenVal.new(Types.Tokens.STMT_SEPARATOR, ''))
 		
-		#elif current_token == Types.Tokens.OPEN_SQR_BRKT_TYPED_ARRAY:
-			#if character == ']':
-				#tokens.append(Types.TokenVal.new(Types.Tokens.CLSD_SQR_BRKT, str_last(status_bundle)))
-				#status_bundle.last_tokenized_idx = idx + 1
-				#current_token = Types.Tokens.NONE
-		
 		elif current_token == Types.Tokens.DBL_QUOTE || current_token == Types.Tokens.AMP_DBL_QUOTE:
 			if character == '"' && (idx == 0 || string[idx - 1] != '\\'):
 				if current_token == Types.Tokens.DBL_QUOTE:
 					tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING, str_last(status_bundle)))
-					#print("STRING     ", str_last(status_bundle))
 				elif current_token == Types.Tokens.AMP_DBL_QUOTE:
 					tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING_NAME, StringName(str_last(status_bundle))))
-					#print("STRINGNAME ", str_last(status_bundle))
 				status_bundle.last_tokenized_idx = idx + 1
 				current_token = Types.Tokens.NONE
 		
@@ -613,7 +601,6 @@ func tokens_to_dict(tokens: Array) -> Dictionary:
 	while idx < tokens.size():
 		var push_to_values := false
 		var token: Types.TokenVal = tokens[idx]
-		#print(token)
 		match token.type:
 			Types.Tokens.EQL_SIGN, Types.Tokens.COLON:
 				var key = values.pop_back()
@@ -662,7 +649,6 @@ func tokens_to_dict(tokens: Array) -> Dictionary:
 				destination.append(val)
 			elif !keys.is_empty():
 				var key = keys.pop_back()
-				#print("destination ", destination, " key: ", key, " val: ", val)
 				destination[key] = val
 		
 		idx += 1

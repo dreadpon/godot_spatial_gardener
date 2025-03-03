@@ -6,6 +6,8 @@ const Landscape_SCN = preload("../assets/landscape/landscape.tscn")
 const PaintBodyData = preload("paint_body_data.gd")
 const OctreeNode = preload("res://addons/dreadpon.spatial_gardener/arborist/mmi_octree/mmi_octree_node.gd")
 
+const node_name_forbidden_symbols = [".", ":", "@", "/", "\"", "%"]
+
 
 
 
@@ -86,7 +88,6 @@ static func snapshot_octree_node(octree_node:OctreeNode):
 	return snapshot
 
 
-const node_name_forbidden_symbols = [".", ":", "@", "/", "\"", "%"]
 static func cleanup_node_name(p_name: String) -> String:
 	for char in node_name_forbidden_symbols:
 		p_name = p_name.replace(char, "_")

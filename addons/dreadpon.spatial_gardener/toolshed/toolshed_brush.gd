@@ -54,19 +54,9 @@ func _init(
 	shape_projection_size = __shape_projection_size
 	behavior_passthrough = __behavior_passthrough
 	behavior_overlap_mode = __behavior_overlap_mode
-	
 	behavior_selection_mode = __behavior_selection_mode
 	behavior_selection_collision_mask = __behavior_selection_collision_mask
 	behavior_enable_selection_preprocess = __behavior_enable_selection_preprocess
-
-
-func get_brush_shape() -> BrushShape:
-	if behavior_brush_type == BrushType.TRANSFORM:
-		return BrushShape.POINTER
-	if behavior_overlap_mode == OverlapMode.PROJECTION:
-		return BrushShape.CIRCLE
-	
-	return BrushShape.SPHERE
 
 
 func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
@@ -91,7 +81,6 @@ func _create_input_field(_base_control:Control, _resource_previewer, prop:String
 		"behavior/behavior_no_settings_text":
 			var settings := {"label_visibility": false}
 			input_field = UI_IF_PlainText.new(behavior_no_settings_text, "No Settings Text", prop, settings)
-		
 		"behavior/behavior_selection_mode":
 			var settings := {"enum_list": FunLib.capitalize_string_array(Transplanter.QueryMode.keys())}
 			input_field = UI_IF_Enum.new(behavior_selection_mode, "Selection Mode", prop, settings)
@@ -147,7 +136,6 @@ func _set(prop, val):
 			_emit_property_list_changed_notify()
 		"behavior/behavior_no_settings_text":
 			behavior_no_settings_text = val
-		
 		"behavior/behavior_selection_mode":
 			behavior_selection_mode = val
 			_emit_property_list_changed_notify()
@@ -180,7 +168,6 @@ func _get(prop):
 			return behavior_overlap_mode
 		"behavior/behavior_no_settings_text":
 			return behavior_no_settings_text
-		
 		"behavior/behavior_selection_mode":
 			return behavior_selection_mode
 		"behavior/behavior_selection_collision_mask":
@@ -333,7 +320,6 @@ func _get_prop_dictionary():
 			"usage": PROPERTY_USAGE_DEFAULT,
 			"hint": PROPERTY_HINT_NONE,
 		},
-		
 		"behavior/behavior_selection_mode" : {
 			"name": "behavior/behavior_selection_mode",
 			"type": TYPE_INT,
@@ -397,7 +383,6 @@ func get_prop_tooltip(prop:String) -> String:
 				+ "Can be edited by pressing\n" \
 				+ "[brush_overlap_mode_button]\n" \
 				+ Globals.AS_IN_SETTINGS_STRING
-		
 		"behavior/behavior_selection_mode":
 			return "The selection mode flag\n" \
 				+ "Defines which LOD parameters are used to select placed instances\n" \

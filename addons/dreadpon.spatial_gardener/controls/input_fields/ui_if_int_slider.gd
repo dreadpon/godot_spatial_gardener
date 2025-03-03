@@ -3,7 +3,7 @@ extends "ui_input_field.gd"
 
 
 #-------------------------------------------------------------------------------
-# Stores a real (float) value
+# Stores an integer (int) value
 # Has a slider + line_edit for convinience
 #-------------------------------------------------------------------------------
 
@@ -40,8 +40,6 @@ func _init(__init_val, __labelText:String = "NONE", __prop_name:String = "", set
 	value_input.size_flags_horizontal = SIZE_EXPAND_FILL
 	value_input.custom_minimum_size.x = 25.0
 	value_input.size_flags_vertical = SIZE_SHRINK_CENTER
-	#value_input.focus_entered.connect(select_line_edit.bind(value_input, true))
-	#value_input.focus_exited.connect(select_line_edit.bind(value_input, false))
 	# focus_exited is our main signal to commit the value in LineEdit
 	# release_focus() is expected to be called when pressing enter and only then we commit the value
 	value_input.focus_exited.connect(focus_lost.bind(value_input))

@@ -1,7 +1,13 @@
 @tool
 extends Resource
 
-const MMIOctreeNode = preload("../arborist/mmi_octree/mmi_octree_node.gd")
+#-------------------------------------------------------------------------------
+# A script responsible for picking and transforming an individual octree instance
+# Has multiple modes of selection 
+# (Mesh, First found MeshInstance3D on a Spawned Spatial, Node3D physics body on a Spawned Spatial)
+#-------------------------------------------------------------------------------
+
+
 const OctreeLeaf = preload("../arborist/mmi_octree/octree_leaf.gd")
 const FrustumQuery = preload("frustum_query.gd")
 const EditorInterfaceInterface = preload("../utility/editor_interface_interface.gd")
@@ -41,23 +47,25 @@ func _init(p_gardener_root):
 	proxy_node_instance.visible = false
 
 
-func free_circular_refs():
-	picked_instance = null
-	selection_exists = false
-	if is_instance_valid(proxy_node_instance):
-		if proxy_node_instance.is_inside_tree():
-			gardener_root.remode_child(proxy_node_instance)
-		proxy_node_instance.queue_free()
-		proxy_mesh_instance.queue_free()
-		proxy_node_instance = null
-		proxy_mesh_instance = null
+# Free/nullify all references that may cause memory leaks
+# NOTE: we assume these refs are recreated whenever the tree is entered again
+# NOTE: currently unused, kept just in case
+# func free_circular_refs():
+# 	picked_instance = null
+# 	selection_exists = false
+# 	if is_instance_valid(proxy_node_instance):
+# 		if proxy_node_instance.is_inside_tree():
+# 			gardener_root.remode_child(proxy_node_instance)
+# 		proxy_node_instance.queue_free()
+# 		proxy_mesh_instance.queue_free()
+# 		proxy_node_instance = null
+# 		proxy_mesh_instance = null
 
 
 func forwarded_input(camera:Camera3D, event):
 	var handled := false
 	if !selection_exists:
 		if event is InputEventMouseButton && event.button_index == MOUSE_BUTTON_LEFT && event.pressed:
-			#print(gardener_root.get_viewport().get_visible_rect().has_point(event.global_position))
 			handled = _query()
 	
 	return handled
@@ -91,9 +99,6 @@ func _query() -> bool:
 	
 	if !viewport || !camera: return false
 	
-	#print(query_mode, " ", collision_mask, " ", is_preprocess_enabled)
-	
-	#var start_ms = Time.get_ticks_msec()
 	var root_nodes = gardener_root.arborist.get_all_octree_root_nodes()
 	var instance_intersection_candidates = []
 	var instance_intersections = []
@@ -102,6 +107,8 @@ func _query() -> bool:
 	var ray_start = camera.project_ray_origin(mouse_pos)
 	var ray_end = camera.project_ray_origin(mouse_pos) + camera.project_ray_normal(mouse_pos) * camera.far
 	
+	# Query using Godot's physics system
+	# This one's the simplest, but relies on metadata assigned to spawned Node3Ds
 	if query_mode == QueryMode.NODE3D_BODY:
 		var ray_params = PhysicsRayQueryParameters3D.create(ray_start, ray_end, collision_mask)
 		var results = gardener_root.get_world_3d().direct_space_state.intersect_ray(ray_params)
@@ -113,8 +120,6 @@ func _query() -> bool:
 			var spawned_spatial_container_instance = gardener_root.get_node(spawned_spatial_container_path)
 			var shape_owner = results.collider.shape_owner_get_owner(results.collider.shape_find_owner(results.shape))
 			var mesh = shape_owner.shape.get_debug_mesh()
-			#body.shape_owner_get_owner(body.shape_find_owner(body_shape_index)).
-			#print(path, " ", spawned_spatial_path, " ", spawned_spatial_container_path)
 			var member_idx := -1
 			var plant_idx := -1
 			var octree_node = null
@@ -132,13 +137,13 @@ func _query() -> bool:
 			
 			if member_idx >= -1:
 				var instance_intersection_candidate = {"node": octree_node, "plant_idx": plant_idx, "member_idx": member_idx, "placeform": octree_node.get_placeform(member_idx)}
-				#print([instance_intersection_candidate, results.position])
-				
 				instance_intersections.append([instance_intersection_candidate, results.position, mesh])
 	
+	# Query by gathering instances under a mouse cursor and manually raycasting against their geometry triangles
 	elif query_mode == QueryMode.MESH || query_mode == QueryMode.NODE3D_FIRST_MESH:
 		if !gardener_root.visible: return false
 		
+		# Obstruction preprocess (obstruction is checked only for Meshes, NOT physics bodies)
 		if is_preprocess_enabled:
 			var intersecting_render_server_instances := RenderingServer.instances_cull_ray(ray_start, ray_end, gardener_root.get_world_3d().scenario)
 			var intersecting_polygonal_instances := []
@@ -148,6 +153,8 @@ func _query() -> bool:
 					if gardener_root.is_ancestor_of(instance): continue
 					instance_intersection_candidates.append({"polygonal_instance": instance})
 		
+		# TODO: this is probably a bad guess for frustum radius
+		#		need some other, more universal way to handle close-by instances
 		var frustum := FrustumQuery.new(camera, 100.0, false)
 		for i in root_nodes.size():
 			var root_node = root_nodes[i]
@@ -160,6 +167,7 @@ func _query() -> bool:
 			intersection_meshes = []
 			mesh_instance_transforms = []
 			
+			# Here we actually add our obstruction query results to the pool of meshes/transforms to check
 			if instance_intersection_candidate.has("polygonal_instance"):
 				if instance_intersection_candidate.polygonal_instance is CSGShape3D:
 					intersection_meshes.append(instance_intersection_candidate.polygonal_instance.get_mesh())
@@ -172,6 +180,7 @@ func _query() -> bool:
 						intersection_meshes.append(instance_intersection_candidate.polygonal_instance.multimesh.mesh)
 						mesh_instance_transforms.append(instance_intersection_candidate.polygonal_instance.multimesh.get_instance_transform(i))
 			
+			# Here we add any instances overlapped by a frustum to the pool of meshes/transforms to check
 			else:
 				match query_mode:
 					QueryMode.MESH:
@@ -180,7 +189,6 @@ func _query() -> bool:
 						intersection_meshes.append(instance_intersection_candidate.node.leaf._mesh)
 						mesh_instance_transforms.append(gardener_root.global_transform * instance_intersection_candidate.placeform[2])
 					QueryMode.NODE3D_FIRST_MESH:
-						#print(instance_intersection_candidate)
 						if instance_intersection_candidate.node.leaf.get_current_state() & OctreeLeaf.StateType.SPATIAL_DEPS_INITIALIZED == 0:
 							continue
 						spatial_first_mesh_path = _get_packed_scene_first_node_rel_path(query_mode, instance_intersection_candidate.node.leaf._spawned_spatial)
@@ -189,14 +197,15 @@ func _query() -> bool:
 						var child_mesh = child_spatial.get_node(spatial_first_mesh_path)
 						intersection_meshes.append(child_mesh.mesh)
 						mesh_instance_transforms.append(child_mesh.global_transform)
-				
+			
+			# Run actual geometry-triangle raycasts
 			for i in intersection_meshes.size():
 				var intersect_triangles_result = intersect_ray_triangles(ray_start, ray_end, mesh_instance_transforms[i], intersection_meshes[i])
 				if intersect_triangles_result:
 					instance_intersections.append([instance_intersection_candidate, intersect_triangles_result.position, intersection_meshes[i]])
 					#[{"node": octree_node, "plant_index": plant_index, "member_idx": member_idx, "placeform": octree_node.get_placeform(member_idx)}, results.position]
-		
-	#print(instance_intersections)
+	
+	# Sort results of raycasts (both physical or geometry-based) and pick the closest one to camera
 	if !instance_intersections.is_empty():
 		instance_intersections.sort_custom(func(a, b): return (a[1] - ray_start).length_squared() < (b[1] - ray_start).length_squared())
 		var instance_intersection_candidate = instance_intersections[0]
@@ -208,7 +217,7 @@ func _query() -> bool:
 			#DebugDraw3D.draw_sphere(instance_intersection_candidate[1], 2.0, Color.RED, 60.0)
 			var node_origin = gardener_root.global_transform * picked_instance.placeform[0]
 			var mesh_trans = gardener_root.global_transform * picked_instance.placeform[2]
-			var selection_mesh = instance_intersection_candidate[2]#.duplicate()
+			var selection_mesh = instance_intersection_candidate[2]
 			
 			proxy_node_instance.global_transform = mesh_trans
 			proxy_node_instance.global_position = node_origin
@@ -217,8 +226,6 @@ func _query() -> bool:
 			EditorInterfaceInterface.select_single_node(proxy_node_instance)
 			last_proxy_transform = proxy_node_instance.global_transform
 			selection_exists = true
-	
-	#print_time.call_deferred(start_ms)
 	
 	return picked_instance != null
 
@@ -244,23 +251,16 @@ func intersect_ray_triangles(ray_start: Vector3, ray_end: Vector3, p_instance_ca
 	return {}
 
 
-func print_time(start_ms):
-	var end_ms = Time.get_ticks_msec()
-	print("QUERY TOOK: %d ms" % [end_ms - start_ms])
-
-
+# Request instance transform update in response to proxy transform change
 func proxy_update():
-	#print("proxy_update")
 	var old_placeform = picked_instance.node.get_placeform(picked_instance.member_idx)
 	var new_placeform = Placeform.mk(proxy_node_instance.global_transform.origin, old_placeform[1], proxy_mesh_instance.global_transform, old_placeform[3])
 	new_placeform[0] = gardener_root.global_transform.affine_inverse() * new_placeform[0]
 	new_placeform[2] = gardener_root.global_transform.affine_inverse() * new_placeform[2]
-	#picked_instance.node.set_placeform_at(picked_instance.member_idx, new_placeform)
 	
 	var address = PackedByteArray()
 	picked_instance.node.get_address(address)
 	var changes = PaintingChanges.new()
-	#print(picked_instance)
 	changes.add_change(
 		PaintingChanges.ChangeType.SET, picked_instance.plant_idx,
 		{"placeform": new_placeform, "index": picked_instance.member_idx, "address": address},
@@ -272,9 +272,9 @@ func deselect_proxy():
 	if selection_exists:
 		selection_exists = false
 		picked_instance = null
-		#_query()
 
 
+# Search a node of type within a PackedScene, return relative path
 func _get_packed_scene_first_node_rel_path(p_node_type: QueryMode, p_scene: PackedScene) -> NodePath:
 	if p_node_type == QueryMode.MESH: return ""
 	var root_node: Node3D = p_scene.instantiate()
@@ -301,8 +301,8 @@ func _get_packed_scene_first_node_rel_path(p_node_type: QueryMode, p_scene: Pack
 	return rel_path
 
 
+# Re-pick a previously picked instance after it was moved to a different OctreeNode
 func on_transplanted_member(plant_index: int, new_address: PackedByteArray, new_idx: int, old_address: PackedByteArray, old_idx: int):
-	#print("on_transplanted_member")
 	if !picked_instance || picked_instance.is_empty(): return
 	if picked_instance.plant_idx == plant_index && picked_instance.address == old_address && picked_instance.member_idx == old_idx:
 		var root_nodes = gardener_root.arborist.get_all_octree_root_nodes()
@@ -311,25 +311,3 @@ func on_transplanted_member(plant_index: int, new_address: PackedByteArray, new_
 		picked_instance.address = new_address
 		picked_instance.member_idx = new_idx
 		picked_instance.placeform = octree_node.get_placeform(new_idx)
-
-
-
-
-#func TEST_is_box_line_intersecting():
-	#for x in range(0, 181, 45):
-		#for y in range(0, 181, 45):
-			#for z in range(0, 181, 45):
-				#var rand_result = rand_from_seed(x + y + z)[0] % 101 / 100.0
-				#var line_origin = Vector3(0, 0, -800).rotated(Vector3.UP, y).rotated(Vector3.RIGHT, x).rotated(Vector3.FORWARD, z) + Vector3(421, 384, -1157)
-				#var line_end = Vector3(0, 0, rand_result * -500 - 100).rotated(Vector3.UP, y).rotated(Vector3.RIGHT, x).rotated(Vector3.FORWARD, z) + Vector3(421, 384, -1157)
-				#FrustumQuery.is_box_line_intersecting($CollisionShape3D.global_transform, $CollisionShape3D.shape.size, line_origin, line_end, [], true, true)
-#
-#
-#func TEST_is_AABB_line_intersecting():
-	#for x in range(0, 181, 45):
-		#for y in range(0, 181, 45):
-			#for z in range(0, 181, 45):
-				#var rand_result = rand_from_seed(x + y + z)[0] % 101 / 100.0
-				#var line_origin = Vector3(0, 0, -800).rotated(Vector3.UP, y).rotated(Vector3.RIGHT, x).rotated(Vector3.FORWARD, z)
-				#var line_end = Vector3(0, 0, rand_result * -500 - 100).rotated(Vector3.UP, y).rotated(Vector3.RIGHT, x).rotated(Vector3.FORWARD, z)
-				#FrustumQuery.is_AABB_line_intersecting(Vector3(-100, -200, -50), Vector3(300, 500, 200), line_origin, line_end, [], true, true)

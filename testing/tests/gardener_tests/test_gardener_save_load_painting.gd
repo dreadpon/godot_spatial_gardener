@@ -75,7 +75,6 @@ func execute_next_stage():
 
 
 func save_gardener():
-	#reassign_gardener_tree_owner(gardener.arborist, gardener, gardener.arborist.owner)
 	var packed_scene = PackedScene.new()
 	packed_scene.pack(gardener)
 	FunLib.save_res(packed_scene, greenhouse_path, "gardener.tscn")
@@ -92,13 +91,6 @@ func load_gardener():
 	gardener.owner = get_tree().get_edited_scene_root()
 	editor_selection.clear()
 	editor_selection.add_node(gardener)
-
-
-#func reassign_gardener_tree_owner(node:Node, new_owner:Node, source_owner: Node):
-	#if node.owner != source_owner: return
-	#node.owner = new_owner
-	#for child in node.get_children():
-		#reassign_gardener_tree_owner(child, new_owner, source_owner)
 
 
 func get_coverage_modes_list():
