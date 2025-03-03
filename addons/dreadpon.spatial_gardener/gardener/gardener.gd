@@ -149,10 +149,16 @@ func _notification(what: int) -> void:
 	match what:
 		NOTIFICATION_TRANSFORM_CHANGED:
 			_propagate_transform()
+		NOTIFICATION_VISIBILITY_CHANGED:
+			_propagate_visibility()
 
 
 func _propagate_transform():
 	arborist.propagate_transform(global_transform)
+
+
+func _propagate_visibility():
+	arborist.propagate_visibility(visible)
 
 
 func _process(delta):

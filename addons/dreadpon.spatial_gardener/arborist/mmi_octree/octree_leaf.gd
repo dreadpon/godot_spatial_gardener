@@ -54,7 +54,7 @@ func _update_state(p_single_state_type: StateType):
 			else:
 				_current_state &= ~StateType.INSTANCES_PERMITTED
 		StateType.MESH_VALID:
-			if is_instance_valid(_mesh):
+			if is_instance_valid(_mesh) && _octree_node.gardener_root.visible:
 				_current_state |= StateType.MESH_VALID
 			else:
 				_current_state &= ~StateType.MESH_VALID
@@ -346,6 +346,21 @@ func on_set_placeform_at(p_idx: int, p_placeform: Array):
 func on_root_transform_changed(p_global_transform: Transform3D):
 	if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
 		_set_mesh_root_transform(p_global_transform)
+
+
+func on_root_visibility_changed(p_visible: bool):
+	_update_state(StateType.MESH_VALID)
+	if p_visible:
+		if _current_state & StateType.INSTANCES_PERMITTED: # If instances can exist
+			if _current_state & StateType.MESH_VALID: # If mesh valid
+				if _current_state & StateType.MESH_DEPS_INITIALIZED == 0: # If mesh deps not initialized
+					_init_mesh_dependencies() # Initialize mesh deps
+					_update_shadow() # Set shadow
+					_update_mesh() # Set mesh 
+					_add_all_mesh_instances() # Add all mesh instances (assume we're currently empty)
+	else:
+		if _current_state & StateType.MESH_DEPS_INITIALIZED: # If mesh deps initialized
+			_deinit_mesh_dependencies() # Deitialize mesh deps
 
 
 

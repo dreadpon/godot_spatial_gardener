@@ -89,6 +89,11 @@ func propagate_transform(global_transform: Transform3D):
 		root_octree_node.propagate_transform(global_transform)
 
 
+func propagate_visibility(p_visible: bool):
+	if is_instance_valid(root_octree_node):
+		root_octree_node.propagate_visibility(p_visible)
+
+
 func init_octree(members_per_node:int, root_extent:float, center:Vector3 = Vector3.ZERO, __gardener_root:Node3D = null, min_leaf_extent:float = 0.0):
 	gardener_root = __gardener_root
 	root_octree_node = MMIOctreeNode.new(null, members_per_node, root_extent, center, -1, min_leaf_extent, gardener_root, LOD_variants)

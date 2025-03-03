@@ -56,6 +56,7 @@ var parent:Resource
 var gardener_root: Node3D
 var leaf: OctreeLeaf = OctreeLeaf.new()
 var shared_LOD_variants:Array = []
+var recursive_shared_LOD_index := -2
 
 var logger = null
 
@@ -173,6 +174,12 @@ func propagate_transform(global_transform: Transform3D):
 		child.propagate_transform(global_transform)
 
 
+func propagate_visibility(p_visible: bool):
+	leaf.on_root_visibility_changed(p_visible)
+	for child in child_nodes:
+		child.propagate_visibility(p_visible)
+
+
 # Mark node as having or not having any members
 # If yes, also create an MMI
 func set_is_leaf(val):
@@ -253,7 +260,6 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	var lifo_nodes: Array[Resource] = [self]
 	var node: Resource
 	
-	var skip_assignment: bool
 	var LOD_index: int
 	var dmax
 	var dmin
@@ -264,7 +270,6 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	
 	while !lifo_nodes.is_empty():
 		node = lifo_nodes.pop_back()
-		skip_assignment = false
 		
 		dmin = 0
 		dmax = 0
@@ -278,39 +283,20 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 				dmin += a
 			elif camera_pos[i] > bmax[i]:
 				dmin += b
-	
-		# If outside the kill threshold
-		if LOD_kill_distance >= 0.0 && dmin >= LOD_kill_distance:
-			# If haven't yet reset MMIs and spawned spatials, reset them
-			if node.active_LOD_index >= 0:
-				node._set_active_LOD_index(-1)
-			# If up-to-date, skip assignment
+		
+		if LOD_kill_distance >= 0.0:
+			if dmin >= LOD_kill_distance:
+				LOD_index = -1
 			else:
-				continue
-			skip_assignment = true
-		# If already at max LOD and outside of the max LOD threshold
-		#elif node.active_LOD_index == max_LOD_index:
-			#if !(LOD_kill_distance >= 0.0 && dmin < LOD_kill_distance) && dmin >= LOD_max_distance:
-				# Skip assignment
-				#continue
-		
-		if dmax < LOD_kill_distance && !skip_assignment:
+				LOD_index = clamp(floor(dmin * index_multiplier), 0, max_LOD_index)
+		else:
 			LOD_index = clamp(floor(dmin * index_multiplier), 0, max_LOD_index)
-			#if node.children_shared_LOD_index == node.active_LOD_index:
-				#if node.active_LOD_index == LOD_index && LOD_index == clamp(floor(dmax * index_multiplier), 0, max_LOD_index): # first update is important not to leave children behind in previous LOD
-					## We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
-					## To safely optimize them away using 'if' statements above
-					#if node.active_LOD_index != LOD_index:
-						#node._set_active_LOD_index(LOD_index)
-					#continue
-			if node.active_LOD_index != LOD_index:
-				node._set_active_LOD_index(LOD_index)
-			#node.assign_LOD_variant(LOD_index)
 		
-		# Iterate over all children
+		if node.active_LOD_index != LOD_index:
+			node._set_active_LOD_index(LOD_index)
+		
 		for child in node.child_nodes:
 			lifo_nodes.append(child)
-		# Else we do nothing: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
 
 
 # Update LOD depending on node's distance to camera

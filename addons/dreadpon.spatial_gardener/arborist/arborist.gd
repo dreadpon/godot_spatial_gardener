@@ -141,6 +141,13 @@ func propagate_transform(global_transform: Transform3D):
 	#mutex_octree.unlock()
 
 
+func propagate_visibility(p_visible: bool):
+	mutex_octree.lock()
+	for octree_manager in octree_managers:
+		octree_manager.propagate_visibility(p_visible)
+	mutex_octree.unlock()
+
+
 
 
 #-------------------------------------------------------------------------------

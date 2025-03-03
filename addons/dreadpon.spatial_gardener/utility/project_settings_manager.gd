@@ -94,6 +94,8 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/plugin/use_precise_LOD_distances",
 		false,
 		TYPE_BOOL)
+	ProjectSettings.set_restart_if_changed("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
+	ProjectSettings.set_restart_if_changed("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", true)
 	
 	# Debug
 	add_project_setting_globals_enum(
