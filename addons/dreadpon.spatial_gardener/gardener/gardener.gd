@@ -93,8 +93,9 @@ func _init():
 
 func _setup_configuration_statics():
 	Globals.is_threaded_LOD_update = 		FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
-	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", false)
+	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", true)
 	Globals.use_precise_camera_frustum = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_camera_frustum", true)
+	#print(Globals.use_precise_LOD_distances)
 	#Globals.force_readable_node_names = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/force_readable_node_names", false)
 
 
@@ -106,11 +107,11 @@ func update_plugin_ver():
 
 
 static func get_plugin_ver():
-	return '1.3.3'
+	return '1.4.0'
 
 
 static func get_storage_ver():
-	return 3
+	return 4
 
 
 func _ready():
@@ -150,7 +151,7 @@ func _exit_tree():
 	#if arborist.initialized_with_gardener:
 	arborist.free_circular_refs()
 	arborist.finish_threaded_processes()
-
+	
 	if !Engine.is_editor_hint(): return
 	
 	_apply_changes()
@@ -170,7 +171,7 @@ func _propagate_transform():
 
 
 func _propagate_visibility():
-	arborist.propagate_visibility(visible)
+	arborist.propagate_visibility(is_visible_in_tree())
 
 
 func _process(delta):
@@ -639,10 +640,10 @@ func reinit_debug_draw_brush_active():
 
 
 # A request to import plant data
-func on_greenhouse_req_import_plant_data(file_path: String, plant_idx: int):
+func on_greenhouse_req_import_plant_data(file_path: String, plant_idx: int, replace_existing: bool):
 	if !is_edited: return
 	var import_export = DataImportExport.new(arborist, greenhouse)
-	import_export.import_plant_data(file_path, plant_idx)
+	import_export.import_plant_data(file_path, plant_idx, replace_existing)
 
 
 # A request to export plant data
@@ -653,10 +654,10 @@ func on_greenhouse_req_export_plant_data(file_path: String, plant_idx: int):
 
 
 # A request to import entire greenhouse data
-func on_greenhouse_req_import_greenhouse_data(file_path: String):
+func on_greenhouse_req_import_greenhouse_data(file_path: String, replace_existing: bool):
 	if !is_edited: return
 	var import_export = DataImportExport.new(arborist, greenhouse)
-	import_export.import_greenhouse_data(file_path)
+	import_export.import_greenhouse_data(file_path, replace_existing)
 
 
 # A request to export entire greenhouse data

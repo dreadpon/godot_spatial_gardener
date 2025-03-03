@@ -26,10 +26,6 @@ const Placeform = preload("../placeform.gd")
 const OctreeLeaf = preload("octree_leaf.gd")
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 
-# A dummy mesh, since in Godot 4.0 multimesh breaks if it has transforms set but no mesh assigned
-# This is used when there's no "actual" mesh
-var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
-
 # An array for looking up placements conviniently
 # Since a member placement is practically it's ID
 # TODO: this can be rewritten to use PackedFloat32Array to reduce scene filesize
@@ -87,7 +83,9 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	child_nodes.clear()
 	reset_placeforms()
 	
-
+	if !is_instance_valid(leaf):
+		leaf = OctreeLeaf.new()
+	
 	# This differentiation helps to keep common functionality when reparenting/collapsing nodes
 	if __parent:
 		safe_inherit(__parent)

@@ -37,7 +37,7 @@ static func get_err_message(err_code):
 const PLANT_DENSITY_UNITS:int = 100
 
 # A string to be used in tooltips/hints regarding plugin settings
-const AS_IN_SETTINGS_STRING:String = "As specified in 'Project' -> 'Project Settings' -> 'Dreadpons Node3D Gardener'"
+const AS_IN_SETTINGS_STRING:String = "As specified in 'Project' -> 'Project Settings' -> 'Dreadpons Spatial Gardener'"
 
 
 

@@ -106,6 +106,9 @@ func add_file_dialog_filter():
 			extensions = "*.tres, *.res"
 			ext_name = "Resource"
 		
+		if inst is Node:
+			inst.queue_free()
+		
 		if extensions != "":
 			file_dialog.add_filter("%s ; %s" % [extensions, ext_name])
 

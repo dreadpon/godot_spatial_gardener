@@ -88,6 +88,13 @@ func _ready():
 	get_tree().node_removed.connect(on_tree_node_removed)
 	
 
+func _notification(what: int):
+	match what:
+		NOTIFICATION_PREDELETE:
+			if undo_redo is UndoRedo:
+				undo_redo.free()
+
+
 
 func _enter_tree():
 	# We need settings without editor too
@@ -112,7 +119,6 @@ func _enter_tree():
 	make_bake_menu()
 	
 	toolbar = HBoxContainer.new()
-	#toolbar.add_child(VSeparator.new())
 	toolbar.add_child(debug_view_menu)
 	toolbar.add_child(bake_menu)
 	toolbar.visible = false

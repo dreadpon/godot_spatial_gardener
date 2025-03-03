@@ -49,7 +49,6 @@ func _init(
 
 func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
 	var input_field:UI_InputField = null
-	
 	match prop:
 		"mesh/mesh_lod_picking":
 			var settings := {"enum_list": FunLib.capitalize_string_array(LODPickingType.keys())}

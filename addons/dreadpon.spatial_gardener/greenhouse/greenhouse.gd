@@ -26,6 +26,8 @@ var vbox_container_properties_nd:Control = null
 var _base_control:Control = null
 var _resource_previewer = null
 var _file_dialog: ConfirmationDialog = null
+var _replace_dialog: ConfirmationDialog = null
+var _replace_dialog_append_button: Button = null
 
 
 signal prop_action_executed_on_plant_state(prop_action, final_val, plant_state)
@@ -33,9 +35,9 @@ signal prop_action_executed_on_plant_state_plant(prop_action, final_val, plant, 
 signal prop_action_executed_on_LOD_variant(prop_action, final_val, LOD_variant, plant, plant_stat)
 signal req_octree_reconfigure(plant, plant_state)
 signal req_octree_recenter(plant, plant_state)
-signal req_import_plant_data(plant_idx, file)
+signal req_import_plant_data(plant_idx, file, replace_existing)
 signal req_export_plant_data(plant_idx, file)
-signal req_import_greenhouse_data(file)
+signal req_import_greenhouse_data(file, replace_existing)
 signal req_export_greenhouse_data(file)
 
 
@@ -53,14 +55,6 @@ func _init():
 	
 	_add_res_edit_source_array("plant_types/greenhouse_plant_states", "plant_types/selected_for_edit_resource")
 
-	if Engine.is_editor_hint():
-		# Editor raises error everytime you run the game with F5 because of "abstract native class"
-		# https://github.com/godotengine/godot/issues/73525
-		_file_dialog = DPON_FM.ED_EditorFileDialog.new()
-	else:
-		_file_dialog = FileDialog.new()
-	_file_dialog.close_requested.connect(on_file_dialog_hide)
-
 
 func _notification(what):
 	match what:
@@ -68,6 +62,9 @@ func _notification(what):
 			if is_instance_valid(_file_dialog):
 				# Avoid memory leaks
 				_file_dialog.queue_free()
+			if is_instance_valid(_replace_dialog):
+				# Avoid memory leaks
+				_replace_dialog.queue_free()
 
 
 # The UI is created here because we need to manage it afterwards
@@ -140,6 +137,14 @@ func add_plant_from_dict(plant_data: Dictionary, str_version: int = 1) -> int:
 	return new_idx
 
 
+func remove_plant(plant_idx: int):
+	request_prop_action(PA_ArrayRemove.new(
+		"plant_types/greenhouse_plant_states", 
+		null,
+		plant_idx
+	))
+
+
 
 
 #-------------------------------------------------------------------------------
@@ -186,6 +191,15 @@ func plant_count_updated(plant_index, new_count):
 
 
 func show_transform_import(type: String):
+	if !is_instance_valid(_file_dialog):
+		if Engine.is_editor_hint():
+			# Editor raises error everytime you run the game with F5 because of "abstract native class"
+			# https://github.com/godotengine/godot/issues/73525
+			_file_dialog = DPON_FM.ED_EditorFileDialog.new()
+		else:
+			_file_dialog = FileDialog.new()
+		_file_dialog.close_requested.connect(on_file_dialog_hide)
+	
 	if _file_dialog.get_parent() != _base_control:
 		_base_control.add_child(_file_dialog)
 	_file_dialog.popup_centered_ratio(0.5)
@@ -200,6 +214,27 @@ func show_transform_import(type: String):
 
 func on_file_dialog_hide():
 	FunLib.disconnect_all(_file_dialog.file_selected)
+
+
+func show_transform_replace_dialog():
+	if !is_instance_valid(_replace_dialog):
+		_replace_dialog = ConfirmationDialog.new()
+		_replace_dialog.title = "Replace existing plant data?"
+		_replace_dialog.dialog_text = "Would you like to replace all existing plants or append imported plants to the existing ones?"
+		_replace_dialog.ok_button_text = "Replace"
+		_replace_dialog_append_button = _replace_dialog.add_button("Append", false, "append")
+		_replace_dialog.cancel_button_text = "Cancel"
+		_replace_dialog.close_requested.connect(on_replace_dialog_hide)
+	
+	if _replace_dialog.get_parent() != _base_control:
+		_base_control.add_child(_replace_dialog)
+	_replace_dialog.popup_centered()
+
+
+func on_replace_dialog_hide():
+	FunLib.disconnect_all(_replace_dialog.confirmed)
+	FunLib.disconnect_all(_replace_dialog.custom_action)
+	FunLib.disconnect_all(_replace_dialog.canceled)
 
 
 
@@ -222,29 +257,54 @@ func on_req_import_plant_data(plant, plant_state):
 	show_transform_import('import')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
 	FunLib.disconnect_all(_file_dialog.file_selected)
-	_file_dialog.file_selected.connect(on_req_import_export_plant_data_file.bind(req_import_plant_data, plant_idx))
+	_file_dialog.file_selected.connect(on_import_export_file_selected.bind(true, true, plant_idx))
 
 func on_req_export_plant_data(plant, plant_state):
 	show_transform_import('export')
 	var plant_idx = greenhouse_plant_states.find(plant_state)
 	FunLib.disconnect_all(_file_dialog.file_selected)
-	_file_dialog.file_selected.connect(on_req_import_export_plant_data_file.bind(req_export_plant_data, plant_idx))
+	_file_dialog.file_selected.connect(on_import_export_file_selected.bind(false, true, plant_idx))
 
 func on_req_import_greenhouse_data():
 	show_transform_import('import')
 	FunLib.disconnect_all(_file_dialog.file_selected)
-	_file_dialog.file_selected.connect(on_req_import_export_greenhouse_data_file.bind(req_import_greenhouse_data))
+	_file_dialog.file_selected.connect(on_import_export_file_selected.bind(true, false))
 
 func on_req_export_greenhouse_data():
 	show_transform_import('export')
 	FunLib.disconnect_all(_file_dialog.file_selected)
-	_file_dialog.file_selected.connect(on_req_import_export_greenhouse_data_file.bind(req_export_greenhouse_data))
+	_file_dialog.file_selected.connect(on_import_export_file_selected.bind(false, false))
 
-func on_req_import_export_plant_data_file(file_path: String, signal_obj: Signal, plant_idx: int):
-	signal_obj.emit(file_path, plant_idx)
+func on_import_export_file_selected(file_path: String, is_import: bool, is_plant_data: bool, plant_idx: int = -1):
+	if is_import:
+		show_transform_replace_dialog()
+		FunLib.disconnect_all(_replace_dialog.confirmed)
+		FunLib.disconnect_all(_replace_dialog.custom_action)
+		FunLib.disconnect_all(_replace_dialog.canceled)
+		_replace_dialog.confirmed.connect(on_req_import_export_file_confirmed.bind(file_path, is_import, is_plant_data, true, plant_idx))
+		_replace_dialog.custom_action.connect(on_replace_dialog_custom_action.bind(file_path, is_import, is_plant_data, plant_idx))
+		# On cancel just hide it
+		#_replace_dialog.canceled.connect()
+	else:
+		on_req_import_export_file_confirmed(file_path, is_import, is_plant_data, false, plant_idx)
 
-func on_req_import_export_greenhouse_data_file(file_path: String, signal_obj: Signal):
-	signal_obj.emit(file_path)
+func on_replace_dialog_custom_action(action: String, file_path: String, is_import: bool, is_plant_data: bool, plant_idx: int = -1):
+	if action == "append":
+		on_req_import_export_file_confirmed(file_path, is_import, is_plant_data, false, plant_idx)
+
+
+func on_req_import_export_file_confirmed(file_path: String, is_import: bool, is_plant_data: bool, replace_data: bool, plant_idx: int = -1):
+	_replace_dialog.hide()
+	if is_import:
+		if is_plant_data:
+			req_import_plant_data.emit(file_path, plant_idx, replace_data)
+		else:
+			req_import_greenhouse_data.emit(file_path, replace_data)
+	else:
+		if is_plant_data:
+			req_export_plant_data.emit(file_path, plant_idx)
+		else:
+			req_export_greenhouse_data.emit(file_path)
 
 
 

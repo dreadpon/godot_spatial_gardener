@@ -9,11 +9,14 @@ enum Tokens {
 	EQL_SIGN,
 	OPEN_PRNTS,
 	CLSD_PRNTS,
+	OPEN_TYPED_ARRAY,
+	CLSD_TYPED_ARRAY,
 	OPEN_SQR_BRKT,
 	CLSD_SQR_BRKT,
 	OPEN_CLY_BRKT,
 	CLSD_CLY_BRKT,
 	SGL_QUOTE,
+	AMP_DBL_QUOTE,
 	DBL_QUOTE,
 	COLON,
 	COMMA,
@@ -27,6 +30,7 @@ enum Tokens {
 	VAL_INT,
 	VAL_REAL,
 	VAL_STRING,
+	VAL_STRING_NAME,
 	VAL_VECTOR2,
 	VAL_RECT,
 	VAL_VECTOR3,
@@ -49,6 +53,7 @@ enum Tokens {
 	VAL_VECTOR2_ARRAY,
 	VAL_VECTOR3_ARRAY,
 	VAL_COLOR_ARRAY,
+	VAL_TYPED_ARRAY,
 	
 	VAL_STRUCT,
 }
@@ -62,6 +67,9 @@ static func get_val_for_export(val):
 			return 'null'
 		TYPE_STRING:
 			return '"%s"' % [val]
+		TYPE_STRING_NAME:
+			#print("TYPE_STRING_NAME ", val)
+			return '&"%s"' % [val]
 		TYPE_FLOAT:
 			if is_equal_approx(val - int(val), 0.0):
 				return '%d.0' % [int(val)]
@@ -69,12 +77,19 @@ static func get_val_for_export(val):
 		TYPE_BOOL:
 			return 'true' if val == true else 'false'
 		TYPE_ARRAY:
-			var string = '[ '
+			var is_typed = val.size() > 0 && val[0] is TypedArrayType
+			var string = '['
+			# This is a hack to simplify storage and retrieval of array's type
+			if is_typed:
+				string = "Array[%s]([" % [val.pop_front()]
 			for element in val:
 				string += get_val_for_export(element) + ', '
 			if val.size() != 0:
 				string = string.trim_suffix(', ')
-			string += ' ]'
+			if is_typed:
+				string += '])'
+			else:
+				string += ']'
 			return string
 		TYPE_DICTIONARY:
 			var string = '{\n'
@@ -133,15 +148,25 @@ class PS_Transform extends PropStruct:
 
 
 class SubResource extends PropStruct:
-	var id: int = -1
-	func _init(__id: int = -1):
-		id = __id
+	var id: String = ""
+	func _init(__id: String = ""):
+		id = __id.trim_prefix('SubResource("').trim_suffix('")')
 	func _to_string():
-		return 'SubResource( %d )' % [id]
+		#return '%s' % [id]
+		return 'SubResource("%s")' % [id]
 
 
 class ExtResource extends SubResource:
-	func _init(__id: int = -1):
-		super(__id)
+	func _init(__id: String = ""):
+		id = __id.trim_prefix('ExtResource("').trim_suffix('")')
 	func _to_string():
-		return 'ExtResource( %d )' % [id]
+		#return '%s' % [id]
+		return 'ExtResource("%s")' % [id]
+
+
+class TypedArrayType extends RefCounted:
+	var type: String = ""
+	func _init(__type: String = ""):
+		type = __type
+	func _to_string():
+		return '%s' % [type]

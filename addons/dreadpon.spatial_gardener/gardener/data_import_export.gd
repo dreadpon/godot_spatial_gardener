@@ -39,7 +39,7 @@ func _init(_arborist: Arborist, _greenhouse: Greenhouse, _toolshed: Toolshed = n
 
 
 # Import data of a single plant (Greenhouse_Plant + placeforms)
-func import_plant_data(file_path: String, plant_idx: int):
+func import_plant_data(file_path: String, plant_idx: int, replace_existing: bool):
 	var file := FileAccess.open(file_path, FileAccess.READ)
 	if !file:
 		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
@@ -53,7 +53,9 @@ func import_plant_data(file_path: String, plant_idx: int):
 	var import_data = test_json_conv.data
 	file.close()
 	
-	_import_process_data(plant_idx, import_data)
+	if replace_existing:
+		greenhouse.remove_plant(plant_idx)
+	_import_process_data(plant_idx, import_data, replace_existing)
 	
 	if import_data is Dictionary && !import_data.get("plant_data", {}).is_empty():
 		logger.info("Successfully imported plant settings and placeform(s) from '%s'" % [file_path])
@@ -79,7 +81,7 @@ func export_plant_data(file_path: String, plant_idx: int):
 
 
 # Import data of an entire Greenhouse + placeforms
-func import_greenhouse_data(file_path: String):
+func import_greenhouse_data(file_path: String, replace_existing: bool):
 	var file := FileAccess.open(file_path, FileAccess.READ)
 	if !file:
 		logger.error("Could not import '%s', error %s!" % [file_path, Globals.get_err_message(FileAccess.get_open_error())])
@@ -93,8 +95,11 @@ func import_greenhouse_data(file_path: String):
 	var import_data = test_json_conv.data
 	file.close()
 	
+	if replace_existing:
+		for i in greenhouse.greenhouse_plant_states.size():
+			greenhouse.remove_plant(0)
 	for i in import_data.size():
-		_import_process_data(i, import_data[i])
+		_import_process_data(i, import_data[i], replace_existing)
 	
 	logger.info("Successfully imported entire greenhouse of %d plants from '%s" % [import_data.size(), file_path])
 
@@ -138,7 +143,7 @@ func _export_gather_data(plant_idx: int) -> Dictionary:
 	}
 
 
-func _import_process_data(plant_idx: int, data):
+func _import_process_data(plant_idx: int, data, replace_existing: bool):
 	var placeform_data := []
 	var plant_data := {}
 	# New version, plant settings + transforms

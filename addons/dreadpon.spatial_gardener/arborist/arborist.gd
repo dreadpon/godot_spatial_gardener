@@ -129,7 +129,6 @@ func restore_circular_refs(p_gardener_root: Node3D):
 # Expected to be called inside or after a parent's _ready()
 # Restore all OctreeManager objects after load
 # Create missing ones
-# TODO: 1.3.4 doesn't seem to actually update instances to plant meshes/spatials???
 func init_with_greenhouse(plant_states):
 	debug_print_lifecycle("verifying for plant_states: " + str(plant_states))
 	
@@ -244,11 +243,13 @@ func add_plant_octree_manager(plant_state, plant_index:int):
 	mutex_octree.unlock()
 	_setup_octree_manager(plant_state, plant_index)
 
-	for mesh_index in range (0, plant_state.plant.mesh_LOD_variants.size()):
-		var LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
-		mutex_octree.lock()
-		octree_managers[plant_index].insert_LOD_variant(LOD_variant, mesh_index)
-		mutex_octree.unlock()
+	# NOTE: 1.4.1 code below makes no sense in light of the same operation being performed in _setup_octree_manager()
+	#		but just in case, keep an eye on LOD stability when adding new plants
+	#for mesh_index in range (0, plant_state.plant.mesh_LOD_variants.size()):
+		#var LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
+		#mutex_octree.lock()
+		#octree_managers[plant_index].insert_LOD_variant(LOD_variant, mesh_index)
+		#mutex_octree.unlock()
 
 
 func _setup_octree_manager(plant_state, plant_index:int):
@@ -486,7 +487,7 @@ func emit_member_count(octree_index:int):
 
 func update(delta):
 #	try_update_LODs()
-	if gardener_root.visible:
+	if gardener_root.is_visible_in_tree():
 		if !Globals.is_threaded_LOD_update:
 			update_LODs()
 		_refresh_LOD_update_params()

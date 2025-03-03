@@ -71,7 +71,6 @@ func get_brush_shape() -> BrushShape:
 
 func _create_input_field(_base_control:Control, _resource_previewer, prop:String) -> UI_InputField:
 	var input_field:UI_InputField = null
-	
 	match prop:
 		"shape/shape_volume_size":
 			var max_value = FunLib.get_setting_safe("dreadpons_spatial_gardener/input_and_ui/brush_volume_size_slider_max_value", 100.0)

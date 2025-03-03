@@ -1,5 +1,5 @@
 @tool
-extends RefCounted # TODO 1.3.4 explore changing this to Object
+extends RefCounted # TODO: explore changing this to Object
 
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
@@ -77,7 +77,7 @@ func _update_state(p_single_state_type: StateType):
 			else:
 				_current_state &= ~StateType.INSTANCES_PERMITTED
 		StateType.MESH_VALID:
-			if is_instance_valid(_mesh) && is_instance_valid(_octree_node) && is_instance_valid(_octree_node.gardener_root) && _octree_node.gardener_root.visible:
+			if is_instance_valid(_mesh) && is_instance_valid(_octree_node) && is_instance_valid(_octree_node.gardener_root) && _octree_node.gardener_root.is_visible_in_tree():
 				_current_state |= StateType.MESH_VALID
 			else:
 				_current_state &= ~StateType.MESH_VALID

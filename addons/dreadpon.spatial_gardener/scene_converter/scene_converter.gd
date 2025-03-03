@@ -42,6 +42,7 @@ extends Node
 const Types = preload('converter_types.gd')
 const Globals = preload("../utility/globals.gd")
 const C_1_To_2 = preload('converters/c_1_to_2.gd')
+const C_3_To_4 = preload('converters/c_3_to_4.gd')
 const FunLib = preload("../utility/fun_lib.gd")
 const Gardener = preload("../gardener/gardener.gd")
 const Logger = preload('../utility/logger.gd')
@@ -53,9 +54,10 @@ enum RunMode {RECREATE, DRY, CONVERT}
 
 var logger = null
 var conversion_map: Dictionary = {
-	1: {'target': 2, 'script': C_1_To_2.new()}
+	1: {'target': 2, 'script': C_1_To_2.new()},
+	3: {'target': 4, 'script': C_3_To_4.new()}
 }
-var run_mode = RunMode.CONVERT
+var run_mode = RunMode.CONVERT#CONVERT
 var _base_control: Control = null
 var _convert_dialog = null
 var _result_dialog: AcceptDialog = null
@@ -131,7 +133,7 @@ func _scan_for_outdated_scenes():
 	
 	if !_result_dialog:
 		_result_dialog = AcceptDialog.new()
-		_result_dialog.title = 'Node3D Gardener conversion finished'
+		_result_dialog.title = 'Spatial Gardener conversion finished'
 		
 	if _result_dialog.get_parent() != _base_control:
 		_base_control.add_child(_result_dialog)
@@ -143,7 +145,7 @@ func _scan_for_outdated_scenes():
 func _convert_from_dialog():
 	var result = _run_conversion(_convert_dialog.get_selected_scenes(), _convert_dialog.should_mk_backups())
 	_result_dialog.dialog_text = (
-"""Node3D Gardener conversion finished.
+"""Spatial Gardener conversion finished.
 Please check the console/output for errors to see if conversion went successfully.
 Don\'t forget to move the backups elsewhere before committing to version control.""")
 	_result_dialog.popup_centered()
@@ -168,7 +170,7 @@ func _get_candidate_scenes(root_dir: String, check_gardeners: bool = true) -> Ar
 	var file = null
 	var text = ''
 	var gardener_regex = RegEx.new()
-	gardener_regex.compile('"class": "Gardener"')
+	gardener_regex.compile('metadata/class = "Gardener"')
 	var storage_regex = RegEx.new()
 	storage_regex.compile('storage_version = ([0-9])*?\n')
 	
@@ -185,7 +187,8 @@ func _get_candidate_scenes(root_dir: String, check_gardeners: bool = true) -> Ar
 			continue
 		
 		for result in results:
-			if int(result.strings[1]) != Gardener.get_storage_ver() && conversion_map.has(result.strings[1]):
+			var store_ver = int(result.strings[1])
+			if store_ver != Gardener.get_storage_ver() && conversion_map.has(store_ver) && !gardener_file_paths.has(scene_file):
 				gardener_file_paths.append(scene_file)
 				continue
 	
@@ -234,9 +237,11 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 		var sub_res := {}
 		logger.info('Parsing scene...')
 		var parsed_scene = parse_scene(in_filepath, ext_res, sub_res)
+		#print(parsed_scene)
 		
 		if run_mode == RunMode.CONVERT || run_mode == RunMode.DRY:
 			var storage_vers = get_vers(parsed_scene)
+			#print("storage_vers ", storage_vers)
 			if storage_vers.size() < 1:
 				logger.warn('No Gardeners found in this scene')
 				continue
@@ -273,7 +278,7 @@ func _run_conversion(in_filepaths: Array, mk_backups: bool = true, out_base_dir:
 func get_vers(parsed_scene):
 	var vers = []
 	for section in parsed_scene:
-		if section.props.get('__meta__', {}).get('class', '') == 'Gardener':
+		if section.props.get('metadata/class') == 'Gardener':
 			var ver = section.props.get('storage_version', 1)
 			if vers.has(ver): continue
 			vers.append(ver)
@@ -405,6 +410,7 @@ func parse_resource(res_string: String, separator: String = '\n') -> Dictionary:
 	if res_string.is_empty(): return {}
 	var result := {}
 	var tokens := tokenize_string(res_string, separator)
+	#print(tokens)
 	result = tokens_to_dict(tokens)
 	return result
 
@@ -437,7 +443,16 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 						tokens.append(Types.TokenVal.new(Types.Tokens.VAL_INT,int(str_last_inclusive_stripped(status_bundle))))
 					status_bundle.last_tokenized_idx = idx + 1
 			
-			if character == '=':
+			if str_last_inclusive(status_bundle).contains('Array['):
+				if str_last_inclusive(status_bundle).ends_with("](["):
+					tokens.append(Types.TokenVal.new(Types.Tokens.OPEN_TYPED_ARRAY, str_last_inclusive_stripped(status_bundle)))
+					status_bundle.last_tokenized_idx = idx + 1
+					#current_token = Types.Tokens.VAL_STRUCT
+			elif character == ']' && string[idx + 1] == ')':
+					tokens.append(Types.TokenVal.new(Types.Tokens.CLSD_TYPED_ARRAY, str_last_inclusive_stripped(status_bundle)))
+					status_bundle.last_tokenized_idx = idx + 2
+			
+			elif character == '=':
 				var prop_name = str_last_stripped(status_bundle)
 				while tokens.size() > 0:
 					var token_val = tokens[-1]
@@ -446,6 +461,9 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 					prop_name = str(token_val.val) + prop_name
 				tokens.append(Types.TokenVal.new(Types.Tokens.PROP_NAME, prop_name))
 				tokens.append(Types.TokenVal.new(Types.Tokens.EQL_SIGN, character))
+				status_bundle.last_tokenized_idx = idx + 1
+			elif character == '"' && string[idx - 1] == '&' && (idx == 0 || string[idx - 2] != '\\'):
+				current_token = Types.Tokens.AMP_DBL_QUOTE
 				status_bundle.last_tokenized_idx = idx + 1
 			elif character == '"' && (idx == 0 || string[idx - 1] != '\\'):
 				current_token = Types.Tokens.DBL_QUOTE
@@ -485,18 +503,29 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 			elif character == separator:
 				tokens.append(Types.TokenVal.new(Types.Tokens.STMT_SEPARATOR, ''))
 		
-		elif current_token == Types.Tokens.DBL_QUOTE:
+		#elif current_token == Types.Tokens.OPEN_SQR_BRKT_TYPED_ARRAY:
+			#if character == ']':
+				#tokens.append(Types.TokenVal.new(Types.Tokens.CLSD_SQR_BRKT, str_last(status_bundle)))
+				#status_bundle.last_tokenized_idx = idx + 1
+				#current_token = Types.Tokens.NONE
+		
+		elif current_token == Types.Tokens.DBL_QUOTE || current_token == Types.Tokens.AMP_DBL_QUOTE:
 			if character == '"' && (idx == 0 || string[idx - 1] != '\\'):
-				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING, str_last(status_bundle)))
+				if current_token == Types.Tokens.DBL_QUOTE:
+					tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING, str_last(status_bundle)))
+					#print("STRING     ", str_last(status_bundle))
+				elif current_token == Types.Tokens.AMP_DBL_QUOTE:
+					tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING_NAME, StringName(str_last(status_bundle))))
+					#print("STRINGNAME ", str_last(status_bundle))
 				status_bundle.last_tokenized_idx = idx + 1
 				current_token = Types.Tokens.NONE
 		
-		elif current_token == Types.Tokens.VAL_STRUCT && character == ')':
+		elif current_token == Types.Tokens.VAL_STRUCT && (character == ')' || character == ']'):
 			var str_struct = str_last_inclusive_stripped(status_bundle)
 			if str_struct.begins_with('SubResource'):
-				tokens.append(Types.TokenVal.new(Types.Tokens.SUB_RES, Types.SubResource.new(int(str_struct))))
+				tokens.append(Types.TokenVal.new(Types.Tokens.SUB_RES, Types.SubResource.new(str_struct)))
 			elif str_struct.begins_with('ExtResource'):
-				tokens.append(Types.TokenVal.new(Types.Tokens.EXT_RES, Types.ExtResource.new(int(str_struct))))
+				tokens.append(Types.TokenVal.new(Types.Tokens.EXT_RES, Types.ExtResource.new(str_struct)))
 			elif str_struct.begins_with('Vector2'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_VECTOR2, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('Rect'):
@@ -519,19 +548,24 @@ func tokenize_string(string: String, separator: String = '\n') -> Array:
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_COLOR, Types.PropStruct.new(str_struct)))
 			elif str_struct.begins_with('NodePath'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_NODE_PATH, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolByteArray'):
+			elif str_struct.begins_with('PackedByteArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_RAW_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolIntArray'):
+			# TODO: check if 32/64 packed arrays actually work as intended (they were simply renamed and duplicated in 1.4.0)
+			elif str_struct.begins_with('PackedInt32Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_INT_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolRealArray'):
+			elif str_struct.begins_with('PackedInt64Array'):
+				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_INT_ARRAY, Types.PropStruct.new(str_struct)))
+			elif str_struct.begins_with('PackedFloat32Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_REAL_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolStringArray'):
+			elif str_struct.begins_with('PackedFloat64Array'):
+				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_REAL_ARRAY, Types.PropStruct.new(str_struct)))
+			elif str_struct.begins_with('PackedStringArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRING_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolVector2Array'):
+			elif str_struct.begins_with('PackedVector2Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_VECTOR2_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolVector3Array'):
+			elif str_struct.begins_with('PackedVector3Array'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_VECTOR3_ARRAY, Types.PropStruct.new(str_struct)))
-			elif str_struct.begins_with('PoolColorArray'):
+			elif str_struct.begins_with('PackedColorArray'):
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_COLOR_ARRAY, Types.PropStruct.new(str_struct)))
 			else:
 				tokens.append(Types.TokenVal.new(Types.Tokens.VAL_STRUCT, str_last_inclusive_stripped(status_bundle)))
@@ -579,11 +613,16 @@ func tokens_to_dict(tokens: Array) -> Dictionary:
 	while idx < tokens.size():
 		var push_to_values := false
 		var token: Types.TokenVal = tokens[idx]
+		#print(token)
 		match token.type:
 			Types.Tokens.EQL_SIGN, Types.Tokens.COLON:
 				var key = values.pop_back()
 				keys.append(key)
 			Types.Tokens.CLSD_CLY_BRKT:
+				if values.size() > nest_level:
+					push_to_values = true
+				nest_level -= 1
+			Types.Tokens.CLSD_TYPED_ARRAY:
 				if values.size() > nest_level:
 					push_to_values = true
 				nest_level -= 1
@@ -599,6 +638,11 @@ func tokens_to_dict(tokens: Array) -> Dictionary:
 			
 			Types.Tokens.OPEN_CLY_BRKT:
 				values.append({})
+				nest_level += 1
+			Types.Tokens.OPEN_TYPED_ARRAY:
+				# This is a hack to simplify storage and retrieval of array's type
+				var array_type = Types.TypedArrayType.new(token.val.substr(6, token.val.length() - 3 - 6))
+				values.append([array_type])
 				nest_level += 1
 			Types.Tokens.OPEN_SQR_BRKT:
 				values.append([])
@@ -618,6 +662,7 @@ func tokens_to_dict(tokens: Array) -> Dictionary:
 				destination.append(val)
 			elif !keys.is_empty():
 				var key = keys.pop_back()
+				#print("destination ", destination, " key: ", key, " val: ", val)
 				destination[key] = val
 		
 		idx += 1

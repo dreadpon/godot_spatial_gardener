@@ -52,7 +52,6 @@ static func make_bake_menu():
 	popup_button_bake_gardener.pressed.connect(func (): bake_menu.emit_signal("bake_requested"))
 	popup_tab.custom_minimum_size.x = 400
 	
-	# TODO: 1.3.4 figure out if it's alright to add popup to button
 	bake_menu.add_child(popup)#, false, Node.INTERNAL_MODE_FRONT)
 	popup.add_child(popup_vb)#, false, Node.INTERNAL_MODE_FRONT)
 	popup_vb.add_child(popup_tab)#, false, Node.INTERNAL_MODE_FRONT)
@@ -77,7 +76,7 @@ func up_to_date_baker_menu(bake_menu: Button, gardener, p_plant_names: Array, p_
 	var popup_tab: TabContainer = popup.get_child(0, false).get_child(0, false)
 	var popup_check_keep_gardener: CheckBox = popup.get_child(0, false).get_child(2, false)
 	popup_check_keep_gardener.set_pressed_no_signal(_keep_original_gardener)
-	# TODO: 1.3.4 connect button press to variable value
+	
 	FunLib.free_children(popup_tab)
 	var octree_root_nodes = gardener.arborist.get_all_octree_root_nodes()
 	for i in octree_root_nodes.size():

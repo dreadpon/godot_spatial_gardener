@@ -65,7 +65,7 @@ func duplicate_tree():
 	copy.root_octree_node = copy.root_octree_node.duplicate_tree()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
-	# TODO: 1.3.4 actually pass LOD_variants and other changes to the octree
+	# TODO: 1.4.0 actually pass LOD_variants and other changes to the octree
 	return copy
 
 
@@ -74,7 +74,7 @@ func deep_copy():
 	copy.root_octree_node = copy.root_octree_node.deep_copy()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
-	# TODO: 1.3.4 actually pass LOD_variants and other changes to the octree
+	# TODO: 1.4.0 actually pass LOD_variants and other changes to the octree
 	return copy
 
 
@@ -330,14 +330,14 @@ func set_LOD_variants(val):
 
 
 # Up-to-date LOD variants of an OctreeNode
-# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
+# NOTE: this change requires update_LODs() call; it will be called by Arborist next frame automatically
 func insert_LOD_variant(variant, index:int):
 	LOD_variants.insert(index, variant)
 	root_octree_node.on_lod_variant_inserted(index)
 
 
 # Up-to-date LOD variants of an OctreeNode
-# NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
+# NOTE: this change requires update_LODs() call; it will be called by Arborist next frame automatically
 func remove_LOD_variant(index:int):
 	LOD_variants.remove_at(index)
 	root_octree_node.on_lod_variant_removed(index)
@@ -384,6 +384,7 @@ func update_LODs_override_kill_distance(camera_pos:Vector3, p_kill_distance: flo
 	camera_pos = container_transform.affine_inverse() * camera_pos
 	var max_LOD_index = LOD_variants.size() - 1
 	
+	#print("update_LODs_override_kill_distance ", max_LOD_index)
 	if Globals.use_precise_LOD_distances:
 		var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
 		root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, p_kill_distance ** 2 if p_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier, p_force_synchronous)

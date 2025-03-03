@@ -44,9 +44,13 @@ static func generate_plant_transform(placement, normal, plant, randomizer) -> Tr
 	if ((plant.fwd_vector_primary_type == Greenhouse_Plant.DirectionVectorType.UNUSED && plant.fwd_vector_blending != 1.0)
 		|| (plant.fwd_vector_secondary_type == Greenhouse_Plant.DirectionVectorType.UNUSED && plant.fwd_vector_blending != 0.0)):
 		# Use automatic forward vector
-		plant_basis.z = Vector3.FORWARD.rotated(plant_up_vector, plant_rotation.y)
-	else:
-		plant_basis.z = plant_fwd_vector.rotated(plant_up_vector, plant_rotation.y)
+		plant_fwd_vector = Vector3.FORWARD
+	plant_basis.z = plant_fwd_vector.rotated(plant_up_vector, plant_rotation.y)
+	
+	# If these two vectors are the same or exactly opposite, we will have a basis calculation error
+	# Introduce a slight bend to plant_basis.z to avoid that (prioritize plant_basis.y correctness)
+	if plant_basis.y.abs() == plant_basis.z.abs():
+		plant_basis.z = (plant_basis.z - Vector3(0.0001, 0.0001, 0.0001)).normalized()
 	
 	plant_basis.x = plant_basis.y.cross(plant_basis.z)
 	plant_basis.z = plant_basis.x.cross(plant_basis.y)

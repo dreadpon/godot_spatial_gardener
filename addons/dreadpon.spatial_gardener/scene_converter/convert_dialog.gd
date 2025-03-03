@@ -1,6 +1,7 @@
 @tool
-extends Window
+extends ConfirmationDialog
 
+const ThemeAdapter = preload("../controls/theme_adapter.gd")
 
 signal confirm_pressed
 signal cancel_pressed
@@ -20,24 +21,25 @@ func _ready():
 func _on_tree_item_selected():
 	var selected_item: TreeItem = $'%TreeScenes'.get_selected()
 	if !selected_item: return
-	selected_item.set_checked(0, !selected_item.is_checked(0))
-	selected_item.deselect(0)
+	#selected_item.set_checked(0, !selected_item.is_checked(0))
+	#selected_item.deselect(0)
 
 
 func add_scenes(scenes: Array):
 	$'%TreeScenes'.clear()
-	$'%TreeScenes'.hide_root = true
+	#$'%TreeScenes'.hide_root = true
 	var root = $'%TreeScenes'.create_item()
 	for scene in scenes:
 		var item: TreeItem = $'%TreeScenes'.create_item(root)
 		item.set_cell_mode(0, TreeItem.CELL_MODE_CHECK)
+		item.set_editable(0, true)
 		item.set_checked(0, true)
 		item.set_text(0, scene)
 
 
 func get_selected_scenes() -> Array:
 	var selected_scenes = []
-	var child_item: TreeItem = $'%TreeScenes'.get_root().get_children()
+	var child_item: TreeItem = $'%TreeScenes'.get_root().get_first_child()
 	while child_item != null:
 		if child_item.is_checked(0):
 			selected_scenes.append(child_item.get_text(0))
@@ -52,6 +54,7 @@ func should_mk_backups():
 
 
 func _on_ButtonConfirm_pressed():
+	print("_on_ButtonConfirm_pressed")
 	confirm_pressed.emit()
 
 

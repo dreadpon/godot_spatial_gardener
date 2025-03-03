@@ -127,7 +127,7 @@ func print_and_get_result_indexed(error_counters_indexed:Dictionary) -> Array:
 
 func check_integrity() -> Dictionary:
 	# This is needed to refresh all pending spawned spatials
-	# NOTE: 1.3.4 this may cause bugs due to recent changes
+	# NOTE: 1.4.0 this may cause bugs due to recent changes
 	gardener.arborist.update_LODs()
 	
 	var error_counters_indexed := {}

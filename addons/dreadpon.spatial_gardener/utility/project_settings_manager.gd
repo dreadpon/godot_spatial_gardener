@@ -92,7 +92,7 @@ static func add_plugin_project_settings():
 		TYPE_BOOL)
 	add_project_setting(
 		"dreadpons_spatial_gardener/plugin/use_precise_LOD_distances",
-		false,
+		true,
 		TYPE_BOOL)
 	add_project_setting(
 		"dreadpons_spatial_gardener/plugin/use_precise_camera_frustum",
