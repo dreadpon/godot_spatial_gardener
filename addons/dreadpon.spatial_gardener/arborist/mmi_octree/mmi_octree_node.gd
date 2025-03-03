@@ -250,68 +250,84 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
 	#print(self.leaf, " update_LODs")
-	var dist_to_node_center := (center_pos - camera_pos).length()
+	var lifo_nodes: Array[Resource] = [self]
+	var node: Resource
 	
-	var max_kill_dist := LOD_kill_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
-	var dist_to_outermost_corner_estimate: float = clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
+	var max_LOD_dist: float
+	var max_kill_dist: float
+	var dist_to_node_center: float
+	var dist_to_outermost_corner_estimate: float
+	var outside_kill_treshold: bool
+	var inside_kill_treshold: bool
+	var outside_max_treshold: bool
+	var skip_assignment: bool
+	var LOD_index: int
+	var LOD_index_next: int
 	
-	#print(
-		#LOD_kill_distance, " + ", min_bounds_to_center_dist, " = ", max_kill_dist, "     ", 
-		#dist_to_node_center, " - ", max_bounds_to_center_dist, " = ", dist_to_outermost_corner_estimate)
-	
-	var skip_assignment := false
-	#var skip_children := false
-	
-	var outside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_outermost_corner_estimate >= max_kill_dist
-	
-	# If outside the kill threshold
-	if outside_kill_treshold:
-		# If haven't yet reset MMIs and spawned spatials, reset them
-		if active_LOD_index >= 0:
-			_set_active_LOD_index(-1)
-		# If up-to-date, skip assignment
+	while !lifo_nodes.is_empty():
+		node = lifo_nodes.pop_back()
+		dist_to_node_center = (node.center_pos - camera_pos).length()
+		
+		max_kill_dist = LOD_kill_distance + node.min_bounds_to_center_dist #max_bounds_to_center_dist
+		dist_to_outermost_corner_estimate = clamp(dist_to_node_center - node.max_bounds_to_center_dist, 0.0, INF)
+		
+		#print(
+			#LOD_kill_distance, " + ", min_bounds_to_center_dist, " = ", max_kill_dist, "     ", 
+			#dist_to_node_center, " - ", max_bounds_to_center_dist, " = ", dist_to_outermost_corner_estimate)
+		
+		skip_assignment = false
+		#var skip_children := false
+		
+		outside_kill_treshold = LOD_kill_distance >= 0.0 && dist_to_outermost_corner_estimate >= max_kill_dist
+		
+		# If outside the kill threshold
+		if outside_kill_treshold:
+			# If haven't yet reset MMIs and spawned spatials, reset them
+			if node.active_LOD_index >= 0:
+				node._set_active_LOD_index(-1)
+			# If up-to-date, skip assignment
+			else:
+				continue
+				#skip_children = true
+			skip_assignment = true
+		# If already at max LOD and outside of the max LOD threshold
 		else:
-			return
-			#skip_children = true
-		skip_assignment = true
-	# If already at max LOD and outside of the max LOD threshold
-	else:
-		var inside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_outermost_corner_estimate < max_kill_dist
-		var max_LOD_dist := LOD_max_distance + min_bounds_to_center_dist #max_bounds_to_center_dist
-		var outside_max_treshold: bool = dist_to_outermost_corner_estimate >= max_LOD_dist
-		if !inside_kill_treshold && active_LOD_index == max_LOD_index && outside_max_treshold:
-			# Skip assignment
-			return
-			#skip_assignment = true
-			#skip_children = true
-	
-	#if !is_leaf && !Engine.is_editor_hint():
-		#print("%s %5.1f / %5.1f | %5.1f" % [str(self), dist_to_outermost_corner_estimate, max_kill_dist - max_dist_across, extent * 2])
-	if dist_to_outermost_corner_estimate > max_kill_dist - max_dist_across:
-		pass
-	else:
-		if !skip_assignment:
-			# We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
-			# To safely optimize them away using 'if' statements above
-			var LOD_index = clamp(floor(dist_to_outermost_corner_estimate * index_multiplier), 0, max_LOD_index)
-			#var LOD_index_prev = clamp(floor((dist_to_outermost_corner_estimate - max_dist_across) * index_multiplier), 0, max_LOD_index)
-			var LOD_index_next = clamp(floor((dist_to_outermost_corner_estimate + max_dist_across) * index_multiplier), 0, max_LOD_index)
-			
-			if LOD_index == LOD_index_next && active_LOD_index == LOD_index: # first update is important not to leave children behind in previous LOD
-				#if !is_leaf && !Engine.is_editor_hint():
-					#print("%s %d -> %d | %d = %d (%5d)" % [str(self), LOD_index, LOD_index_next, active_LOD_index, LOD_index, get_nested_member_count()])
-				assign_LOD_variant(LOD_index)
-				return
-			#else:
-				#if !is_leaf && !Engine.is_editor_hint():
-					#print("%s %d -> %d | %d = %d" % [str(self), LOD_index, LOD_index_next, active_LOD_index, LOD_index])
-			assign_LOD_variant(LOD_index)
-	
-	#if !skip_children:
-	# Iterate over all children
-	for child in child_nodes:
-		child.update_LODs(camera_pos, LOD_max_distance, LOD_kill_distance, max_LOD_index, index_multiplier)
-	# Else we do nothings: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
+			inside_kill_treshold = LOD_kill_distance >= 0.0 && dist_to_outermost_corner_estimate < max_kill_dist
+			max_LOD_dist = LOD_max_distance + node.min_bounds_to_center_dist #max_bounds_to_center_dist
+			outside_max_treshold = dist_to_outermost_corner_estimate >= max_LOD_dist
+			if !inside_kill_treshold && node.active_LOD_index == max_LOD_index && outside_max_treshold:
+				# Skip assignment
+				continue
+				#skip_assignment = true
+				#skip_children = true
+		
+		#if !is_leaf && !Engine.is_editor_hint():
+			#print("%s %5.1f / %5.1f | %5.1f" % [str(self), dist_to_outermost_corner_estimate, max_kill_dist - max_dist_across, extent * 2])
+		if dist_to_outermost_corner_estimate > max_kill_dist - node.max_dist_across:
+			pass
+		else:
+			if !skip_assignment:
+				# We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
+				# To safely optimize them away using 'if' statements above
+				LOD_index = clamp(floor(dist_to_outermost_corner_estimate * index_multiplier), 0, max_LOD_index)
+				#var LOD_index_prev = clamp(floor((dist_to_outermost_corner_estimate - max_dist_across) * index_multiplier), 0, max_LOD_index)
+				LOD_index_next = clamp(floor((dist_to_outermost_corner_estimate + node.max_dist_across) * index_multiplier), 0, max_LOD_index)
+				
+				if LOD_index == LOD_index_next && node.active_LOD_index == LOD_index: # first update is important not to leave children behind in previous LOD
+					#if !is_leaf && !Engine.is_editor_hint():
+						#print("%s %d -> %d | %d = %d (%5d)" % [str(self), LOD_index, LOD_index_next, active_LOD_index, LOD_index, get_nested_member_count()])
+					node.assign_LOD_variant(LOD_index)
+					continue
+				#else:
+					#if !is_leaf && !Engine.is_editor_hint():
+						#print("%s %d -> %d | %d = %d" % [str(self), LOD_index, LOD_index_next, active_LOD_index, LOD_index])
+				node.assign_LOD_variant(LOD_index)
+		
+		#if !skip_children:
+		# Iterate over all children
+		for child in node.child_nodes:
+			lifo_nodes.append(child)
+		# Else we do nothings: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
 
 
 # Check if camera is within range, calculate a LOD variant index and set it
