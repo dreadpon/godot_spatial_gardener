@@ -86,6 +86,14 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/plugin/scan_for_outdated_scenes",
 		true,
 		TYPE_BOOL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/plugin/is_threaded_LOD_update",
+		true,
+		TYPE_BOOL)
+	add_project_setting(
+		"dreadpons_spatial_gardener/plugin/use_precise_LOD_distances",
+		false,
+		TYPE_BOOL)
 	
 	# Debug
 	add_project_setting_globals_enum(

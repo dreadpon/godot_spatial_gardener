@@ -84,6 +84,12 @@ func _init():
 	child_entered_tree.connect(_on_child_entered_tree)
 	child_exiting_tree.connect(_on_child_exiting_tree)
 	set_notify_transform(true)
+	_setup_configuration_statics()
+
+
+func _setup_configuration_statics():
+	Globals.is_threaded_LOD_update = 		FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
+	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", false)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener

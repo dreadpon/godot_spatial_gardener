@@ -14,6 +14,7 @@ const MMIOctreeNode = preload("mmi_octree_node.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
 const DponDebugDraw = preload("../../utility/debug_draw.gd")
 const GreenhouseLODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
+const Globals = preload("../../utility/globals.gd")
 
 
 @export var root_octree_node: Resource = null
@@ -367,15 +368,23 @@ func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
 		LOD_max_distance = 0.00001
 	camera_pos = container_transform.affine_inverse() * camera_pos
 	var max_LOD_index = LOD_variants.size() - 1
-	var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
-	root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, LOD_kill_distance ** 2 if LOD_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier)
+	
+	if Globals.use_precise_LOD_distances:
+		var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
+		root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, LOD_kill_distance ** 2 if LOD_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier)
+	else:
+		var index_multiplier = max_LOD_index / LOD_max_distance
+		root_octree_node.update_LODs_legacy(camera_pos, LOD_max_distance, LOD_kill_distance if LOD_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier)
 
 
 func update_LODs_no_camera():
 	if LOD_variants.is_empty(): return
 	var max_LOD_index = LOD_variants.size() - 1
 	var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
-	root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
+	if Globals.use_precise_LOD_distances:
+		root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
+	else:
+		root_octree_node.update_LODs_legacy(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
 	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
 
 

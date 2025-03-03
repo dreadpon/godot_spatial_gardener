@@ -49,7 +49,6 @@ var DUMMY_MMI_MESH: Mesh = ArrayMesh.new()
 @export var bounds:AABB
 @export var max_bounds_to_center_dist:float
 @export var min_bounds_to_center_dist:float
-@export var max_dist_across:float
 
 @export var active_LOD_index:int = -1
 
@@ -111,7 +110,6 @@ func _init(__parent:Resource = null, __max_members:int = 0, __extent:float = 0.0
 	max_bounds_to_center_dist = sqrt(pow(extent, 2) * 3)
 	min_bounds_to_center_dist = extent
 	bounds = AABB(center_pos - Vector3(extent, extent, extent), Vector3(extent, extent, extent) * 2.0)
-	max_dist_across = bounds.size.length()
 	
 	print_address("", "initialized")
 
@@ -149,6 +147,9 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	gardener_root = __gardener_root
 	shared_LOD_variants = LOD_variants
 	
+	max_bounds_to_center_dist = sqrt(pow(extent, 2) * 3)
+	min_bounds_to_center_dist = extent
+	
 	if shared_LOD_variants.size() <= active_LOD_index:
 		_set_active_LOD_index_skip_leaf(shared_LOD_variants.size() - 1)
 
@@ -162,7 +163,6 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	for child in child_nodes:
 		child.parent = self
 		child.restore_after_load(__gardener_root, LOD_variants)
-	max_dist_across = bounds.size.length()
 	
 	print_address("", "restored after load")
 
@@ -253,17 +253,10 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 	var lifo_nodes: Array[Resource] = [self]
 	var node: Resource
 	
-	#var max_LOD_dist: float
-	#var max_kill_dist: float
-	#var dist_to_node_center: float
-	#var dist_to_outermost_corner_estimate: float
-	#var outside_kill_treshold: bool
-	#var inside_kill_treshold: bool
-	#var outside_max_treshold: bool
 	var skip_assignment: bool
 	var LOD_index: int
-	var dmax = 0
-	var dmin = 0
+	var dmax
+	var dmin
 	var bmin
 	var bmax
 	var a
@@ -285,7 +278,6 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 				dmin += a
 			elif camera_pos[i] > bmax[i]:
 				dmin += b
-		
 	
 		# If outside the kill threshold
 		if LOD_kill_distance >= 0.0 && dmin >= LOD_kill_distance:
@@ -318,15 +310,62 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 		# Iterate over all children
 		for child in node.child_nodes:
 			lifo_nodes.append(child)
-		# Else we do nothings: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
+		# Else we do nothing: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
 
 
-# Check if camera is within range, calculate a LOD variant index and set it
-#func assign_LOD_variant(LOD_index:int):
-	## Skip if already assigned this LOD_index and not marked as dirty
-	#if active_LOD_index == LOD_index: return
-	#
-	#_set_active_LOD_index(LOD_index)
+# Update LOD depending on node's distance to camera
+func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float):
+	# If we don't have any LOD variants, abort the entire update process
+	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
+	if shared_LOD_variants.is_empty(): return
+	
+	var dist_to_node_center := (center_pos - camera_pos).length()
+	
+	var max_LOD_dist := LOD_max_distance + min_bounds_to_center_dist #max_bounds_to_center_dist_squared
+	var max_kill_dist := LOD_kill_distance + min_bounds_to_center_dist #max_bounds_to_center_dist_squared
+	var dist_to_node_center_bounds_estimate: float = clamp(dist_to_node_center - max_bounds_to_center_dist, 0.0, INF)
+	
+	var skip_assignment := false
+	var skip_children := false
+	
+	var outside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate >= max_kill_dist
+	var inside_kill_treshold: bool = LOD_kill_distance >= 0.0 && dist_to_node_center_bounds_estimate < max_kill_dist
+	var outside_max_treshold: bool = dist_to_node_center_bounds_estimate >= max_LOD_dist
+	
+	#print(
+		#LOD_kill_distance, " + ", min_bounds_to_center_dist, " = ", max_kill_dist, "     ", 
+		#dist_to_node_center, " - ", max_bounds_to_center_dist, " = ", dist_to_node_center_bounds_estimate)
+	
+	# If outside the kill threshold
+	if outside_kill_treshold:
+		# If haven't yet reset MMIs and spawned spatials, reset them
+		if active_LOD_index >= 0:
+			_set_active_LOD_index(-1)
+		# If up-to-date, skip assignment
+		else:
+			skip_children = true
+		skip_assignment = true
+	# If already at max LOD and outside of the max LOD threshold
+	elif !inside_kill_treshold && active_LOD_index == max_LOD_index && outside_max_treshold:
+		# Skip assignment
+		skip_assignment = true
+		skip_children = true
+	
+	if !skip_assignment:
+		var LOD_index = max_LOD_index
+		# We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
+		# To safely optimize them away using 'if' statements above
+		if LOD_max_distance > 0:
+			LOD_index = clamp(floor(dist_to_node_center_bounds_estimate * index_multiplier), 0, max_LOD_index)
+	
+		if active_LOD_index != LOD_index:
+			_set_active_LOD_index(LOD_index)
+	
+	if !skip_children:
+		# Iterate over all children
+		for child in child_nodes:
+			child.update_LODs_legacy(camera_pos, LOD_max_distance, LOD_kill_distance, max_LOD_index, index_multiplier)
+	# Else we do nothing: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
 
 
 func _set_active_LOD_index_skip_leaf(p_active_LOD_index: int):
@@ -335,7 +374,7 @@ func _set_active_LOD_index_skip_leaf(p_active_LOD_index: int):
 
 func _set_active_LOD_index(p_active_LOD_index: int):
 	active_LOD_index = p_active_LOD_index
-	leaf.on_active_lod_index_changed()
+	leaf.on_active_lod_index_changed.call_deferred()
 
 
 

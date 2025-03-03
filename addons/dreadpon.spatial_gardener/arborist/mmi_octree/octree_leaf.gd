@@ -366,10 +366,7 @@ func restore_circular_refs(p_octree_node: Resource):
 
 
 
-
 func _init_mesh_dependencies():
-	_i_init_mesh_dependencies.call_deferred()
-func _i_init_mesh_dependencies():
 	var rendering_scenario_RID = _octree_node.gardener_root.get_world_3d().scenario
 	_RID_multimesh = RenderingServer.multimesh_create()
 	_RID_instance = RenderingServer.instance_create2(_RID_multimesh, rendering_scenario_RID)
@@ -378,8 +375,6 @@ func _i_init_mesh_dependencies():
 
 
 func _init_spawned_spatial_dependencies():
-	_i_init_spawned_spatial_dependencies.call_deferred()
-func _i_init_spawned_spatial_dependencies():
 	_spawned_spatial_container = Node3D.new()
 	_octree_node.gardener_root.add_child(_spawned_spatial_container)
 	_spawned_spatial_container.transform = Transform3D()
@@ -387,8 +382,6 @@ func _i_init_spawned_spatial_dependencies():
 
 
 func _deinit_mesh_dependencies():
-	_i_deinit_mesh_dependencies()
-func _i_deinit_mesh_dependencies():
 	RenderingServer.free_rid(_RID_multimesh)
 	RenderingServer.free_rid(_RID_instance)
 	_RID_multimesh = RID()
@@ -397,8 +390,6 @@ func _i_deinit_mesh_dependencies():
 
 
 func _deinit_spawned_spatial_dependencies():
-	_i_deinit_spawned_spatial_dependencies.call_deferred()
-func _i_deinit_spawned_spatial_dependencies():
 	FunLib.free_children(_spawned_spatial_container)
 	_spawned_spatial_container.get_parent().remove_child(_spawned_spatial_container)
 	_spawned_spatial_container.queue_free()
@@ -407,26 +398,18 @@ func _i_deinit_spawned_spatial_dependencies():
 
 
 func _set_mesh_root_transform(p_global_transform: Transform3D):
-	_i_set_mesh_root_transform.call_deferred(p_global_transform)
-func _i_set_mesh_root_transform(p_global_transform: Transform3D):
 	RenderingServer.instance_set_transform(_RID_instance, p_global_transform)
 
 
 func _update_mesh():
-	_i_update_mesh.call_deferred()
-func _i_update_mesh():
 	RenderingServer.multimesh_set_mesh(_RID_multimesh, _mesh.get_rid())
 
 
 func _update_shadow():
-	_i_update_shadow.call_deferred()
-func _i_update_shadow():
 	RenderingServer.instance_geometry_set_cast_shadows_setting(_RID_instance, _cast_shadow)
 
 
 func _add_all_mesh_instances():
-	_i_add_all_mesh_instances.call_deferred()
-func _i_add_all_mesh_instances():
 	var instance_count = _octree_node.get_member_count()
 	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count, RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
 	for i in range(0, instance_count):
@@ -435,8 +418,6 @@ func _i_add_all_mesh_instances():
 
 
 func _add_all_spatial_instances():
-	_i_add_all_spatial_instances.call_deferred()
-func _i_add_all_spatial_instances():
 	var instance_count = _octree_node.get_member_count()
 	var spatial = null
 	for i in range(0, instance_count):
@@ -446,21 +427,15 @@ func _i_add_all_spatial_instances():
 
 
 func _replace_all_mesh_instances():
-	_i_replace_all_mesh_instances.call_deferred()
-func _i_replace_all_mesh_instances():
 	_add_all_mesh_instances() # Multimesh needs no additional cleanup for replacing existing instances
 
 
 func _replace_all_spatial_instances():
-	_i_replace_all_spatial_instances.call_deferred()
-func _i_replace_all_spatial_instances():
 	FunLib.free_children(_spawned_spatial_container)
 	_add_all_spatial_instances()
 
 
 func _add_mesh_instances(p_placeforms: Array):
-	_i_add_mesh_instances.call_deferred(p_placeforms)
-func _i_add_mesh_instances(p_placeforms: Array):
 	var instance_count = RenderingServer.multimesh_get_instance_count(_RID_multimesh)
 	var buffer = RenderingServer.multimesh_get_buffer(_RID_multimesh)
 	RenderingServer.multimesh_allocate_data(_RID_multimesh, instance_count + p_placeforms.size(), RenderingServer.MULTIMESH_TRANSFORM_3D, false, false)
@@ -477,8 +452,6 @@ func _i_add_mesh_instances(p_placeforms: Array):
 
 
 func _add_spatial_instances(p_placeforms: Array):
-	_i_add_spatial_instances.call_deferred(p_placeforms)
-func _i_add_spatial_instances(p_placeforms: Array):
 	var spatial = null
 	for i in range(0, p_placeforms.size()):
 		spatial = _spawned_spatial.instantiate()
@@ -487,8 +460,6 @@ func _i_add_spatial_instances(p_placeforms: Array):
 
 
 func _remove_mesh_instance(p_idx: int):
-	_i_remove_mesh_instance.call_deferred(p_idx)
-func _i_remove_mesh_instance(p_idx: int):
 	var buffer = RenderingServer.multimesh_get_buffer(_RID_multimesh)
 	var instance_count = RenderingServer.multimesh_get_instance_count(_RID_multimesh)
 
@@ -506,20 +477,14 @@ func _i_remove_mesh_instance(p_idx: int):
 
 
 func _remove_spatial_instance(p_idx: int):
-	_i_remove_spatial_instance.call_deferred(p_idx)
-func _i_remove_spatial_instance(p_idx: int):
 	_spawned_spatial_container.remove_child(_spawned_spatial_container.get_child(p_idx))
 
 
 func _set_mesh_instance(p_idx: int, p_placeform: Array):
-	_i_set_mesh_instance.call_deferred(p_idx, p_placeform)
-func _i_set_mesh_instance(p_idx: int, p_placeform: Array):
 	RenderingServer.multimesh_instance_set_transform(_RID_multimesh, p_idx, p_placeform[2])
 
 
 func _set_spatial_instance(p_idx: int, p_placeform: Array):
-	_i_set_spatial_instance.call_deferred(p_idx, p_placeform)
-func _i_set_spatial_instance(p_idx: int, p_placeform: Array):
 	_spawned_spatial_container.get_child(p_idx).global_transform = _spawned_spatial_container.global_transform * p_placeform[2]
 
 

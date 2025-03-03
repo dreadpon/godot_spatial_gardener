@@ -14,6 +14,7 @@ const Globals = preload("utility/globals.gd")
 const FunLib = preload("utility/fun_lib.gd")
 const ProjectSettingsManager = preload("utility/project_settings_manager.gd")
 const Gardener = preload("gardener/gardener.gd")
+const MMIOctreeNode = preload("arborist/mmi_octree/mmi_octree_node.gd")
 const DebugViewer = preload("gardener/debug_viewer.gd")
 const UI_SidePanel_SCN = preload("controls/side_panel/ui_side_panel.tscn")
 const UI_SidePanel = preload("controls/side_panel/ui_side_panel.gd")
@@ -134,6 +135,9 @@ func _exit_tree():
 		_side_panel.queue_free()
 	if is_instance_valid(toolbar):
 		toolbar.queue_free()
+
+
+
 
 
 # Previously here was '_apply_changes', but it fired even when scene was closed without saving

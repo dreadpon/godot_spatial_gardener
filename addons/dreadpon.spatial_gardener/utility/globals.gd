@@ -9,6 +9,8 @@
 #-------------------------------------------------------------------------------
 
 
+static var is_threaded_LOD_update: bool = false
+static var use_precise_LOD_distances: bool = false
 
 
 # Convert index starting from "0" to an enum value, where first index is the first enum value
@@ -328,4 +330,3 @@ const Error = {
 	ERR_BUG: "Bug error",
 	ERR_PRINTER_ON_FIRE: "Printer on fire error",
 }
-
