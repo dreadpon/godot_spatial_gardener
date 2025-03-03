@@ -60,7 +60,6 @@ var shared_LOD_variants:Array = []
 
 var logger = null
 
-
 signal placeforms_rejected(new_placeforms) 	# (new_placeforms: Array<Array>)
 signal collapse_self_possible(octant)	# (octant: int)
 signal req_debug_redraw()
@@ -158,6 +157,7 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	#print("restore")
 	# No need to explicitly call on_active_lod_index_changed, since it's accounted for in restore_after_load
 	leaf.restore_after_load() 
+	_set_active_LOD_index(0)
 
 	for child in child_nodes:
 		child.parent = self
@@ -286,6 +286,7 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 			elif camera_pos[i] > bmax[i]:
 				dmin += b
 		
+	
 		# If outside the kill threshold
 		if LOD_kill_distance >= 0.0 && dmin >= LOD_kill_distance:
 			# If haven't yet reset MMIs and spawned spatials, reset them
@@ -296,19 +297,23 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 				continue
 			skip_assignment = true
 		# If already at max LOD and outside of the max LOD threshold
-		elif node.active_LOD_index == max_LOD_index:
-			if !(LOD_kill_distance >= 0.0 && dmin < LOD_kill_distance) && dmin >= LOD_max_distance:
+		#elif node.active_LOD_index == max_LOD_index:
+			#if !(LOD_kill_distance >= 0.0 && dmin < LOD_kill_distance) && dmin >= LOD_max_distance:
 				# Skip assignment
-				continue
+				#continue
 		
 		if dmax < LOD_kill_distance && !skip_assignment:
-				LOD_index = clamp(floor(dmin * index_multiplier), 0, max_LOD_index)
-				if node.active_LOD_index == LOD_index && LOD_index == clamp(floor(dmax * index_multiplier), 0, max_LOD_index): # first update is important not to leave children behind in previous LOD
-					# We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
-					# To safely optimize them away using 'if' statements above
-					node.assign_LOD_variant(LOD_index)
-					continue
-				node.assign_LOD_variant(LOD_index)
+			LOD_index = clamp(floor(dmin * index_multiplier), 0, max_LOD_index)
+			#if node.children_shared_LOD_index == node.active_LOD_index:
+				#if node.active_LOD_index == LOD_index && LOD_index == clamp(floor(dmax * index_multiplier), 0, max_LOD_index): # first update is important not to leave children behind in previous LOD
+					## We set LOD_index on both leaves/non-leaves to keep track of updated/not-updated parent nodes
+					## To safely optimize them away using 'if' statements above
+					#if node.active_LOD_index != LOD_index:
+						#node._set_active_LOD_index(LOD_index)
+					#continue
+			if node.active_LOD_index != LOD_index:
+				node._set_active_LOD_index(LOD_index)
+			#node.assign_LOD_variant(LOD_index)
 		
 		# Iterate over all children
 		for child in node.child_nodes:
@@ -317,11 +322,11 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 
 
 # Check if camera is within range, calculate a LOD variant index and set it
-func assign_LOD_variant(LOD_index:int):
-	# Skip if already assigned this LOD_index and not marked as dirty
-	if active_LOD_index == LOD_index: return
-	
-	_set_active_LOD_index(LOD_index)
+#func assign_LOD_variant(LOD_index:int):
+	## Skip if already assigned this LOD_index and not marked as dirty
+	#if active_LOD_index == LOD_index: return
+	#
+	#_set_active_LOD_index(LOD_index)
 
 
 func _set_active_LOD_index_skip_leaf(p_active_LOD_index: int):

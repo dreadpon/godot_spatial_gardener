@@ -125,11 +125,13 @@ func _ready():
 
 func _enter_tree() -> void:
 	arborist.restore_circular_refs(self)
+	arborist.start_threaded_processes()
 
 
 func _exit_tree():
 	# NOTE: we assume these refs are recreated whenever the tree is entered again
 	arborist.free_circular_refs()
+	arborist.finish_threaded_processes()
 
 	if !Engine.is_editor_hint(): return
 	

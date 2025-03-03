@@ -45,8 +45,12 @@ var active_painting_changes:PaintingChanges = null
 # Threading LOD updates is not working for some reason. Gives error "Condition "!multimesh" is true." when closing a scene
 # This might be related to https://github.com/godotengine/godot/pull/54650
 # Possibly, there are some leftover references after closing a scene and idk how I'm supposed to clean them up
-#var mutex_placement:Mutex = null
-#var thread_instance_placement:Thread
+var mutex_octree:Mutex = Mutex.new()
+var mutex_LOD_update_meta:Mutex = Mutex.new()
+var thread_LOD_update:Thread = Thread.new()
+var semaphore_LOD_update: Semaphore = Semaphore.new()
+var stop_thread_LOD_update := false
+var lod_update_in_process := false
 #var semaphore_instance_placement:Semaphore
 #var exit_instance_placement:bool
 #var done_instance_placement:bool
@@ -56,6 +60,8 @@ var _undo_redo = null
 var debug_redraw_requested_managers:Array = []
 
 var logger = null
+
+var camera_to_use
 
 
 signal req_debug_redraw(octree_managers, requested_indexes)
@@ -72,65 +78,41 @@ signal member_count_updated(octree_index, new_count)
 func _init():
 	set_meta("class", "Arborist")
 	logger = Logger.get_for(self)
-
+	mutex_octree = Mutex.new()
+	mutex_LOD_update_meta = Mutex.new()
+	thread_LOD_update = Thread.new()
+	semaphore_LOD_update = Semaphore.new()
+	stop_thread_LOD_update = false
+	lod_update_in_process = false
 
 
 func init_with_gardeener_root(p_gardener_root: Node3D):
 	gardener_root = p_gardener_root
 	FunLib.free_children(gardener_root)
 	
+	_lock_octree_mutex()
 	for octree_manager in octree_managers:
 		octree_manager.restore_after_load(gardener_root)
-
-#	thread_instance_placement = Thread.new()
-#	mutex_placement = Mutex.new()
-#	semaphore_instance_placement = Semaphore.new()
-#
-#	exit_instance_placement = false
-#	done_instance_placement = true
-#
-#	thread_instance_placement.start(Callable(self,"thread_update_LODs"))
-
-
-# func _notification(what):
-# 	match what:
-# 		NOTIFICATION_PREDELETE:
-# 			for octree_manager in octree_managers:
-# 				octree_manager.free_refs(true)
-			
-			# This is... weird
-			# Apparently I need to free any Resources that are left after closing a scene
-			# I'm not exactly sure why
-			# And it *might* be destructive to do so in editor
-			#if Engine.is_editor_hint(): return
-			#for octree_manager in octree_managers:
-				#octree_manager.destroy()
-		#	mutex_placement.lock()
-		#	exit_instance_placement = true
-		#	done_instance_placement = false
-		#	mutex_placement.unlock()
-		#
-		#	semaphore_instance_placement.post()
-		#	thread_instance_placement.wait_to_finish()
-		#
-		#	thread_instance_placement = null
-		#	mutex_placement = null
-		#	semaphore_instance_placement = null
+	mutex_octree.unlock()
 
 
 # Free/nullify all references that may cause memory leaks
 # NOTE: we assume these refs are recreated whenever the tree is entered again
 func free_circular_refs():
+	_lock_octree_mutex()
 	for octree_manager in octree_managers:
 		octree_manager.free_circular_refs()
+	mutex_octree.unlock()
 	gardener_root = null
 
 
 # Restore all references might have been freed in free_circular_refs()
 func restore_circular_refs(p_gardener_root: Node3D):
 	gardener_root = p_gardener_root
+	_lock_octree_mutex()
 	for octree_manager in octree_managers:
 		octree_manager.restore_circular_refs(gardener_root)
+	mutex_octree.unlock()
 
 
 # Expected to be called inside or after a parent's _ready()
@@ -140,16 +122,22 @@ func restore_circular_refs(p_gardener_root: Node3D):
 func init_with_greenhouse(plant_states):
 	debug_print_lifecycle("verifying for plant_states: " + str(plant_states))
 	
+	_lock_octree_mutex()
+	var manager_count = octree_managers.size()
+	mutex_octree.unlock()
+	
 	for plant_index in range(0, plant_states.size()):
-		if octree_managers.size() - 1 >= plant_index:
+		if manager_count - 1 >= plant_index:
 			_setup_octree_manager(plant_states[plant_index], plant_index)
 		else:
 			add_plant_octree_manager(plant_states[plant_index], plant_index)
 
 
 func propagate_transform(global_transform: Transform3D):
+	_lock_octree_mutex()
 	for octree_manager in octree_managers:
 		octree_manager.propagate_transform(global_transform)
+	mutex_octree.unlock()
 
 
 
@@ -177,41 +165,53 @@ func on_plant_removed(plant_state, plant_index:int):
 # Up-to-date LOD variants of an OctreeManager
 func on_LOD_variant_added(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s added at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.insert_LOD_variant(LOD_variant, mesh_index)
+	mutex_octree.unlock()
 
 
 # Up-to-date LOD variants of an OctreeManager
 func on_LOD_variant_removed(plant_index:int, mesh_index:int):
 	debug_print_lifecycle("LOD Variant: removed at plant_index %d and mesh_index %d" % [plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.remove_LOD_variant(mesh_index)
+	mutex_octree.unlock()
 
 
 # Up-to-date LOD variants of an OctreeManager
 func on_LOD_variant_set(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s set at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.set_LOD_variant(LOD_variant, mesh_index)
+	mutex_octree.unlock()
 
 
 # Up-to-date LOD variants of an OctreeManager
 func on_LOD_variant_prop_changed_spawned_spatial(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s spawned spatial changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.on_lod_variant_spatial_changed(mesh_index)
+	mutex_octree.unlock()
 
 
 func on_LOD_variant_prop_changed_mesh(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s mesh changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.on_lod_variant_mesh_changed(mesh_index)
+	mutex_octree.unlock()
 
 
 func on_LOD_variant_prop_changed_cast_shadow(plant_index:int, mesh_index:int, LOD_variant):
 	debug_print_lifecycle("LOD Variant: %s cast shadow changed at plant_index %d and mesh_index %d" % [str(LOD_variant), plant_index, mesh_index])
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.on_lod_variant_shadow_changed(mesh_index)
+	mutex_octree.unlock()
 
 
 # Initialize an OctreeManager for a given plant
@@ -220,16 +220,21 @@ func add_plant_octree_manager(plant_state, plant_index:int):
 	octree_manager.init_octree(
 		plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size,
 		Vector3.ZERO, gardener_root, plant_state.plant.mesh_LOD_min_size)
-	octree_managers.insert(plant_index, octree_manager)
 	
+	_lock_octree_mutex()
+	octree_managers.insert(plant_index, octree_manager)
+	mutex_octree.unlock()
 	_setup_octree_manager(plant_state, plant_index)
 
 	for mesh_index in range (0, plant_state.plant.mesh_LOD_variants.size()):
 		var LOD_variant = plant_state.plant.mesh_LOD_variants[mesh_index]
-		octree_manager.insert_LOD_variant(LOD_variant, mesh_index)
+		_lock_octree_mutex()
+		octree_managers[plant_index].insert_LOD_variant(LOD_variant, mesh_index)
+		mutex_octree.unlock()
 
 
 func _setup_octree_manager(plant_state, plant_index:int):
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.LOD_max_distance = plant_state.plant.mesh_LOD_max_distance
 	octree_manager.LOD_kill_distance = plant_state.plant.mesh_LOD_kill_distance
@@ -246,40 +251,53 @@ func _setup_octree_manager(plant_state, plant_index:int):
 	elif octree_manager.LOD_variants.size() > plant_state.plant.mesh_LOD_variants.size():
 		for mesh_index in range(plant_state.plant.mesh_LOD_variants.size(), octree_manager.LOD_variants.size()):
 			octree_manager.remove_LOD_variant(mesh_index)
+	mutex_octree.unlock()
 
-	connect_octree_manager(octree_manager)
+	connect_octree_manager(plant_index)
 
 
 # Remove an OctreeManager for a given plant
 func remove_plant_octree_manager(plant_state, plant_index:int):
-	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
-	disconnect_octree_manager(octree_manager)
+	disconnect_octree_manager(plant_index)
+	_lock_octree_mutex()
+	var octree_manager = octree_managers[plant_index]
 	octree_manager.free_refs(true)
 	octree_managers.remove_at(plant_index)
+	mutex_octree.unlock()
 
 
 # A request to reconfigure an octree
 func reconfigure_octree(plant_state, plant_index:int):
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.rebuild_octree(plant_state.plant.mesh_LOD_max_capacity, plant_state.plant.mesh_LOD_min_size)
+	mutex_octree.unlock()
 
 
 # A request to recenter an octree
 func recenter_octree(plant_state, plant_index:int):
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.recenter_octree()
+	mutex_octree.unlock()
 
 
 # Connect all OctreeManager signals
-func connect_octree_manager(octree_manager:MMIOctreeManager):
+func connect_octree_manager(plant_index:int):
+	_lock_octree_mutex()
+	var octree_manager = octree_managers[plant_index]
 	if !octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
 		octree_manager.req_debug_redraw.connect(on_req_debug_redraw.bind(octree_manager))
+	mutex_octree.unlock()
 
 
 # Disconnect all OctreeManager signals
-func disconnect_octree_manager(octree_manager:MMIOctreeManager):
+func disconnect_octree_manager(plant_index:int):
+	_lock_octree_mutex()
+	var octree_manager = octree_managers[plant_index]
 	if octree_manager.req_debug_redraw.is_connected(on_req_debug_redraw):
 		octree_manager.req_debug_redraw.disconnect(on_req_debug_redraw)
+	mutex_octree.unlock()
 
 
 
@@ -291,14 +309,18 @@ func disconnect_octree_manager(octree_manager:MMIOctreeManager):
 
 # To be called by a signal from Greenhouse_PlantState -> Gardener -> Arborist
 func update_plant_LOD_max_distance(plant_index, val):
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.LOD_max_distance = val
+	mutex_octree.unlock()
 
 
 # To be called by a signal from Greenhouse_PlantState -> Gardener -> Arborist
 func update_plant_LOD_kill_distance(plant_index, val):
+	_lock_octree_mutex()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.LOD_kill_distance = val
+	mutex_octree.unlock()
 
 
 # To be called by a signal from Gardener -> Arborist
@@ -318,6 +340,8 @@ func on_stroke_started(brush:Toolshed_Brush, plant_states:Array):
 	var space_state := gardener_root.get_world_3d().direct_space_state
 	var camera = get_camera_3d()
 	active_painting_changes = PaintingChanges.new()
+	
+	_lock_octree_mutex()
 	match brush.behavior_brush_type:
 		brush.BrushType.PAINT:
 			active_stroke_handler = SH_Paint.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
@@ -329,6 +353,7 @@ func on_stroke_started(brush:Toolshed_Brush, plant_states:Array):
 			active_stroke_handler = SH_Reapply.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
 		_:
 			active_stroke_handler = StrokeHandler.new(brush, plant_states, octree_managers, space_state, camera, gardening_collision_mask)
+	mutex_octree.unlock()
 	
 	debug_print_lifecycle("Stroke %s started" % [active_stroke_handler.get_meta("class")])
 
@@ -342,10 +367,8 @@ func on_stroke_updated(brush_data:Dictionary):
 	debug_print_lifecycle("Stroke %s updating..." % [active_stroke_handler.get_meta("class")])
 	var msec_start = FunLib.get_msec()
 	
-#	mutex_placement.lock()
 	var changes = active_stroke_handler.get_stroke_update_changes(brush_data, gardener_root.global_transform)
 	apply_stroke_update_changes(changes)
-#	mutex_placement.unlock()
 	active_painting_changes.append_changes(changes)
 	
 	var msec_end = FunLib.get_msec()
@@ -372,9 +395,7 @@ func on_stroke_finished():
 
 # A wrapper for applying changes to avoid reaplying UndoRedo actions on commit_action()
 func _action_apply_changes(changes):
-#	mutex_placement.lock()
 	apply_stroke_update_changes(changes)
-#	mutex_placement.unlock()
 
 
 
@@ -396,6 +417,7 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 	debug_print_lifecycle("	Applying %d stroke changes" % [changes.changes.size()])
 	var msec_start = FunLib.get_msec()
 	
+	_lock_octree_mutex()
 	var affected_octree_managers := []
 	
 	for change in changes.changes:
@@ -411,10 +433,13 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 		
 		if !affected_octree_managers.has(change.at_index):
 			affected_octree_managers.append(change.at_index)
+	mutex_octree.unlock()
 	
 	for index in affected_octree_managers:
+		_lock_octree_mutex()
 		var octree_manager = octree_managers[index]
 		octree_manager.process_queues()
+		mutex_octree.unlock()
 		emit_member_count(index)
 	
 	var msec_end = FunLib.get_msec()
@@ -422,64 +447,104 @@ func apply_stroke_update_changes(changes:PaintingChanges):
 
 
 func emit_total_member_count():
+	_lock_octree_mutex()
 	for i in range(0, octree_managers.size()):
 		emit_member_count(i)
+	mutex_octree.unlock()
 
 
 func emit_member_count(octree_index:int):
+	_lock_octree_mutex()
 	member_count_updated.emit(octree_index, octree_managers[octree_index].root_octree_node.get_nested_member_count())
+	mutex_octree.unlock()
 
 
 func update(delta):
 #	try_update_LODs()
 	if gardener_root.visible:
-		update_LODs()
+		#update_LODs()
+		_refresh_LOD_update_params()
+
+
+func _refresh_LOD_update_params():
+	mutex_LOD_update_meta.lock()
+	camera_to_use = get_camera_3d()
+	var l_lod_update_in_process = lod_update_in_process
+	mutex_LOD_update_meta.unlock()
+	
+	if !l_lod_update_in_process:
 		request_debug_redraw()
+		semaphore_LOD_update.post()
 
 
-# Trigger a threaded LOD update
-#func try_update_LODs():
-#	var should_post = false
-#
-#	mutex_placement.lock()
-#	if done_instance_placement:
-#		done_instance_placement = false
-#		should_post = true
-#	mutex_placement.unlock()
-#
-#	if should_post:
-#		semaphore_instance_placement.post()
+func start_threaded_processes():
+	if thread_LOD_update.is_started():
+		return
+	thread_LOD_update.start(thread_update_LODs)
 
 
-# A function that carries out threaded LOD updates
-#func thread_update_LODs(arg = null):
-#	while true:
-#		semaphore_instance_placement.wait()
-#
-#		var should_exit = false
-#		mutex_placement.lock()
-#		if exit_instance_placement:
-#			should_exit = true
-#		mutex_placement.unlock()
-#		if should_exit: break
-#
-#		mutex_placement.lock()
-#		update_LODs()
-#		done_instance_placement = true
-#		mutex_placement.unlock()
+func finish_threaded_processes():
+	if !thread_LOD_update.is_started():
+		return
+	
+	mutex_LOD_update_meta.lock()
+	stop_thread_LOD_update = true
+	mutex_LOD_update_meta.unlock()
+	
+	semaphore_LOD_update.post()
+	thread_LOD_update.wait_to_finish()
+
+func _lock_octree_mutex():
+	mutex_octree.lock()
+	#print(get_stack()[1]["function"])
+
+
+func thread_update_LODs():
+	while true:
+		semaphore_LOD_update.wait()
+		
+		mutex_LOD_update_meta.lock()
+		var l_stop_thread_LOD_update = stop_thread_LOD_update
+		mutex_LOD_update_meta.unlock()
+		
+		if l_stop_thread_LOD_update:
+			break
+		mutex_LOD_update_meta.lock()
+		lod_update_in_process = true
+		mutex_LOD_update_meta.unlock()
+		update_LODs()
+		mutex_LOD_update_meta.lock()
+		lod_update_in_process = false
+		mutex_LOD_update_meta.unlock()
 
 
 # Instigate LOD updates in OctreeManager objects
 func update_LODs():
-	var camera_to_use:Camera3D = get_camera_3d()
-	if camera_to_use:
-		var camera_pos := camera_to_use.global_transform.origin
-		for octree_manager in octree_managers:
+	mutex_LOD_update_meta.lock()
+	var camera_valid = is_instance_valid(camera_to_use)
+	mutex_LOD_update_meta.unlock()
+	
+	mutex_octree.lock()
+	var manager_size = octree_managers.size()
+	mutex_octree.unlock()
+	
+	if camera_valid:
+		mutex_LOD_update_meta.lock()
+		var camera_pos = camera_to_use.global_transform.origin
+		mutex_LOD_update_meta.unlock()
+		
+		for i in range(0, manager_size):
+			mutex_octree.lock()
+			var octree_manager = octree_managers[i]
 			octree_manager.update_LODs(camera_pos, gardener_root.global_transform)
+			mutex_octree.unlock()
 	# This exists to properly render instances in editor even if there is no forwarded_input()
 	else:
-		for octree_manager in octree_managers:
+		for i in range(0, manager_size):
+			mutex_octree.lock()
+			var octree_manager = octree_managers[i]
 			octree_manager.update_LODs_no_camera()
+			mutex_octree.unlock()
 
 
 # Add instances as a batch (mostly, as a result of importing Greenhouse data)
@@ -487,8 +552,10 @@ func batch_add_instances(placeforms: Array, plant_idx: int):
 	active_painting_changes = PaintingChanges.new()
 	active_stroke_handler = SH_Manual.new()
 	
+	_lock_octree_mutex()
 	for placeform in placeforms:
 		active_stroke_handler.add_instance_placeform(placeform, plant_idx, active_painting_changes)
+	mutex_octree.unlock()
 	
 	apply_stroke_update_changes(active_painting_changes)
 	on_stroke_finished()
@@ -504,8 +571,10 @@ func batch_add_instances(placeforms: Array, plant_idx: int):
 func forward_input(event):
 	if is_instance_of(event, InputEventKey) && !event.pressed:
 		if event.keycode == debug_get_dump_tree_key():
+			_lock_octree_mutex()
 			for octree_manager in octree_managers:
 				logger.info(octree_manager.root_octree_node.debug_dump_tree())
+			mutex_octree.unlock()
 
 
 
@@ -573,14 +642,25 @@ func _get_property_list():
 
 # A wrapper to request debug redraw for a specific OctreeManager
 func request_debug_redraw_from_index(plant_index):
+	_lock_octree_mutex()
 	for index in range(plant_index, octree_managers.size()):
-		on_req_debug_redraw(octree_managers[index])
+		on_req_debug_redraw(octree_managers[index], true)
+	mutex_octree.unlock()
 
 
 # Add an OctreeManager to the debug redraw waiting list
-func on_req_debug_redraw(octree_manager:MMIOctreeManager):
-	if debug_redraw_requested_managers.has(octree_manager): return
+func on_req_debug_redraw(octree_manager:MMIOctreeManager, external_mutex_control := false):
+	if !external_mutex_control:
+		_lock_octree_mutex()
+		
+	if debug_redraw_requested_managers.has(octree_manager): 
+		if !external_mutex_control:
+			mutex_octree.unlock()
+		return
 	debug_redraw_requested_managers.append(octree_manager)
+	
+	if !external_mutex_control:
+		mutex_octree.unlock()
 
 
 # Request a debug redraw for all OctreeManager objects in a waiting list using a signal
@@ -588,7 +668,10 @@ func on_req_debug_redraw(octree_manager:MMIOctreeManager):
 # Because we expect the order of managers might change and indexes will become inaccurate
 # Typically called from _process()
 func request_debug_redraw():
-	if debug_redraw_requested_managers.is_empty(): return
+	_lock_octree_mutex()
+	if debug_redraw_requested_managers.is_empty(): 
+		mutex_octree.unlock()
+		return
 	
 	var requested_indexes := []
 	for octree_manager in debug_redraw_requested_managers:
@@ -597,6 +680,7 @@ func request_debug_redraw():
 	if !requested_indexes.is_empty():
 		req_debug_redraw.emit(octree_managers)
 	debug_redraw_requested_managers = []
+	mutex_octree.unlock()
 
 
 func debug_get_dump_tree_key():

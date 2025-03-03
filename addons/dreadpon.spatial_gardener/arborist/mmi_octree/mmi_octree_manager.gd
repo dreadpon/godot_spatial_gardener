@@ -373,7 +373,9 @@ func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
 
 func update_LODs_no_camera():
 	if LOD_variants.is_empty(): return
-	root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0)
+	var max_LOD_index = LOD_variants.size() - 1
+	var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
+	root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
 	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
 
 
