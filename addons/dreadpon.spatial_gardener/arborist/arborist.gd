@@ -56,6 +56,8 @@ var lod_update_in_process := false
 #var exit_instance_placement:bool
 #var done_instance_placement:bool
 
+#var initialized_with_gardener: bool = false
+
 var _undo_redo = null
 
 var debug_redraw_requested_managers:Array = []
@@ -79,6 +81,7 @@ signal transplanted_member(plant_index: int, new_address: PackedByteArray, new_i
 
 func _init():
 	set_meta("class", "Arborist")
+	resource_local_to_scene = true
 	logger = Logger.get_for(self)
 	mutex_octree = Mutex.new()
 	mutex_LOD_update_meta = Mutex.new()
@@ -86,11 +89,16 @@ func _init():
 	semaphore_LOD_update = Semaphore.new()
 	stop_thread_LOD_update = false
 	lod_update_in_process = false
+	
+	#initialized_with_gardener = false
 
 
 func init_with_gardeener_root(p_gardener_root: Node3D):
+	#print("ARBORIST init_with_gardeener_root")
+	#initialized_with_gardener = true
+	
 	gardener_root = p_gardener_root
-	FunLib.free_children(gardener_root)
+	#FunLib.free_children(gardener_root)
 	
 	mutex_octree.lock()
 	for octree_manager in octree_managers:
@@ -110,6 +118,7 @@ func free_circular_refs():
 
 # Restore all references might have been freed in free_circular_refs()
 func restore_circular_refs(p_gardener_root: Node3D):
+	#print("ARBORIST restore_circular_refs")
 	gardener_root = p_gardener_root
 	mutex_octree.lock()
 	for octree_manager in octree_managers:
@@ -270,7 +279,7 @@ func remove_plant_octree_manager(plant_state, plant_index:int):
 	disconnect_octree_manager(plant_index)
 	mutex_octree.lock()
 	var octree_manager = octree_managers[plant_index]
-	octree_manager.free_refs(true)
+	octree_manager.free_circular_refs()
 	octree_managers.remove_at(plant_index)
 	mutex_octree.unlock()
 
@@ -499,6 +508,10 @@ func start_threaded_processes():
 	
 	if thread_LOD_update.is_started():
 		return
+	
+	mutex_LOD_update_meta.lock()
+	stop_thread_LOD_update = false
+	mutex_LOD_update_meta.unlock()
 	thread_LOD_update.start(thread_update_LODs)
 
 
@@ -553,15 +566,37 @@ func update_LODs():
 		for i in range(0, manager_size):
 			mutex_octree.lock()
 			var octree_manager = octree_managers[i]
-			octree_manager.update_LODs(camera_pos, gardener_root.global_transform)
+			octree_manager.update_LODs(camera_pos, gardener_root.global_transform, false)
 			mutex_octree.unlock()
 	# This exists to properly render instances in editor even if there is no forwarded_input()
 	else:
 		for i in range(0, manager_size):
 			mutex_octree.lock()
 			var octree_manager = octree_managers[i]
-			octree_manager.update_LODs_no_camera()
+			octree_manager.update_LODs_no_camera(false)
 			mutex_octree.unlock()
+
+
+func update_LODs_for_baking(p_forced_camera_pos: Vector3, p_unlock_signal: Signal):
+	mutex_octree.lock()
+	var manager_size = octree_managers.size()
+	for i in range(0, manager_size):
+		var octree_manager = octree_managers[i]
+		octree_manager.update_LODs(p_forced_camera_pos, gardener_root.global_transform, true)
+	
+	await p_unlock_signal
+	mutex_octree.unlock()
+
+
+func update_LODs_for_baking_override_kill_distance(p_forced_camera_pos: Vector3, p_kill_distance: float, p_unlock_signal: Signal):
+	mutex_octree.lock()
+	var manager_size = octree_managers.size()
+	for i in range(0, manager_size):
+		var octree_manager = octree_managers[i]
+		octree_manager.update_LODs_override_kill_distance(p_forced_camera_pos, p_kill_distance, gardener_root.global_transform, true)
+	
+	await p_unlock_signal
+	mutex_octree.unlock()
 
 
 # Add instances as a batch (mostly, as a result of importing Greenhouse data)

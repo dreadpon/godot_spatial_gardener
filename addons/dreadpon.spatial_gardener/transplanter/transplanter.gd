@@ -30,6 +30,7 @@ signal member_transformed(changes: PaintingChanges)
 
 
 func _init(p_gardener_root):
+	resource_local_to_scene = true
 	gardener_root = p_gardener_root
 	proxy_mesh_instance = MeshInstance3D.new()
 	gardener_root.add_child(proxy_mesh_instance, false, Node.INTERNAL_MODE_FRONT)

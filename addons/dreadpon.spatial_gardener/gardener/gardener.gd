@@ -21,6 +21,7 @@ const Toolshed = preload("../toolshed/toolshed.gd")
 const Painter = preload("painter.gd")
 const Arborist = preload("../arborist/arborist.gd")
 const DebugViewer = preload("debug_viewer.gd")
+const Baker = preload("baker.gd")
 const UI_SidePanel_SCN = preload("../controls/side_panel/ui_side_panel.tscn")
 const UI_SidePanel = preload("../controls/side_panel/ui_side_panel.gd")
 const Globals = preload("../utility/globals.gd")
@@ -55,6 +56,7 @@ var painter:Painter = null
 var arborist:Arborist = Arborist.new()
 var transplanter:Transplanter = null
 var debug_viewer:DebugViewer = null
+var baker:Baker = null
 
 var _resource_previewer = null
 var _base_control:Control = null
@@ -121,6 +123,9 @@ func _ready():
 	debug_viewer = DebugViewer.new()
 	add_child(debug_viewer, false, Node.INTERNAL_MODE_FRONT)
 	
+	baker = Baker.new()
+	add_child(baker, false, Node.INTERNAL_MODE_FRONT)
+	
 	init_painter()
 	init_transplanter()
 	
@@ -134,12 +139,14 @@ func _ready():
 
 
 func _enter_tree() -> void:
+	#if arborist.initialized_with_gardener:
 	arborist.restore_circular_refs(self)
 	arborist.start_threaded_processes()
 
 
 func _exit_tree():
 	# NOTE: we assume these refs are recreated whenever the tree is entered again
+	#if arborist.initialized_with_gardener:
 	arborist.free_circular_refs()
 	arborist.finish_threaded_processes()
 
@@ -419,6 +426,7 @@ func start_editing(__base_control:Control, __resource_previewer, __undoRedo, __s
 	greenhouse.set_undo_redo(_undo_redo)
 
 	arborist._undo_redo = _undo_redo
+	baker._undo_redo = _undo_redo
 
 #	# Making sure we and UI are on the same page (setting property values and checkboxes/tabs)
 	painter_update_to_active_brush(toolshed.active_brush)
@@ -467,6 +475,26 @@ func debug_view_flag_checked(debug_view_menu:MenuButton, flag:int):
 	assert(debug_viewer)
 	debug_viewer.flag_checked(debug_view_menu, flag)
 	debug_viewer.request_debug_redraw(arborist.octree_managers)
+
+
+func up_to_date_bake_menu(bake_menu: Button):
+	assert(baker)
+	assert(greenhouse)
+	var plant_names := []
+	for plant_state in greenhouse.greenhouse_plant_states:
+		plant_names.append(plant_state.plant_label)
+	baker.up_to_date_baker_menu(bake_menu, self, plant_names, _base_control, _resource_previewer)
+
+
+func bake_menu_pressed(bake_menu: Button):
+	assert(baker)
+	up_to_date_bake_menu(bake_menu)
+	baker.bake_menu_pressed(bake_menu)
+
+
+func bake_requested(bake_menu: Button):
+	assert(baker)
+	baker.request_bake(bake_menu, self)
 
 
 

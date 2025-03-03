@@ -71,7 +71,7 @@ func _string_to_val(string) -> int:
 	elif string is int:
 		return string
 	else:
-		logger.warn("Passed variable is not a string!")
+		logger.warn("Passed variable is not a string or int!")
 	return 0
 
 

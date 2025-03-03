@@ -151,7 +151,7 @@ func _string_to_val(string) -> float:
 	elif string is float:
 		return string
 	else:
-		logger.warn("Passed variable is not a string!")
+		logger.warn("Passed variable is not a string or float!")
 	return 0.0
 
 

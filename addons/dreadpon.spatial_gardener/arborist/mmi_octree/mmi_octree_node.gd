@@ -152,15 +152,16 @@ func restore_after_load(__gardener_root:Node3D, LOD_variants:Array):
 	max_bounds_to_center_dist = sqrt(pow(extent, 2) * 3)
 	min_bounds_to_center_dist = extent
 	
-	if shared_LOD_variants.size() <= active_LOD_index:
-		_set_active_LOD_index_skip_leaf(shared_LOD_variants.size() - 1)
-
 	if !is_instance_valid(leaf):
 		leaf = OctreeLeaf.new()
+	
+	if shared_LOD_variants.size() <= active_LOD_index:
+		_set_active_LOD_index_skip_leaf(shared_LOD_variants.size() - 1)
+	
 	#print("restore")
 	# No need to explicitly call on_active_lod_index_changed, since it's accounted for in restore_after_load
 	leaf.restore_after_load() 
-	_set_active_LOD_index(0)
+	_set_active_LOD_index(0, false)
 
 	for child in child_nodes:
 		child.parent = self
@@ -246,14 +247,14 @@ func restore_circular_refs(p_parent: Resource, p_gardener_root: Node3D):
 func set_LODs_to_active_index():
 	if is_leaf:
 		if shared_LOD_variants.size() <= active_LOD_index:
-			_set_active_LOD_index(shared_LOD_variants.size() - 1)
+			_set_active_LOD_index(shared_LOD_variants.size() - 1, false)
 	else:
 		for child in child_nodes:
 			child.set_LODs_to_active_index()
 
 
 # Update LOD depending on node's distance to camera
-func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float):
+func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float, p_force_synchronous: bool):
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
 	#print(self.leaf, " update_LODs")
@@ -293,18 +294,18 @@ func update_LODs(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:f
 			LOD_index = clamp(floor(dmin * index_multiplier), 0, max_LOD_index)
 		
 		if node.active_LOD_index != LOD_index:
-			node._set_active_LOD_index(LOD_index)
+			node._set_active_LOD_index(LOD_index, p_force_synchronous)
 		
 		for child in node.child_nodes:
 			lifo_nodes.append(child)
 
 
 # Update LOD depending on node's distance to camera
-func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float):
+func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_distance:float, max_LOD_index: int, index_multiplier: float, p_force_synchronous: bool):
 	# If we don't have any LOD variants, abort the entire update process
 	# We assume mesh and spatials are reset on shared_LOD_variants change using set_LODs_to_active_index() call from an arborist
 	if shared_LOD_variants.is_empty(): return
-	
+
 	var dist_to_node_center := (center_pos - camera_pos).length()
 	
 	var max_LOD_dist := LOD_max_distance + min_bounds_to_center_dist #max_bounds_to_center_dist_squared
@@ -326,7 +327,7 @@ func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_dis
 	if outside_kill_treshold:
 		# If haven't yet reset MMIs and spawned spatials, reset them
 		if active_LOD_index >= 0:
-			_set_active_LOD_index(-1)
+			_set_active_LOD_index(-1, p_force_synchronous)
 		# If up-to-date, skip assignment
 		else:
 			skip_children = true
@@ -345,12 +346,12 @@ func update_LODs_legacy(camera_pos:Vector3, LOD_max_distance:float, LOD_kill_dis
 			LOD_index = clamp(floor(dist_to_node_center_bounds_estimate * index_multiplier), 0, max_LOD_index)
 	
 		if active_LOD_index != LOD_index:
-			_set_active_LOD_index(LOD_index)
+			_set_active_LOD_index(LOD_index, p_force_synchronous)
 	
 	if !skip_children:
 		# Iterate over all children
 		for child in child_nodes:
-			child.update_LODs_legacy(camera_pos, LOD_max_distance, LOD_kill_distance, max_LOD_index, index_multiplier)
+			child.update_LODs_legacy(camera_pos, LOD_max_distance, LOD_kill_distance, max_LOD_index, index_multiplier, p_force_synchronous)
 	# Else we do nothing: this node and all it's children are up-to-date outside either max_LOD_index or LOD_kill_distance
 
 
@@ -358,9 +359,12 @@ func _set_active_LOD_index_skip_leaf(p_active_LOD_index: int):
 	active_LOD_index = p_active_LOD_index
 
 
-func _set_active_LOD_index(p_active_LOD_index: int):
+func _set_active_LOD_index(p_active_LOD_index: int, p_force_synchronous: bool):
 	active_LOD_index = p_active_LOD_index
-	leaf.on_active_lod_index_changed.call_deferred()
+	if p_force_synchronous:
+		leaf.on_active_lod_index_changed()
+	else:
+		leaf.on_active_lod_index_changed.call_deferred()
 
 
 
@@ -617,7 +621,7 @@ func _make_children():
 		child_nodes.append(child)
 		# NOTE: line below is essential for properly initializing instances 
 		#		when passing them down to newly created children
-		child._set_active_LOD_index(active_LOD_index)
+		child._set_active_LOD_index(active_LOD_index, false)
 	set_is_leaf(false)
 	#print(self, " _make_children")
 

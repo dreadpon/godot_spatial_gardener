@@ -64,7 +64,7 @@ func clone(p_octree_node) -> RefCounted:
 		p_octree_node, _is_leaf, _active_LOD_index,
 		null, RID(), RID(),
 		_mesh, _spawned_spatial, _cast_shadow,
-		_current_state)
+		0)
 	return clone
 
 
@@ -76,7 +76,7 @@ func _update_state(p_single_state_type: StateType):
 			else:
 				_current_state &= ~StateType.INSTANCES_PERMITTED
 		StateType.MESH_VALID:
-			if is_instance_valid(_mesh) && _octree_node.gardener_root.visible:
+			if is_instance_valid(_mesh) && is_instance_valid(_octree_node) && is_instance_valid(_octree_node.gardener_root) && _octree_node.gardener_root.visible:
 				_current_state |= StateType.MESH_VALID
 			else:
 				_current_state &= ~StateType.MESH_VALID
@@ -95,6 +95,7 @@ func _update_state(p_single_state_type: StateType):
 				_current_state |= StateType.SPATIAL_DEPS_INITIALIZED
 			else:
 				_current_state &= ~StateType.SPATIAL_DEPS_INITIALIZED
+	#print(self, " ", String.num_int64(_current_state, 2), " ", _spawned_spatial_container.get_parent() if _spawned_spatial_container else null)
 
 
 func _get_variant_param(p_param: LODVariantParam, p_default_val = null):
@@ -128,7 +129,6 @@ func restore_after_load():
 
 
 func _init_with_octree_node():
-	#print(self, " _init_with_octree_node ", String.num_int64(_current_state, 2))
 	#print("_init_with_octree_node")
 	# Inherit leaf, mesh, spawned spatial, shadow, create new spatial container if necessary
 	if _octree_node == null:
@@ -397,6 +397,7 @@ func free_circular_refs():
 
 
 func restore_circular_refs(p_octree_node: Resource):
+	#print(self, " restore_circular_refs")
 	set_octree_node(p_octree_node)
 
 
@@ -427,6 +428,7 @@ func _deinit_mesh_dependencies():
 
 
 func _deinit_spawned_spatial_dependencies():
+	#if is_instance_valid(_spawned_spatial_container.get_parent()): # When Gardener exits tree, all chidlren are already freed afaik
 	FunLib.free_children(_spawned_spatial_container)
 	_spawned_spatial_container.get_parent().remove_child(_spawned_spatial_container)
 	_spawned_spatial_container.queue_free()

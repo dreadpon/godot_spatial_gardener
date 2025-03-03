@@ -60,6 +60,14 @@ static func add_undo_method(undo_redo, callable: Callable):
 		undo_redo.add_undo_method(callable)
 
 
+static func add_do_reference(undo_redo, object: Object):
+	undo_redo.add_do_reference(object)
+
+
+static func add_undo_reference(undo_redo, object: Object):
+	undo_redo.add_undo_reference(object)
+
+
 
 static func commit_action(undo_redo, execute := true):
 	undo_redo.commit_action(execute)

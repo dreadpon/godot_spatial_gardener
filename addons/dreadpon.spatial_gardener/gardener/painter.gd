@@ -151,7 +151,7 @@ func stop_editing():
 
 func forwarded_input(camera:Camera3D, event):
 	if !can_draw: return false
-	if !active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return false
+	if active_brush_type == Toolshed_Brush.BrushType.TRANSFORM: return false
 	
 	_cached_camera = camera
 	var handled = false

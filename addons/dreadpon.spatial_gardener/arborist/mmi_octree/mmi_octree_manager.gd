@@ -373,7 +373,11 @@ func set_LODs_to_active_index():
 
 
 # Update LODs in OctreeNodes depending on their distance to camera
-func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
+func update_LODs(camera_pos:Vector3, container_transform:Transform3D, p_force_synchronous: bool):
+	update_LODs_override_kill_distance(camera_pos, LOD_kill_distance, container_transform, p_force_synchronous)
+
+
+func update_LODs_override_kill_distance(camera_pos:Vector3, p_kill_distance: float, container_transform:Transform3D, p_force_synchronous: bool):
 	if LOD_variants.is_empty(): return
 	if LOD_max_distance <= 0:
 		LOD_max_distance = 0.00001
@@ -382,20 +386,20 @@ func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
 	
 	if Globals.use_precise_LOD_distances:
 		var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
-		root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, LOD_kill_distance ** 2 if LOD_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier)
+		root_octree_node.update_LODs(camera_pos, LOD_max_distance ** 2, p_kill_distance ** 2 if p_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
 	else:
 		var index_multiplier = max_LOD_index / LOD_max_distance
-		root_octree_node.update_LODs_legacy(camera_pos, LOD_max_distance, LOD_kill_distance if LOD_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier)
+		root_octree_node.update_LODs_legacy(camera_pos, LOD_max_distance, p_kill_distance if p_kill_distance > 0 else -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
 
 
-func update_LODs_no_camera():
+func update_LODs_no_camera(p_force_synchronous: bool):
 	if LOD_variants.is_empty(): return
 	var max_LOD_index = LOD_variants.size() - 1
 	var index_multiplier = max_LOD_index / (LOD_max_distance ** 2)
 	if Globals.use_precise_LOD_distances:
-		root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
+		root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
 	else:
-		root_octree_node.update_LODs_legacy(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier)
+		root_octree_node.update_LODs_legacy(Vector3.ZERO, 0.00001, -1.0, max_LOD_index, index_multiplier, p_force_synchronous)
 	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
 
 

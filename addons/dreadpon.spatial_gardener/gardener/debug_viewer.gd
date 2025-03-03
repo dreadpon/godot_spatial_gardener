@@ -49,7 +49,8 @@ static func make_debug_view_menu():
 	debug_view_menu.text = "Gardener Debug Viewer"
 	debug_view_menu.get_popup().hide_on_checkable_item_selection = false
 	debug_view_menu.get_popup().hide_on_item_selection = false
-	
+	debug_view_menu.tooltip_text = "Display debug information about octrees and instances"
+
 	for i in range(0, PlantViewModeFlags.size() - 1):
 		debug_view_menu.get_popup().add_radio_check_item(PlantViewModeFlags.keys()[i].capitalize(), PlantViewModeFlags.values()[i])
 	
