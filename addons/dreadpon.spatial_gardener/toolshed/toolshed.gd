@@ -59,6 +59,9 @@ func create_ui(__base_control:Control, __resource_previewer):
 	ui_category_brushes_nd.theme_type_variation = "InspectorPanelContainer"
 	panel_container_category_nd.theme_type_variation = "PropertyCategory"
 	
+	if brushes.size() < 5:
+		push_error("Current Toolshed is missing some brushes. Consider deleting it and letting Spatial Gardener recreate it automatically.")
+
 	for brush in brushes:
 		var section_brush = ui_section_brush_SCN.instantiate()
 		var vbox_container_properties = section_brush.find_child('VBoxContainer_Properties')

@@ -35,7 +35,7 @@ func _unhandled_input(event):
 		
 		if !event.pressed:
 			match event.keycode:
-				KEY_ENTER:
+				KEY_ENTER, KEY_KP_ENTER:
 					input_field.text = input_field.text.trim_suffix("\n")
 					try_execute_command()
 				KEY_ESCAPE:
