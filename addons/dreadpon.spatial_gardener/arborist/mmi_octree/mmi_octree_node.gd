@@ -529,15 +529,24 @@ func _remove_member_from_child(old_placeform: Array):
 	child_nodes[old_placeform[3]].remove_members([old_placeform])
 
 
-
-
-#-------------------------------------------------------------------------------
-# MMI and spawned spatial management
-#-------------------------------------------------------------------------------
-
-
 func get_member_transform(member_idx: int):
 	return member_placeforms[member_idx][2]
+
+
+# Some OctreeNode detected an out-of-bounds instance (moved by Transplanter)
+# Notify OctreeManager of this (to instigate a structural change)
+func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
+	if parent:
+		parent.request_transplanting(p_address, p_member_idx, p_new_placeform, p_old_placeform)
+	else:
+		transplanting_requested.emit(p_address, p_member_idx, p_new_placeform, p_old_placeform)
+
+
+
+
+#-------------------------------------------------------------------------------
+# LOD variant changes
+#-------------------------------------------------------------------------------
 
 
 # NOTE: this changed requires update_LODs() call; it will be called by Arborist next frame automatically
@@ -877,15 +886,6 @@ func request_debug_redraw():
 		parent.request_debug_redraw()
 	else:
 		req_debug_redraw.emit()
-
-
-# Some OctreeNode detected an out-of-bounds instance (moved by Transplanter)
-# Notify OctreeManager of this (to instigate a structural change)
-func request_transplanting(p_address: PackedByteArray, p_member_idx: int, p_new_placeform: Array, p_old_placeform: Array):
-	if parent:
-		parent.request_transplanting(p_address, p_member_idx, p_new_placeform, p_old_placeform)
-	else:
-		transplanting_requested.emit(p_address, p_member_idx, p_new_placeform, p_old_placeform)
 
 
 # Get a color depending on address length

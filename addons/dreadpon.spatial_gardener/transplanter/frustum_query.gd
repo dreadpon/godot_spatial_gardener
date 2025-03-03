@@ -23,12 +23,22 @@ var frustum_planes: Array
 
 
 
+#-------------------------------------------------------------------------------
+# Initialization
+#-------------------------------------------------------------------------------
+
+
 func _init(__camera: Camera3D, __radius: float, __simplify_projection_frustum := false): #, __debug_draw_enabled := false):
 	camera = __camera
 	radius = __radius
 	simplify_projection_frustum = __simplify_projection_frustum
 
 
+
+
+#-------------------------------------------------------------------------------
+# Frustum definition and queries
+#-------------------------------------------------------------------------------
 
 
 func proj_define_frustum(frustum_planes: Array) -> Array:
@@ -44,8 +54,6 @@ func proj_define_frustum(frustum_planes: Array) -> Array:
 	#debug_draw_plane_array(frustum_planes, [frustum_points[0], frustum_points[2], frustum_points[4], frustum_points[6], frustum_points[4], frustum_points[7]])
 	
 	return frustum_planes
-
-
 
 
 func query_intersecting_positions(ray_start: Vector3, ray_end: Vector3, container_transform, oc_node: MMIOctreeNode, plant_idx: int):
@@ -72,10 +80,6 @@ func proj_get_placeforms_data_at_point(ray_start: Vector3, ray_end: Vector3, int
 		else:
 			for child_node in octree_node.child_nodes:
 				proj_get_placeforms_data_at_point(ray_start, ray_end, intersected_positions, child_node, container_transform, plant_idx)
-
-
-
-
 
 
 static func is_box_line_intersecting(box_transform: Transform3D, box_size: Vector3, line_origin: Vector3, line_end: Vector3, intersection := [], draw_box := false, draw_line := false) -> bool:
@@ -150,7 +154,6 @@ static func is_AABB_line_intersecting(box_min: Vector3, box_max: Vector3, line_o
 	return true
 
 
-
 static func is_line_triangle_intersecting(
 	line_origin: Vector3, line_end: Vector3, 
 	t0: Vector3, t1: Vector3, t2: Vector3, 
@@ -198,8 +201,6 @@ static func point_inside_triangle(point: Vector3, t0: Vector3, t1: Vector3, t2: 
 	
 	var inside := bary.x >= 0.0 && bary.y >= 0.0 && bary.z >= 0.0
 	return inside
-
-
 
 
 # Project frustum points from screen-space to world-space
@@ -289,7 +290,9 @@ func project_point(distance: float, offset: Vector2 = Vector2.ZERO) -> Vector3:
 
 
 
-
+#-------------------------------------------------------------------------------
+# Debug drawing
+#-------------------------------------------------------------------------------
 
 
 #func debug_draw_plane_array(planes: Array, origin_points: Array, color: Color = Color.RED):

@@ -55,6 +55,11 @@ enum LODVariantParam {
 
 
 
+#-------------------------------------------------------------------------------
+# Initialization
+#-------------------------------------------------------------------------------
+
+
 func _init(
 	p_octree_node = null, p_is_leaf: bool = false, p_active_LOD_index: int = -1,
 	p_spawned_spatial_container: Node3D = null, p_RID_instance: RID = RID(), p_RID_multimesh: RID = RID(),
@@ -73,10 +78,6 @@ func _init(
 		_current_state = p_current_state
 
 
-func get_current_state() -> StateType:
-	return _current_state
-
-
 func clone(p_octree_node) -> RefCounted:
 	var clone = get_script().new(
 		p_octree_node, _is_leaf, _active_LOD_index,
@@ -84,6 +85,35 @@ func clone(p_octree_node) -> RefCounted:
 		_mesh, _spawned_spatial, _cast_shadow,
 		0)
 	return clone
+
+
+# Free anything that might incur a circular reference or a memory leak
+# Anything that is @export'ed is NOT touched here
+# We count on Godot's own systems to handle that in whatever way works best
+func free_circular_refs():
+	if _current_state & StateType.MESH_DEPS_INITIALIZED: 
+		_deinit_mesh_dependencies()
+	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: 
+		_deinit_spawned_spatial_dependencies()
+
+	_octree_node = null
+
+
+# "Restore" circular references freed in free_circular_refs() 
+# (e.g. when exiting and then entering the tree again)
+func restore_circular_refs(p_octree_node: Resource):
+	set_octree_node(p_octree_node)
+
+
+
+
+#-------------------------------------------------------------------------------
+# Octree event handling
+#-------------------------------------------------------------------------------
+
+
+func get_current_state() -> StateType:
+	return _current_state
 
 
 # Check conditions for a single state and turn it on/off
@@ -406,24 +436,9 @@ func on_root_visibility_changed(p_visible: bool):
 
 
 
-# Free anything that might incur a circular reference or a memory leak
-# Anything that is @export'ed is NOT touched here
-# We count on Godot's own systems to handle that in whatever way works best
-func free_circular_refs():
-	if _current_state & StateType.MESH_DEPS_INITIALIZED: 
-		_deinit_mesh_dependencies()
-	if _current_state & StateType.SPATIAL_DEPS_INITIALIZED: 
-		_deinit_spawned_spatial_dependencies()
-
-	_octree_node = null
-
-
-# "Restore" circular references freed in free_circular_refs() 
-# (e.g. when exiting and then entering the tree again)
-func restore_circular_refs(p_octree_node: Resource):
-	set_octree_node(p_octree_node)
-
-
+#-------------------------------------------------------------------------------
+# State management
+#-------------------------------------------------------------------------------
 
 
 func _init_mesh_dependencies():

@@ -94,6 +94,13 @@ func up_to_date_baker_menu(bake_menu: Button, gardener, p_plant_names: Array, p_
 	popup.reset_size()
 
 
+
+
+#-------------------------------------------------------------------------------
+# Baking
+#-------------------------------------------------------------------------------
+
+
 func request_bake(bake_menu: Button, gardener: Node3D):
 	if !is_instance_valid(gardener.get_parent()):
 		push_error("Cannot bake a Gardener when it is the scene's root!")

@@ -36,6 +36,11 @@ signal member_transformed(changes: PaintingChanges)
 
 
 
+#-------------------------------------------------------------------------------
+# Initialization and lifecycle
+#-------------------------------------------------------------------------------
+
+
 func _init(p_gardener_root):
 	resource_local_to_scene = true
 	gardener_root = p_gardener_root
@@ -71,14 +76,6 @@ func forwarded_input(camera:Camera3D, event):
 	return handled
 
 
-
-
-func update_all_props_to_active_brush(brush: Toolshed_Brush):
-	query_mode = brush.behavior_selection_mode
-	collision_mask = brush.behavior_selection_collision_mask
-	is_preprocess_enabled = brush.behavior_enable_selection_preprocess
-
-
 func update(delta):
 	if selection_exists:
 		if EditorInterfaceInterface.get_selected_nodes().size() != 1 || EditorInterfaceInterface.get_selected_nodes()[0] != proxy_node_instance:
@@ -89,6 +86,19 @@ func update(delta):
 				last_proxy_transform = proxy_node_instance.global_transform
 				proxy_update()
 				_query()
+
+
+func update_all_props_to_active_brush(brush: Toolshed_Brush):
+	query_mode = brush.behavior_selection_mode
+	collision_mask = brush.behavior_selection_collision_mask
+	is_preprocess_enabled = brush.behavior_enable_selection_preprocess
+
+
+
+
+#-------------------------------------------------------------------------------
+# Query
+#-------------------------------------------------------------------------------
 
 
 func _query() -> bool:
@@ -251,29 +261,6 @@ func intersect_ray_triangles(ray_start: Vector3, ray_end: Vector3, p_instance_ca
 	return {}
 
 
-# Request instance transform update in response to proxy transform change
-func proxy_update():
-	var old_placeform = picked_instance.node.get_placeform(picked_instance.member_idx)
-	var new_placeform = Placeform.mk(proxy_node_instance.global_transform.origin, old_placeform[1], proxy_mesh_instance.global_transform, old_placeform[3])
-	new_placeform[0] = gardener_root.global_transform.affine_inverse() * new_placeform[0]
-	new_placeform[2] = gardener_root.global_transform.affine_inverse() * new_placeform[2]
-	
-	var address = PackedByteArray()
-	picked_instance.node.get_address(address)
-	var changes = PaintingChanges.new()
-	changes.add_change(
-		PaintingChanges.ChangeType.SET, picked_instance.plant_idx,
-		{"placeform": new_placeform, "index": picked_instance.member_idx, "address": address},
-		{"placeform": old_placeform, "index": picked_instance.member_idx, "address": address})
-	member_transformed.emit(changes)
-
-
-func deselect_proxy():
-	if selection_exists:
-		selection_exists = false
-		picked_instance = null
-
-
 # Search a node of type within a PackedScene, return relative path
 func _get_packed_scene_first_node_rel_path(p_node_type: QueryMode, p_scene: PackedScene) -> NodePath:
 	if p_node_type == QueryMode.MESH: return ""
@@ -299,6 +286,36 @@ func _get_packed_scene_first_node_rel_path(p_node_type: QueryMode, p_scene: Pack
 			lifo_nodes.append(child)
 	
 	return rel_path
+
+
+
+
+#-------------------------------------------------------------------------------
+# Proxy handling
+#-------------------------------------------------------------------------------
+
+
+# Request instance transform update in response to proxy transform change
+func proxy_update():
+	var old_placeform = picked_instance.node.get_placeform(picked_instance.member_idx)
+	var new_placeform = Placeform.mk(proxy_node_instance.global_transform.origin, old_placeform[1], proxy_mesh_instance.global_transform, old_placeform[3])
+	new_placeform[0] = gardener_root.global_transform.affine_inverse() * new_placeform[0]
+	new_placeform[2] = gardener_root.global_transform.affine_inverse() * new_placeform[2]
+	
+	var address = PackedByteArray()
+	picked_instance.node.get_address(address)
+	var changes = PaintingChanges.new()
+	changes.add_change(
+		PaintingChanges.ChangeType.SET, picked_instance.plant_idx,
+		{"placeform": new_placeform, "index": picked_instance.member_idx, "address": address},
+		{"placeform": old_placeform, "index": picked_instance.member_idx, "address": address})
+	member_transformed.emit(changes)
+
+
+func deselect_proxy():
+	if selection_exists:
+		selection_exists = false
+		picked_instance = null
 
 
 # Re-pick a previously picked instance after it was moved to a different OctreeNode

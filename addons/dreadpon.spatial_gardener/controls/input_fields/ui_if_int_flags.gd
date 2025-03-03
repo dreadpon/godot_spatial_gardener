@@ -94,110 +94,14 @@ func _cleanup():
 	button = null
 
 
-
-
-#-------------------------------------------------------------------------------
-# Property management
-#-------------------------------------------------------------------------------
-
-
-func _update_ui_to_prop_action(prop_action:PropAction, final_val):
-	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
-		_update_ui_to_val(final_val)
-
-
-func _update_ui_to_val(val):
-	grid.set_flag(val)
-	super._update_ui_to_val(val)
-
-
-func _string_to_val(string) -> int:
-	if string is String:
-		if string.is_valid_int():
-			return string.to_int()
-		else:
-			logger.warn("String cannot be converted to int!")
-	elif string is int:
-		return string
-	else:
-		logger.warn("Passed variable is not a string or int!")
-	return 0
-
-
-
-
-
-#-------------------------------------------------------------------------------
-# Input
-#-------------------------------------------------------------------------------
-
-
-
-func _grid_changed(p_grid: int) -> void:
-	_request_prop_action(p_grid, "PA_PropSet")
-
-
-func _button_pressed() -> void:
-	var layer_count := grid.layer_count
-	layers.clear()
-	for i in range(0, layer_count): 
-		var name := get_layer_name(i)
-		if name.is_empty():
-			continue
-		
-		layers.add_check_item(name, i)
-		var idx := layers.get_item_index(i)
-		layers.set_item_checked(idx, grid.value & (1 << i))
-	
-
-	if layers.get_item_count() == 0:
-		layers.add_item("No Named Layers")
-		layers.set_item_disabled(0, true)
-	
-	layers.add_separator()
-	# TODO: can't use this to open ProjectSettings, Godot doesn't expose this function to plugins
-	#		removing for now
-	#layers.add_icon_item(get_theme_icon("Edit", "EditorIcons"), "Edit Layer Names", grid.layer_count)
-	layers.add_item("Plugins can't open Project Settings")
-	layers.add_item("You'll have to do it manually :(")
-	layers.set_item_disabled(layers.get_item_count() - 2, true)
-	layers.set_item_disabled(layers.get_item_count() - 1, true)
-
-	var button_xform := button.get_screen_transform()
-	var gp := Rect2(button_xform.get_origin(), button_xform.get_scale() * get_size())
-	layers.reset_size()
-	var popup_pos := gp.position - Vector2(layers.get_contents_minimum_size().x, 0)
-	layers.set_position(popup_pos)
-	layers.popup()
-
-
-func _menu_pressed(p_menu: int) -> void:
-	if p_menu >= grid.layer_count:
-		pass
-		# Popup ProjectSettings layer editor
-		# ProjectSettingsEditor.set_general_page(basename)
-	else:
-		if grid.value & (1 << p_menu):
-			grid.value &= ~(1 << p_menu)
-		else:
-			grid.value |= (1 << p_menu)
-		
-		grid.queue_redraw()
-		layers.set_item_checked(layers.get_item_index(p_menu), grid.value & (1 << p_menu))
-		_grid_changed(grid.value)
-	
-
-
-func _refresh_names() -> void:
-	setup(layer_type);
-
-
 func _notification(p_what: int) -> void:
 	match p_what:
 		NOTIFICATION_ENTER_TREE, NOTIFICATION_THEME_CHANGED:
 			button.set_texture_normal(get_theme_icon("GuiTabMenuHl", "EditorIcons"))
 			button.set_texture_pressed(get_theme_icon("GuiTabMenuHl", "EditorIcons"))
 			button.set_texture_disabled(get_theme_icon("GuiTabMenu", "EditorIcons"))
+
+
 
 
 func _set_read_only(p_read_only: bool) -> void: # override
@@ -267,6 +171,36 @@ func setup(p_layer_type: LayerType) -> void:
 	grid.layer_count = layer_count
 
 
+
+
+#-------------------------------------------------------------------------------
+# Property management
+#-------------------------------------------------------------------------------
+
+
+func _update_ui_to_prop_action(prop_action:PropAction, final_val):
+	if is_instance_of(prop_action, PA_PropSet) || is_instance_of(prop_action, PA_PropEdit):
+		_update_ui_to_val(final_val)
+
+
+func _update_ui_to_val(val):
+	grid.set_flag(val)
+	super._update_ui_to_val(val)
+
+
+func _string_to_val(string) -> int:
+	if string is String:
+		if string.is_valid_int():
+			return string.to_int()
+		else:
+			logger.warn("String cannot be converted to int!")
+	elif string is int:
+		return string
+	else:
+		logger.warn("Passed variable is not a string or int!")
+	return 0
+
+
 func set_layer_name(p_index: int, p_name: String) -> void:
 	var property_name := basename + "/layer_%d" % [p_index + 1]
 	if ProjectSettings.has_setting(property_name):
@@ -279,3 +213,70 @@ func get_layer_name(p_index: int) -> String:
 	if ProjectSettings.has_setting(property_name):
 		return ProjectSettings.get_setting_with_override(property_name);
 	return ""
+
+
+
+
+#-------------------------------------------------------------------------------
+# Input
+#-------------------------------------------------------------------------------
+
+
+
+func _grid_changed(p_grid: int) -> void:
+	_request_prop_action(p_grid, "PA_PropSet")
+
+
+func _button_pressed() -> void:
+	var layer_count := grid.layer_count
+	layers.clear()
+	for i in range(0, layer_count): 
+		var name := get_layer_name(i)
+		if name.is_empty():
+			continue
+		
+		layers.add_check_item(name, i)
+		var idx := layers.get_item_index(i)
+		layers.set_item_checked(idx, grid.value & (1 << i))
+	
+
+	if layers.get_item_count() == 0:
+		layers.add_item("No Named Layers")
+		layers.set_item_disabled(0, true)
+	
+	layers.add_separator()
+	# TODO: can't use this to open ProjectSettings, Godot doesn't expose this function to plugins
+	#		removing for now
+	#layers.add_icon_item(get_theme_icon("Edit", "EditorIcons"), "Edit Layer Names", grid.layer_count)
+	layers.add_item("Plugins can't open Project Settings")
+	layers.add_item("You'll have to do it manually :(")
+	layers.set_item_disabled(layers.get_item_count() - 2, true)
+	layers.set_item_disabled(layers.get_item_count() - 1, true)
+
+	var button_xform := button.get_screen_transform()
+	var gp := Rect2(button_xform.get_origin(), button_xform.get_scale() * get_size())
+	layers.reset_size()
+	var popup_pos := gp.position - Vector2(layers.get_contents_minimum_size().x, 0)
+	layers.set_position(popup_pos)
+	layers.popup()
+
+
+func _menu_pressed(p_menu: int) -> void:
+	if p_menu >= grid.layer_count:
+		pass
+		# Popup ProjectSettings layer editor
+		# ProjectSettingsEditor.set_general_page(basename)
+	else:
+		if grid.value & (1 << p_menu):
+			grid.value &= ~(1 << p_menu)
+		else:
+			grid.value |= (1 << p_menu)
+		
+		grid.queue_redraw()
+		layers.set_item_checked(layers.get_item_index(p_menu), grid.value & (1 << p_menu))
+		_grid_changed(grid.value)
+	
+
+
+func _refresh_names() -> void:
+	setup(layer_type);
