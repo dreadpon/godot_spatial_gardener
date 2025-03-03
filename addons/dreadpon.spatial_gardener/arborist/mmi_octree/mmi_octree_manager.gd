@@ -362,12 +362,19 @@ func set_LODs_to_active_index():
 
 # Update LODs in OctreeNodes depending on their distance to camera
 func update_LODs(camera_pos:Vector3, container_transform:Transform3D):
+	if LOD_variants.is_empty(): return
+	if LOD_max_distance <= 0:
+		LOD_max_distance = 0.00001
 	camera_pos = container_transform.affine_inverse() * camera_pos
-	root_octree_node.update_LODs(camera_pos, LOD_max_distance, LOD_kill_distance)
+	var max_LOD_index = LOD_variants.size() - 1
+	var index_multiplier = max_LOD_index / LOD_max_distance
+	root_octree_node.update_LODs(camera_pos, LOD_max_distance, LOD_kill_distance, max_LOD_index, index_multiplier)
 
 
 func update_LODs_no_camera():
-	root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
+	if LOD_variants.is_empty(): return
+	root_octree_node.update_LODs(Vector3.ZERO, 0.00001, -1.0)
+	#root_octree_node.update_LODs(Vector3.ZERO, -1.0, -1.0)
 
 
 
