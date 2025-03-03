@@ -89,10 +89,10 @@ func _init(_owned_spatial):
 	paint_brush_node.name = "active_brush"
 	set_brush_mesh(Toolshed_Brush.BrushShape.SPHERE)
 	
-	#owned_spatial.add_child(paint_brush_node)
+	#owned_spatial.add_child(paint_brush_node, true)
 	detached_paint_brush_container = Node.new()
-	owned_spatial.add_child(detached_paint_brush_container)
-	detached_paint_brush_container.add_child(paint_brush_node)
+	owned_spatial.add_child(detached_paint_brush_container, true)
+	detached_paint_brush_container.add_child(paint_brush_node, true)
 	set_can_draw(false)
 
 

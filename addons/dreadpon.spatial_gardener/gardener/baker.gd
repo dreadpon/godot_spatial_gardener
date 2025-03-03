@@ -222,7 +222,7 @@ func request_bake(bake_menu: Button, gardener: Node3D):
 	UndoRedoInterface.add_undo_method(_undo_redo, parent.remove_child.bind(baked_gardener))
 	if !_keep_original_gardener:
 		UndoRedoInterface.add_do_method(_undo_redo, parent.remove_child.bind(gardener))
-		UndoRedoInterface.add_undo_method(_undo_redo, parent.add_child.bind(gardener))
+		UndoRedoInterface.add_undo_method(_undo_redo, parent.add_child.bind(gardener, true))
 		UndoRedoInterface.add_undo_method(_undo_redo, gardener.set_owner.bind(gardener.owner))
 	
 	UndoRedoInterface.add_do_method(_undo_redo, EditorInterfaceInterface.select_single_node.bind(baked_gardener))

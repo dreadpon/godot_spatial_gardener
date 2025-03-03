@@ -383,7 +383,7 @@ func debug_mk_debug_draw():
 	if !context.has_node('DponDebugDraw'):
 		var debug_draw := DponDebugDraw.new()
 		debug_draw.name = 'DponDebugDraw'
-		context.add_child(debug_draw)
+		context.add_child(debug_draw, true)
 
 
 func debug_draw_plane_array(planes: Array, origin_points: Array, color: Color = Color.RED):

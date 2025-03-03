@@ -41,6 +41,8 @@ func snapshot_octrees(octree_managers:Array):
 
 
 func check_tree_snapshots(logger, text:String = "") -> Array:
+	#print("GIVEN ", given_tree_snapshot)
+	#print("REFER ", reference_tree_snapshot)
 	var tree_discrepancies = GenericUtils.check_values(given_tree_snapshot, reference_tree_snapshot)
 	
 	logger.info("Found '%d' discrepancies %s %s" % [tree_discrepancies.size(), "in node tree", text])

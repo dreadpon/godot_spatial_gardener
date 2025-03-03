@@ -3,6 +3,7 @@ extends Node
 
 
 const GenericUtils = preload("../utility/generic_utils.gd")
+const Global = preload("res://addons/dreadpon.spatial_gardener/utility/globals.gd")
 const Logger = preload("res://addons/dreadpon.spatial_gardener/utility/logger.gd")
 const FunLib = preload("res://addons/dreadpon.spatial_gardener/utility/fun_lib.gd")
 const UndoRedoInterface = preload("res://addons/dreadpon.spatial_gardener/utility/undo_redo_interface.gd")
@@ -11,6 +12,8 @@ const UndoRedoInterface = preload("res://addons/dreadpon.spatial_gardener/utilit
 var logger = null
 var undo_redo = null : set = dpon_testing_set_undo_redo
 var is_executing:bool = false
+
+var initial_force_readable_node_names: bool = false
 
 signal finished_execution(result)
 signal finished_undo_redo_action(current_action_index)
@@ -31,11 +34,14 @@ func set_do_execute(val):
 
 
 func execute():
+	initial_force_readable_node_names = Global.force_readable_node_names 
+	Global.force_readable_node_names = true
 	assert(!is_executing) # Trying to execute an already running test
 	is_executing = true
 
 
 func finish_execution(results:Array = []):
+	Global.force_readable_node_names = initial_force_readable_node_names
 	is_executing = false
 	finished_execution.emit(results)
 

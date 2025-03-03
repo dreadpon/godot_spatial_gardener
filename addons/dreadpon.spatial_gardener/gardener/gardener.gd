@@ -95,6 +95,7 @@ func _setup_configuration_statics():
 	Globals.is_threaded_LOD_update = 		FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/is_threaded_LOD_update", true)
 	Globals.use_precise_LOD_distances = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_LOD_distances", false)
 	Globals.use_precise_camera_frustum = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/plugin/use_precise_camera_frustum", true)
+	#Globals.force_readable_node_names = 	FunLib.get_setting_safe("dreadpons_spatial_gardener/debug/force_readable_node_names", false)
 
 
 # Update plugin/storage versions that might have been stored inside a .tscn file for this Gardener
@@ -118,13 +119,13 @@ func _ready():
 	logger = Logger.get_for(self, name)
 	
 	painting_node = Node3D.new()
-	add_child(painting_node, false, Node.INTERNAL_MODE_FRONT)
+	add_child(painting_node, true, Node.INTERNAL_MODE_FRONT)
 	
 	debug_viewer = DebugViewer.new()
-	add_child(debug_viewer, false, Node.INTERNAL_MODE_FRONT)
+	add_child(debug_viewer, true, Node.INTERNAL_MODE_FRONT)
 	
 	baker = Baker.new()
-	add_child(baker, false, Node.INTERNAL_MODE_FRONT)
+	add_child(baker, true, Node.INTERNAL_MODE_FRONT)
 	
 	init_painter()
 	init_transplanter()
@@ -618,7 +619,7 @@ func on_greenhouse_req_octree_reconfigure(plant, plant_state):
 func on_greenhouse_req_octree_recenter(plant, plant_state):
 	if !is_edited: return
 	var plant_index = greenhouse.greenhouse_plant_states.find(plant_state)
-	arborist.recenter_octree(plant_state, plant_index)
+	arborist.recenter_octree(plant_index)
 
 
 # Update brush active indexes for DebugViewer

@@ -293,7 +293,7 @@ func reconfigure_octree(plant_state, plant_index:int):
 
 
 # A request to recenter an octree
-func recenter_octree(plant_state, plant_index:int):
+func recenter_octree(plant_index:int):
 	mutex_octree.lock()
 	var octree_manager:MMIOctreeManager = octree_managers[plant_index]
 	octree_manager.recenter_octree()

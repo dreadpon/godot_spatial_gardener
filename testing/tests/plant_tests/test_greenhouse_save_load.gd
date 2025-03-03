@@ -26,7 +26,7 @@ func execute():
 			last_greenhouse = greenhouses[i-1]
 		
 		greenhouse_save_load_node = GreenhouseSaveLoadNode.new()
-		add_child(greenhouse_save_load_node)
+		add_child(greenhouse_save_load_node, true)
 		
 		if i > 0:
 			greenhouse_save_load_node.load_from_path(test_save_load_path, "greenhouse.tres")

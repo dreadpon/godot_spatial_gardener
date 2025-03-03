@@ -3,6 +3,7 @@ extends RefCounted # TODO 1.3.4 explore changing this to Object
 
 const Greenhouse_LODVariant = preload("../../greenhouse/greenhouse_LOD_variant.gd")
 const FunLib = preload("../../utility/fun_lib.gd")
+const Globals = preload("../../utility/globals.gd")
 
 const multimesh_buffer_size: int = 12
 
@@ -412,9 +413,10 @@ func _init_mesh_dependencies():
 
 
 func _init_spawned_spatial_dependencies():
+	var force_readable_node_name = Globals.force_readable_node_names
 	_spawned_spatial_container = Node3D.new()
 	_spawned_spatial_container.set_meta("octree_address", _octree_node.get_address())
-	_octree_node.gardener_root.add_child(_spawned_spatial_container)
+	_octree_node.gardener_root.add_child(_spawned_spatial_container, force_readable_node_name)
 	_spawned_spatial_container.transform = Transform3D()
 	_update_state(StateType.SPATIAL_DEPS_INITIALIZED)
 
@@ -457,11 +459,12 @@ func _add_all_mesh_instances():
 
 
 func _add_all_spatial_instances():
+	var force_readable_node_name = Globals.force_readable_node_names
 	var instance_count = _octree_node.get_member_count()
 	var spatial = null
 	for i in range(0, instance_count):
 		spatial = _spawned_spatial.instantiate()
-		_spawned_spatial_container.add_child(spatial)
+		_spawned_spatial_container.add_child(spatial, force_readable_node_name)
 		spatial.global_transform = _spawned_spatial_container.global_transform * _octree_node.member_placeforms[i][2]
 
 
@@ -491,10 +494,11 @@ func _add_mesh_instances(p_placeforms: Array):
 
 
 func _add_spatial_instances(p_placeforms: Array):
+	var force_readable_node_name = Globals.force_readable_node_names
 	var spatial = null
 	for i in range(0, p_placeforms.size()):
 		spatial = _spawned_spatial.instantiate()
-		_spawned_spatial_container.add_child(spatial)
+		_spawned_spatial_container.add_child(spatial, force_readable_node_name)
 		spatial.global_transform = _spawned_spatial_container.global_transform * p_placeforms[i][2]
 
 

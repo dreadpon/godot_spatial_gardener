@@ -36,7 +36,7 @@ static func populate_node_with_surfaces(parent_node:Node, landscape_surface:bool
 				mesh_instance.global_transform = Transform3D(data.basis, data.origin)
 				mesh_instance.create_trimesh_collision()
 		
-		parent_node.add_child(mesh_instance)
+		parent_node.add_child(mesh_instance, true)
 		mesh_instance.owner = parent_node.get_tree().get_edited_scene_root()
 	
 	return painting_data
@@ -46,15 +46,15 @@ static func populate_node_with_surfaces(parent_node:Node, landscape_surface:bool
 
 static func snapshot_tree(root_node:Node) -> Dictionary:
 	var snapshot := {}
-	snapshot[root_node.name] = snapshot_node(root_node)
+	snapshot[cleanup_node_name(root_node.name)] = snapshot_node(root_node)
 	
 	return snapshot
 
 
 static func snapshot_node(node:Node) -> Dictionary:
 	var snapshot := {}
-	for child in node.get_children():
-		snapshot[child.name] = snapshot_node(child)
+	for child in node.get_children(true):
+		snapshot[cleanup_node_name(child.name)] = snapshot_node(child)
 	
 	return snapshot
 
@@ -81,6 +81,13 @@ static func snapshot_octree_node(octree_node:OctreeNode):
 			var address_string = str(child.get_address_string())
 			snapshot[address_string] = snapshot_octree_node(child)
 	else:
-		return octree_node.member_count()
+		return octree_node.get_member_count()
 	
 	return snapshot
+
+
+const node_name_forbidden_symbols = [".", ":", "@", "/", "\"", "%"]
+static func cleanup_node_name(p_name: String) -> String:
+	for char in node_name_forbidden_symbols:
+		p_name = p_name.replace(char, "_")
+	return p_name

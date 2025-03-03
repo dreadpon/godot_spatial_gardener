@@ -15,23 +15,10 @@ const Gardener = preload("res://addons/dreadpon.spatial_gardener/gardener/garden
 
 
 static func check_all_integrity(gardener:Gardener, painting_data:Array, coverage_modes_list:Array) -> Dictionary:
-	var total_results := {"results_list": [], "results": {"extra_MMIs": []}}
+	var total_results := {"results_list": [], "results": {"extra_multimeshes": []}}
 	for octree_index in range(0, gardener.arborist.octree_managers.size()):
 		var results = check_integrity(gardener, octree_index, painting_data, coverage_modes_list[octree_index])
 		total_results.results_list.append(results)
-	
-	for MMI in gardener.arborist.MMI_container.get_children():
-		var found_MMI := false
-		for results in total_results.results_list:
-			if results.accounted_MMIs.has(MMI):
-				found_MMI = true
-				break
-		if !found_MMI:
-			total_results.results.extra_MMIs.append(
-				MMI)
-	
-	for results in total_results.results_list:
-		results.erase("accounted_MMIs")
 	
 	return total_results
 
@@ -39,6 +26,7 @@ static func check_all_integrity(gardener:Gardener, painting_data:Array, coverage
 static func check_integrity(gardener:Gardener, octree_index:int, painting_data:Array, coverage_modes:Array) -> Dictionary:
 	var plant = gardener.greenhouse.greenhouse_plant_states[octree_index].plant
 	var root_octree_node:OctreeNode = gardener.arborist.octree_managers[octree_index].root_octree_node
+	var spawns_mesh:bool = plant.mesh_LOD_variants[0].mesh != null
 	var spawns_spatial:bool = plant.mesh_LOD_variants[0].spawned_spatial != null
 	
 	var plant_density:float = gardener.greenhouse.greenhouse_plant_states[octree_index].plant.density_per_units
@@ -46,7 +34,7 @@ static func check_integrity(gardener:Gardener, octree_index:int, painting_data:A
 	var target_members := GardenerScript.get_member_count_for_painting_data(painting_data, plant_density, brush_strength, coverage_modes)
 	
 	var structure_results := analyze_octree_node_structure(root_octree_node)
-	var scene_tree_results := analyze_octree_scene_tree(root_octree_node, gardener.arborist.MMI_container, spawns_spatial)
+	var scene_tree_results := analyze_octree_scene_tree(root_octree_node, gardener, spawns_mesh, spawns_spatial)
 	var total_results := combine_results(structure_results, scene_tree_results)
 	total_results.target_members = target_members
 	
@@ -65,10 +53,10 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 		for child_node in octree_node.child_nodes:
 			var child_node_results = analyze_octree_node_structure(child_node)
 			append_results(node_results, child_node_results)
-			if child_node.member_count() > 0 || child_node.child_nodes.size() > 0:
+			if child_node.get_member_count() > 0 || child_node.child_nodes.size() > 0:
 				occupied_child_nodes += 1
 	else:
-		node_results.total_members += octree_node.member_count()
+		node_results.total_members += octree_node.get_member_count()
 	
 	if octree_node.child_nodes.size() > 0:
 		if node_results.total_members <= octree_node.max_members:
@@ -84,42 +72,43 @@ static func analyze_octree_node_structure(octree_node:OctreeNode) -> Dictionary:
 		else:
 			node_results.has_only_one_child = []
 	else:
-		if octree_node.extent >= octree_node.min_leaf_extent && octree_node.member_count() > octree_node.max_members:
+		if octree_node.extent >= octree_node.min_leaf_extent && octree_node.get_member_count() > octree_node.max_members:
 			node_results.has_members_above_limit.append(
 				"at %s" % [str(octree_node.get_address())])
 	
 	return node_results
 
 
-static func analyze_octree_scene_tree(octree_node:OctreeNode, MMI_container:Node3D, spawns_spatial:bool) -> Dictionary:
+static func analyze_octree_scene_tree(octree_node:OctreeNode, gardener_root:Node3D, spawns_mesh:bool, spawns_spatial:bool) -> Dictionary:
 	var node_results := {}
-	node_results.missing_MMIs = []
-	node_results.extra_MMIs = []
-	node_results.misnamed_MMIs = []
+	node_results.missing_multimeshes = []
+	node_results.extra_multimeshes = []
+	#node_results.misnamed_multimeshes = []
 	node_results.node_missing_spawned_spatials = []
 	node_results.node_with_extra_spawned_spatials = []
-	node_results.accounted_MMIs = []
+	#node_results.accounted_multimeshes = []
 	
 	if octree_node.child_nodes.size() > 0:
 		for child_node in octree_node.child_nodes:
-			var child_node_results = analyze_octree_scene_tree(child_node, MMI_container, spawns_spatial)
+			var child_node_results = analyze_octree_scene_tree(child_node, gardener_root, spawns_mesh, spawns_spatial)
 			append_results(node_results, child_node_results)
 	else:
-		if octree_node.MMI_name != octree_node.MMI.name:
-			node_results.misnamed_MMIs.append(
-				"at %s, %s != %s" % [str(octree_node.get_address()), octree_node.MMI_name, str(octree_node.MMI)])
-		elif !MMI_container.get_children().has(octree_node.MMI):
-			node_results.missing_MMIs.append(
-				"at %s, %s" % [str(octree_node.get_address()), str(octree_node.MMI)])
+		if spawns_mesh:
+			if octree_node.get_member_count() > 0 && (!octree_node.leaf._RID_multimesh.is_valid() || RenderingServer.multimesh_get_instance_count(octree_node.leaf._RID_multimesh) != octree_node.get_member_count()):
+				node_results.missing_multimeshes.append(
+					"at %s, %s" % [str(octree_node.get_address()), str(octree_node.leaf._RID_multimesh)])
+			elif octree_node.leaf._RID_multimesh.is_valid() && (octree_node.get_member_count() <= 0 || !octree_node.is_leaf):
+				node_results.extra_multimeshes.append(
+					"at %s, %s" % [str(octree_node.get_address()), str(octree_node.leaf._RID_multimesh)])
 		else:
-			node_results.accounted_MMIs.append(octree_node.MMI)
+			#node_results.accounted_multimeshes.append(octree_node.leaf._RID_multimesh)
 			if spawns_spatial:
-				if octree_node.MMI.get_children().size() < octree_node.member_count():
+				if octree_node.leaf._spawned_spatial_container.get_children(true).size() < octree_node.get_member_count():
 					node_results.node_missing_spawned_spatials.append(
-						"at %s, from %s, %d are missing" % [str(octree_node.get_address()), octree_node.MMI, octree_node.member_count() - octree_node.MMI.get_children().size()])
-				elif octree_node.MMI.get_children().size() > octree_node.member_count():
+						"at %s, from %s, %d are missing" % [str(octree_node.get_address()), octree_node.leaf._RID_multimesh, octree_node.get_member_count() - octree_node.leaf._spawned_spatial_container.get_children(true).size()])
+				elif octree_node.leaf._spawned_spatial_container.get_children().size() > octree_node.get_member_count():
 					node_results.node_missing_spawned_spatials.append(
-						"at %s, from %s, %d are extra" % [str(octree_node.get_address()), octree_node.MMI, octree_node.MMI.get_children().size() - octree_node.member_count()])
+						"at %s, from %s, %d are extra" % [str(octree_node.get_address()), octree_node.leaf._RID_multimesh, octree_node.leaf._spawned_spatial_container.get_children(true).size() - octree_node.get_member_count()])
 	
 	return node_results
 

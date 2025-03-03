@@ -36,13 +36,17 @@ func execute_next_stage():
 				GardenerScript.mk_script(painting_data[4], GardenerScript.CoverageMode.CENTER_50_PCT))
 		
 		2:
-			octree_snapshot_check.snapshot_tree(gardener.arborist.MMI_container)
+			for idx in gardener.arborist.octree_managers.size():
+				gardener.arborist.recenter_octree(idx)
+			octree_snapshot_check.snapshot_tree(gardener)
 			octree_snapshot_check.snapshot_octrees(gardener.arborist.octree_managers)
 			save_gardener()
 		
 		3:
 			load_gardener()
-			octree_snapshot_check.snapshot_tree(gardener.arborist.MMI_container)
+			for idx in gardener.arborist.octree_managers.size():
+				gardener.arborist.recenter_octree(idx)
+			octree_snapshot_check.snapshot_tree(gardener)
 			octree_snapshot_check.snapshot_octrees(gardener.arborist.octree_managers)
 		
 		4:
@@ -71,7 +75,7 @@ func execute_next_stage():
 
 
 func save_gardener():
-	reassign_gardener_tree_owner(gardener.arborist, gardener, gardener.arborist.owner)
+	#reassign_gardener_tree_owner(gardener.arborist, gardener, gardener.arborist.owner)
 	var packed_scene = PackedScene.new()
 	packed_scene.pack(gardener)
 	FunLib.save_res(packed_scene, greenhouse_path, "gardener.tscn")
@@ -84,17 +88,17 @@ func save_gardener():
 func load_gardener():
 	var packed_scene = FunLib.load_res(greenhouse_path, "gardener.tscn")
 	gardener = packed_scene.instantiate()
-	add_child(gardener)
+	add_child(gardener, true)
 	gardener.owner = get_tree().get_edited_scene_root()
 	editor_selection.clear()
 	editor_selection.add_node(gardener)
 
 
-func reassign_gardener_tree_owner(node:Node, new_owner:Node, source_owner: Node):
-	if node.owner != source_owner: return
-	node.owner = new_owner
-	for child in node.get_children():
-		reassign_gardener_tree_owner(child, new_owner, source_owner)
+#func reassign_gardener_tree_owner(node:Node, new_owner:Node, source_owner: Node):
+	#if node.owner != source_owner: return
+	#node.owner = new_owner
+	#for child in node.get_children():
+		#reassign_gardener_tree_owner(child, new_owner, source_owner)
 
 
 func get_coverage_modes_list():

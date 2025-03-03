@@ -133,6 +133,11 @@ static func add_plugin_project_settings():
 		"dreadpons_spatial_gardener/debug/stroke_handler_debug_draw",
 		false,
 		TYPE_BOOL)
+	#add_project_setting(
+		#"dreadpons_spatial_gardener/debug/force_readable_node_names",
+		#false,
+		#TYPE_BOOL)
+	#ProjectSettings.set_restart_if_changed("dreadpons_spatial_gardener/debug/force_readable_node_names", true)
 	
 	# Saving settings
 	var err: int = ProjectSettings.save()

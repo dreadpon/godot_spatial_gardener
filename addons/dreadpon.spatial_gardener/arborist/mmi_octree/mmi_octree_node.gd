@@ -395,7 +395,7 @@ func remove_placeform_at(idx: int):
 # Set member data by index
 func set_placeform_at(idx:int, placeform: Array):
 	if member_placeforms.size() <= idx: return
-	if !bounds.has_point(placeform[2].origin):
+	if !bounds.has_point(placeform[0]):
 		var address = PackedByteArray()
 		#print("set_placeform_at", " ", address, " ", idx)
 		request_transplanting(get_address(), idx, placeform, member_placeforms[idx])
@@ -933,7 +933,7 @@ func debug_dump_tree(results:Dictionary = {"string": "", "total_members": 0}):
 	if is_leaf:
 		string += " is leaf"
 	if get_member_count() > 0:
-		string += " members: %d" % [get_member_count()]
+		string += " members: %d, _RID_multimesh: %s" % [get_member_count(), str(leaf._RID_multimesh)]
 	
 	results.string += string + "\n"
 	

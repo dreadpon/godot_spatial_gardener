@@ -13,6 +13,7 @@ enum QueryMode {
 	MESH, NODE3D_FIRST_MESH, NODE3D_BODY
 }
 
+var proxy_node_instance: Node3D
 var proxy_mesh_instance: MeshInstance3D
 var picked_instance = null
 var last_proxy_transform: Transform3D
@@ -32,18 +33,24 @@ signal member_transformed(changes: PaintingChanges)
 func _init(p_gardener_root):
 	resource_local_to_scene = true
 	gardener_root = p_gardener_root
+	
+	proxy_node_instance = Node3D.new()
 	proxy_mesh_instance = MeshInstance3D.new()
-	gardener_root.add_child(proxy_mesh_instance, false, Node.INTERNAL_MODE_FRONT)
-	proxy_mesh_instance.visible = false
+	gardener_root.add_child(proxy_node_instance, true, Node.INTERNAL_MODE_FRONT)
+	proxy_node_instance.add_child(proxy_mesh_instance, true, Node.INTERNAL_MODE_FRONT)
+	proxy_node_instance.visible = false
 
 
 func free_circular_refs():
 	picked_instance = null
 	selection_exists = false
-	if is_instance_valid(proxy_mesh_instance):
-		if proxy_mesh_instance.is_inside_tree():
-			gardener_root.remode_child(proxy_mesh_instance)
+	if is_instance_valid(proxy_node_instance):
+		if proxy_node_instance.is_inside_tree():
+			gardener_root.remode_child(proxy_node_instance)
+		proxy_node_instance.queue_free()
 		proxy_mesh_instance.queue_free()
+		proxy_node_instance = null
+		proxy_mesh_instance = null
 
 
 func forwarded_input(camera:Camera3D, event):
@@ -66,12 +73,12 @@ func update_all_props_to_active_brush(brush: Toolshed_Brush):
 
 func update(delta):
 	if selection_exists:
-		if EditorInterfaceInterface.get_selected_nodes().size() != 1 || EditorInterfaceInterface.get_selected_nodes()[0] != proxy_mesh_instance:
+		if EditorInterfaceInterface.get_selected_nodes().size() != 1 || EditorInterfaceInterface.get_selected_nodes()[0] != proxy_node_instance:
 			deselect_proxy()
 	
 		else:
-			if proxy_mesh_instance.global_transform != last_proxy_transform:
-				last_proxy_transform = proxy_mesh_instance.global_transform
+			if proxy_node_instance.global_transform != last_proxy_transform:
+				last_proxy_transform = proxy_node_instance.global_transform
 				proxy_update()
 				_query()
 
@@ -199,13 +206,16 @@ func _query() -> bool:
 			picked_instance.node.get_address(address)
 			picked_instance.address = address
 			#DebugDraw3D.draw_sphere(instance_intersection_candidate[1], 2.0, Color.RED, 60.0)
-			var trans = gardener_root.global_transform * picked_instance.placeform[2]
+			var node_origin = gardener_root.global_transform * picked_instance.placeform[0]
+			var mesh_trans = gardener_root.global_transform * picked_instance.placeform[2]
 			var selection_mesh = instance_intersection_candidate[2]#.duplicate()
 			
+			proxy_node_instance.global_transform = mesh_trans
+			proxy_node_instance.global_position = node_origin
 			proxy_mesh_instance.mesh = selection_mesh
-			proxy_mesh_instance.global_transform = trans
-			EditorInterfaceInterface.select_single_node(proxy_mesh_instance)
-			last_proxy_transform = trans
+			proxy_mesh_instance.global_transform = mesh_trans
+			EditorInterfaceInterface.select_single_node(proxy_node_instance)
+			last_proxy_transform = proxy_node_instance.global_transform
 			selection_exists = true
 	
 	#print_time.call_deferred(start_ms)
@@ -242,7 +252,7 @@ func print_time(start_ms):
 func proxy_update():
 	#print("proxy_update")
 	var old_placeform = picked_instance.node.get_placeform(picked_instance.member_idx)
-	var new_placeform = Placeform.mk(proxy_mesh_instance.global_transform.origin, old_placeform[1], proxy_mesh_instance.global_transform, old_placeform[3])
+	var new_placeform = Placeform.mk(proxy_node_instance.global_transform.origin, old_placeform[1], proxy_mesh_instance.global_transform, old_placeform[3])
 	new_placeform[0] = gardener_root.global_transform.affine_inverse() * new_placeform[0]
 	new_placeform[2] = gardener_root.global_transform.affine_inverse() * new_placeform[2]
 	#picked_instance.node.set_placeform_at(picked_instance.member_idx, new_placeform)
@@ -293,6 +303,7 @@ func _get_packed_scene_first_node_rel_path(p_node_type: QueryMode, p_scene: Pack
 
 func on_transplanted_member(plant_index: int, new_address: PackedByteArray, new_idx: int, old_address: PackedByteArray, old_idx: int):
 	#print("on_transplanted_member")
+	if !picked_instance || picked_instance.is_empty(): return
 	if picked_instance.plant_idx == plant_index && picked_instance.address == old_address && picked_instance.member_idx == old_idx:
 		var root_nodes = gardener_root.arborist.get_all_octree_root_nodes()
 		var octree_node = root_nodes[plant_index].find_child_by_address(new_address)

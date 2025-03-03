@@ -7,6 +7,7 @@ extends Node
 # Or as a static tool for creating geometry and attaching it to a scene
 #-------------------------------------------------------------------------------
 
+const Globals = preload("../utility/globals.gd")
 
 var active_geometry:Array = []
 var cached_geometry:Array = []
@@ -156,7 +157,7 @@ static func static_draw_line(start:Vector3, end:Vector3, color:Color, node_conte
 	geom.material_override.albedo_color = color
 	
 	mesh_inst.mesh = geom
-	node_context.add_child(mesh_inst)
+	node_context.add_child(mesh_inst, Globals.force_readable_node_names)
 	
 	return mesh_inst
 
@@ -175,7 +176,7 @@ static func static_draw_cube(pos:Vector3, size:Vector3, rotation:Quaternion, col
 	var mesh_instance = MeshInstance3D.new()
 	mesh_instance.transform.basis = Basis(rotation)
 	mesh_instance.transform.origin = pos
-	node_context.add_child(mesh_instance)
+	node_context.add_child(mesh_instance, Globals.force_readable_node_names)
 	
 	mesh_instance.mesh = generate_cube(size, color)
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -255,7 +256,7 @@ static func static_draw_plane(pos:Vector3, size:float, normal:Vector3, color:Col
 	basis.x = normal.cross(basis.y)
 	mesh_instance.transform.basis = basis.orthonormalized()
 	mesh_instance.transform.origin = pos
-	node_context.add_child(mesh_instance)
+	node_context.add_child(mesh_instance, Globals.force_readable_node_names)
 	
 	mesh_instance.mesh = generate_plane(size, color, normal_length)
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

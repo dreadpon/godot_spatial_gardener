@@ -57,6 +57,8 @@ func execute_next_stage():
 			painter_script = painter_scripts[2]
 		
 		3:
+			for idx in gardener.arborist.octree_managers.size():
+				gardener.arborist.recenter_octree(idx)
 			var undo_redo_gone_wrongs = execute_undo_redo_sequence(
 				action_intervals, undoable_action_count, [])
 			
@@ -82,8 +84,16 @@ func finished_painter_action(painter_action:PainterAction):
 
 
 func on_finished_undo_redo_action(current_action_index:int, action_name:String, callback_return_value, callback_binds:Array = []):
+	for idx in gardener.arborist.octree_managers.size():
+		gardener.arborist.recenter_octree(idx)
+	
 	if callback_return_value == null:
 		callback_return_value = {}
+	
+	var manager_size = gardener.arborist.octree_managers.size()
+	for i in range(0, manager_size):
+		var octree_manager = gardener.arborist.octree_managers[i]
+		octree_manager.update_LODs(Vector3.ZERO, gardener.global_transform, true)
 	
 	for i in range(0, gardener.arborist.octree_managers.size()):
 		if callback_return_value.size() <= i:

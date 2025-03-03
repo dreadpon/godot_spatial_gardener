@@ -12,6 +12,7 @@
 static var is_threaded_LOD_update: bool = false
 static var use_precise_LOD_distances: bool = false
 static var use_precise_camera_frustum: bool = false
+static var force_readable_node_names: bool = false
 
 
 # Convert index starting from "0" to an enum value, where first index is the first enum value

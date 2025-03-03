@@ -47,7 +47,7 @@ func create_and_start_gardener_editing():
 	FunLib.free_children(self)
 	
 	gardener = Gardener.new()
-	add_child(gardener)
+	add_child(gardener, true)
 	
 	editor_selection.clear()
 	editor_selection.add_node(gardener)
@@ -90,7 +90,10 @@ func execute():
 
 func finish_execution(results:Array = []):
 	if gardener:
-		gardener.visible = false
+		UndoRedoInterface.create_action(undo_redo, "Gardener visibility")
+		UndoRedoInterface.add_do_method(undo_redo, gardener.set_visible.bind(false))
+		UndoRedoInterface.add_undo_method(undo_redo, gardener.set_visible.bind(true))
+		UndoRedoInterface.commit_action(undo_redo, true)
 		gardener.forward_input_events = true
 	super.finish_execution(results)
 
@@ -124,6 +127,7 @@ func print_and_get_result_indexed(error_counters_indexed:Dictionary) -> Array:
 
 func check_integrity() -> Dictionary:
 	# This is needed to refresh all pending spawned spatials
+	# NOTE: 1.3.4 this may cause bugs due to recent changes
 	gardener.arborist.update_LODs()
 	
 	var error_counters_indexed := {}
