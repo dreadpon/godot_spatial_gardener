@@ -32,13 +32,7 @@ Next up, the scene tree structure.
 
 ![t_pt2_gardener_scene_tree](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_gardener_scene_tree.jpg)
 
-- First is the `Gardener` – a high-level manager that handles input, lifecycle of different functions and communications between them.
-- Second comes the `Arborist`. It manages octrees and foliage placement in response to brush painting.
-- Then you have a MultiMesh container for each of the plant types.
-- Next is a long list of `MultiMeshInstance3D` nodes. They are unordered, and handled by Arborist's octrees. Each multimesh represents a 'cube' you've seen in `Gardener Debug Viewer`, called an octree node. MultiMeshes handle the instancing of meshes on GPU.
-- Finally we have `StaticBody` nodes, which were spawned if you had a `Spawned Spatial` assigned.
-
-You shouldn't manually edit this list, so it's better to keep your Gardeners folded.
+NOTE: starting from 1.4.0 Gardener is *the only* node visible in the hierarchy. You should not add any children to it or otherwise interfere with its descendants.
 
 ## Brushes
 
@@ -52,6 +46,7 @@ You can switch between them by clicking, or pressing buttons 1-4 on your keyboar
 - `Erase` removes foliage. `Strength` defines how much foliage is removed related to current density in the settings. A value of 0.5 will make your foliage approximately half as dense. It's a bit wonky though, as density isn't 100% precise in this plugin.
 - `Single` is used to place individual objects like trees or props.
 - `Reapply` updates individual transforms of already placed plants. It doesn't affect density, octree configuration or LOD settings.
+- `Transform` is used to select painted instances one at a time and transform it using Godot's built-in gizmo
 
 Both size and strength can be quickly edited: `Size` by holding `Side Mouse Button 1` and dragging, and `Strength` by holding `Shift` + `Side Mouse Button 1`.
 
@@ -66,6 +61,14 @@ You can quickly switch between Volume and Projection brushes by pressing `` ` ``
 By default `Projection` brushes don't affect plants obstructed by terrain. If you want to ignore obstruction checks, set `Passthrough` to `On`. 
 
 ![t_pt2_passthrough](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_passthrough.jpg)
+
+For `Transform` brush, `Selection Mode` defines how the instance is selected. Due to the fact that instances can be both pure `Mesh`es or `Node3D`s, you have a few options here:
+- `Mesh` option performs a geometry-based raycast (without using a physics engine). Use this when you have a `Mesh` field assigned for your `LOD Variants`
+- `Node3D First Mesh` is used with a `Spawned Node3D` field. It scans the `PackedScene` you assign and finds the first `MeshInstance3D` node (if any). Then performs the same geometry-based scan as with `Mesh` selection mode
+- `Node3D Body` performs a physics-based raycast against any `PhysicsBodies3D` that `Spawned Node3D` might have.
+
+`Selection Mask` is used together with `Node3D Body` selection mode to define physics layers used for raycasting.
+`Preprocess Selection` defines whether or not `Mesh` based geometry raycasts will be occluded by other geometry present in the level. Turn this off if you want to pick instances through any other geometry.
 
 ## Plants
 
@@ -141,6 +144,27 @@ Next, a debugging tool called `Gardener Debug Viewer`. It visualizes the underly
 
 ![t_pt2_debug_viewer_members](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_debug_viewer_members.jpg)
 
+## Bake Gardener
+
+In 1.4.0 LOD management and instance spawning system was reworked, which resulted in nodes no longer being visible in the `SceneTree`. Sometimes though, you may want to take all instances *out* of the Gardener and work with them as regular Nodes. `Bake Gardener` functionality is supposed to help with that.
+
+Baking menu allows you to configure the baking process separately for each plant in your Gardener.
+- `Mesh LOD Picking` and `Node3D LOD Picking` defines how baker should pick which LOD to use: 
+    - `Manual` allows you to specify an LOD index manually
+    - `Current Camera` uses LODs as they are assigned around the current/editor camera
+    - `Scene Origin` uses LODs as if the camera was at scene origin coordinates (0, 0, 0)
+    - `None` skips baking `Mesh`/`Node3D` for current plant
+- `Mesh LOD Index` and `Node3D LOD Index` defines which LOD should be chosed with `Manual` picking mode
+- `Mesh Kill Instances` and `Node3D Kill Instances` defines whether `Spawned Node3D` instances farther than `LOD Kill Distance` should be culled/killed on bake or kept regardless
+
+`Keep Original Gardener` also allows you to keep the Gardener Node in the SceneTree or delete it after baking is done.
+
+![t_pt2_baking_menu](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_baking_menu.jpg)
+
+After pressing `Bake Gardener to Nodes`, depending on your chosen settings, an hierarchy of Nodes should appear in the SceenTree. 
+
+![t_pt2_bake_result](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_bake_result.jpg)
+
 ## Project Settings
 
 And finally, the plugin settings. Go to `Project -> Project Settings` and scroll until you see `Dreadpon Spatial Gardener`.
@@ -155,7 +179,9 @@ And finally, the plugin settings. Go to `Project -> Project Settings` and scroll
 
     ![t_pt2_input_ui](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_input_ui.jpg)
 
-- In `Plugin` are all the tweakable settings related to plugin in general. For now it's only settings related to converting scenes from previous plugin versions.
+- In `Plugin` are all the tweakable settings related to plugin in general. From here you can tweak whether or not outdated scene scanning should be performed on statup, whether LOD updates should be offloaded to a separate thread, whether precise claculations should be used during this process, whether precise frustum algorithm should be used when using a `Transform` brush.
+
+- It is recommenended to leave all these on (if you experience long project statup times, you can disable scene scanning).
 
     ![t_pt2_plugin](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut2_plugin.jpg)
 

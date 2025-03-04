@@ -63,7 +63,9 @@ Go to the scene tree and add a node called `Gardener`. It will handle the entire
 
 ![t_pt1_adding_gardener](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_adding_gardener.jpg)
 
-Every Gardener maintains a subtree of nodes that are essential for its functionality. You can have however many Gardeners you need, but you should not add or remove any descendants.
+Every Gardener maintains a (hidden) subtree of nodes that are essential for its functionality. You can have however many Gardeners you need, but you should not add or otherwise influence its descendants.
+
+NOTE: some outdated screenshots feature *visible* Gardener descendants. Ignore this, starting from 1.4.0 they are not meant to be interacted with.
 
 ![t_pt1_gardener_scene_tree](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_gardener_scene_tree.jpg)
 
@@ -87,7 +89,8 @@ To paint a plant, you need two basic things: a mesh and a desired density. For t
 
 For plants to look good, they need a lot of polygons and high-res textures. There's usually hundreds if not thousands of plants in a level. Multiply these and you get a molten Graphics Card. But, we rightfully assume that players can't see that well in the distance, so it's fine for faraway plants to have less detail. This concept is called 'Level of Detail' or LOD for short. We make 2, 3, 4 separate models, each simpler than the last. And then switch between them depending on the distance.
 
-![t_pt1_lod_primer]()
+![t_pt1_lod_primer_separate](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_lod_primer_separate.jpg)
+![t_pt1_lod_primer_together](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_lod_primer_together.jpg)
 
 That's what `LOD Variants` are for. Add three variants. Now go to `demo -> playground -> plants -> pine` and find three meshes named `plants_tree_pine_lod.mesh`. You should assign them in order of simplification: drag  `plants_tree_pine_lod0.mesh` to the first LOD variant, `plants_tree_pine_lod1.mesh` to second and `plants_tree_pine_lod2.mesh` to third.
 
@@ -121,7 +124,7 @@ Set `LOD Max Distance` to 100, and zoom your camera in and out. Observe how the 
 
 Click `Configure Octrees`. Default values here are meant for something more dense, like bushes. It assumes 75 objects can fit into one 'cube'. Lets change `Max Chunk Capacity` to a more reasonable 10 and click `Apply`.
 
-![t_pt1_configuting_octree](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_configuting_octree.jpg)
+![t_pt1_configuting_octree](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/text_tutorial/tut1_configuring_octree.jpg)
 
 Notice how the density of debug cubes increased.
 

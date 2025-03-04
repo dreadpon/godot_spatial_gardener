@@ -66,21 +66,22 @@ If you got this far, you should probably open an issue on GitHub.
 
 New to Spatial Gardener v.1.1.1 is the ability to export plant placement data as JSON.
 
-Steps:
+Steps for v.1.1.1 - v.1.2.0:
 1. First, backup all the scenes you're planning to convert.
-2. Download the Spatial Gardener v.1.1.1 if you were using one of the previous versions. It is compatible with scenes made in these previous versions, and is made purely for enabling JSON exporting. All subsequent versions have breaking changes compared to pre v1.1.1.
+2. Download the Spatial Gardener v.1.1.1 if you were using one of the versions **before it**. It is compatible with scenes made in these previous versions, and is made purely for enabling JSON exporting. All subsequent versions have breaking changes compared to pre v1.1.1.
 3. Open the scene you'd like to convert.
 4. For each `Gardener` and each plant in this scene, go to plant settings, scroll to the bottom and press `Export Transforms` (`Export Plant Data` in v.1.3.0 and up).
 	- ![export.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_export.jpg)
 5. Select the folder, set file name and press `Save`.
 	- You should probably export outside of your project directory.
 	- At this point you should have a bunch of individual JSON files. E.g. if you have 2 Gardeners in your scene, 3 plants each, you would have 6 JSON files.
+	- For v.1.3.0 and up you can bundle plants together by exporting the entire `Greenhouse` (so you would have only 2 JSON files).
 6. Upgrade Spatial Gardener to the version, when NEXT storage specification change occured
 	- Storage v.1: plugin v.1.0.0 - v.1.1.1
-	- Storage v.2: plugin v.1.2.0 - now
+	- Storage v.2: plugin v.1.2.0 only
 7. Open your scenes. The editor will scream errors, that's fine.
 8. Clear your `Gardener`s by deleting them or the `Arborist` nodes.
-9. Save and re_open the scene. Recreate the `Gardener`s in case you deleted them.
+9. Save and re-open the scene. Recreate the `Gardener`s in case you deleted them.
 10. For each `Gardener` and each plant in the scene, go to plant settings, scroll to the bottom and press `Import Transforms` (`Import Plant Data` in v.1.3.0 and up).
 	- ![import.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_import.jpg)
 11. Select the files you exported previously and click `Open`.
@@ -99,11 +100,11 @@ New in Spatial Gardener fot Godot 4.x (v.1.3.0 and up) is the ability to Export/
 	- You should probably export outside of your project directory.
 	- At this point you should have a bunch of individual JSON files. E.g. if you have 2 Gardeners in your scene, 3 plants each, you would have 2 JSON files.
 6. Upgrade Spatial Gardener to next version, when NEXT storage specification change occured
-	- Storage v.3: plugin v.1.3.0 - now
-	- **NOTE:** there is currently no storage spec changes for plugin versions for Godot 4.x, but this might change in the future.
+	- Storage v.3: plugin v.1.3.0 - v.1.3.3
+	- Storage v.4: plugin v.1.4.0 - now
 7. Open your scenes. The editor will scream errors, that's fine.
-8. Clear your `Gardener`s by deleting them or the `Arborist` nodes.
-9. Save and re_open the scene. Recreate the `Gardener`s in case you deleted them.
+8. Clear your `Gardener`s by deleting them or the `Arborist` nodes. (not needed for v.1.4.0 and up)
+9. Save and re-open the scene. Recreate the `Gardener`s in case you deleted them.
 10. For each `Gardener` add at least one "dummy" plant, go to plant settings and scroll to the bottom and press `Import Greenhouse Data`.
 	- ![import.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_import2.jpg)
 11. Select the files you exported previously and click `Open`.
@@ -117,8 +118,6 @@ If this fails too, proceed to the last resort: [Dealing with failed conversions]
 <br>
 
 ## Dealing with failed conversions
-
-**NOTE:** information below is relevant for Godot 3.x. Godot 4.x versions of this plugin currently use the same storage methods described, but you are unlikely to need to use them.
 
 ### The obvious
 
@@ -202,3 +201,31 @@ Again, it's a good idea to open on issue on GitHub if you got this far.
 This is where a change from Godot 3.x to Godot 4.x occured. The storage didn't actually change, but due to Godot's own compatability breaking changes/renames, two formats cannot be used interchangeably. 
 
 Read previous paragraph to get an idea of how the storage works (and account for Godot 4.x renames).
+
+### Storage v.3 -> Storage v.4
+
+This is where I realised the smartass approach from before did not account for a desire to have `Spawned Node3D`s *without* any *Mesh*es. This is a valid use case in v.1.4.0 and up, so I was forced to revert back to storing entire `PlacementTransform`s with their owning `OctreeNode`s.
+
+However, this would have reverted scene sizes back to bloated. Instead, it was decided to *not* store created `MultiMeshInstance3D`s and instantiated `Spawned Node3D`s on disk at all and instead recreate them procedurally on scene load.
+
+This does not *really* impact loading times much since Godot has to initialize these nodes either way.
+
+So, the storage change basically boils down to:
+1. Parsing scenes to find all `MultiMesh` and `MultiMeshInstance3D` objects referenced by `OctreeNode`s
+2. Gathering `Transform3D` data from them
+3. Erasing `member_origin_offsets`, `member_surface_normals`, `member_octants` and `MMI_name` properties from `OctreeNode`s
+4. Constructing `PlacementTransform` arrays from them and assigning the result to `member_placeforms` variable of the `OctreeNode`s
+5. Erasing `MultiMesh`, `MultiMeshInstance3D` and any `Spawned Node3D` objects from the scene file
+6. Changing `Arborist` object type from Node to Resource and moving it right after all the `OctreeManager`s (since it becomes a resource, it needs to appear earlier in the scene file in order for Godot's parser to work correctly)
+
+Reconstructing `PlacementTransform`s
+
+![storage_v-3-storage_v-4-0.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_storage_v.3.0.0-storage_v.4.0.0_0.jpg)
+
+Changing `Arborists`'s type and erasing `MultiMesh`es
+
+![storage_v-3-storage_v-4-1.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_storage_v.3.0.0-storage_v.4.0.0_1.jpg)
+
+Erasing other leftover nodes
+
+![storage_v-3-storage_v-4-2.jpg](https://raw.githubusercontent.com/dreadpon/godot_spatial_gardener_media/main/scene_conversion/cnvrsn_storage_v.3.0.0-storage_v.4.0.0_2.jpg)
