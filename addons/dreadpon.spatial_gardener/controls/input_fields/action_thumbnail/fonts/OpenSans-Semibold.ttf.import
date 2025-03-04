@@ -15,6 +15,7 @@ dest_files=["res://.godot/imported/OpenSans-Semibold.ttf-40498e8d34d9d98b42e3a1e
 Rendering=null
 antialiasing=1
 generate_mipmaps=false
+disable_embedded_bitmaps=true
 multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48

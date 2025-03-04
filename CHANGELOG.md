@@ -5,6 +5,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.4.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.4.0) - 2025-03-05
+
+### Added
+
+#### Plant painting
+- Implement Feature #45 'Add transform brush' for precise and manual transformation of placed instances via a Transplanter object and Transform brush
+
+#### Gardener
+- Implement a separate 'Bake Gardener' toolbar action to bake a currently selected Gardener to actual, static Nodes (a separate solution was needed due to LOD management and instance spawning system overhaul)
+- Offload LOD picking calculations to a separate thread (can be toggled on and off in Project Settings)
+- Implement a precise LOD picking raycasting logic (slower but more precise than legacy option, can be toggled on and off in Project Settings)
+- Implement JSON import option to replace all currently existing plants (instead of appending to the list)
+
+### Changed
+
+#### Godot 4.3 port
+- Plugin is fully ported to Godot 4.3!
+
+#### Optimizations
+- Merge Pull Request #55 'Remove duplicated, unpacked, locally saved fonts. Reduces addon size from 11 MB to 1 MB' from [GustJc](https://github.com/GustJc)
+
+#### UI
+- Merge Pull Request #60 'Update Gardener icon for hi-dpi screens' from [flaff](https://github.com/flaff)
+
+### Fixed
+
+#### Stability
+- Fix overriding of native add_child() method to force configuration warning updates (and fix updates themselves)
+- Fix Issues #44, #52, #54, #63 related to instances disappearing from a scene if only `Spawned Spatial` is configured, without a `Mesh` in `LODVariant` by overhauling LOD management and instance spawning system
+- Fix Issue #32 'Error: buffer_update: Buffer argument is not a valid buffer of any type' by overhauling LOD management and instance spawning system
+
+#### Plant painting
+- Fix transform calculation error when placing instances exactly perpendicular/on an `XY` plane
+
+#### UI
+- Fix a UI-related error whenever a Gardener was selected
+- Fix Issue #50 'Confirming values with numpad enter key doesn't work'
+
+<br/><br/>
+
 ## [v1.3.3](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.3.3) - 2024-05-04
 
 ### Changed
