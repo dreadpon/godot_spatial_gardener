@@ -1,10 +1,10 @@
 [gd_resource type="Resource" load_steps=34 format=3 uid="uid://c6q1so1uum8k4"]
 
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="1"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
-[ext_resource type="PackedScene" path="res://testing/assets/suzanne/suzanne_body.tscn" id="5"]
+[ext_resource type="Script" uid="uid://bnsd2fyntembv" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="1"]
+[ext_resource type="Script" uid="uid://c6btkf1v8d8pn" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="2"]
+[ext_resource type="Script" uid="uid://ckg16wf0ebcts" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
+[ext_resource type="Script" uid="uid://cjsirac1827tg" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
+[ext_resource type="PackedScene" uid="uid://mlm32hvvh3ku" path="res://testing/assets/suzanne/suzanne_body.tscn" id="5"]
 [ext_resource type="ArrayMesh" uid="uid://ceosyi1ekunku" path="res://testing/assets/suzanne/suzanne_LOD1_suzanne_LOD1.mesh" id="7"]
 [ext_resource type="ArrayMesh" uid="uid://cw1iq0wir1bs5" path="res://testing/assets/suzanne/suzanne_LOD2_suzanne_LOD2.mesh" id="8"]
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://uhmxpabnq061"]
 
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/scene_converter/convert_dialog.gd" id="1"]
+[ext_resource type="Script" uid="uid://dslltoyi0h7jt" path="res://addons/dreadpon.spatial_gardener/scene_converter/convert_dialog.gd" id="1"]
 
 [node name="ConvertDialog" type="ConfirmationDialog"]
 position = Vector2i(0, 36)

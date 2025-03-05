@@ -1,12 +1,12 @@
 [gd_scene load_steps=19 format=3 uid="uid://cki1qgeugx182"]
 
-[ext_resource type="Script" path="res://testing/utility/greenhouse_creator.gd" id="1"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed.gd" id="2"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="5"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="6"]
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed_brush.gd" id="7"]
+[ext_resource type="Script" uid="uid://dxd462c6ju58e" path="res://testing/utility/greenhouse_creator.gd" id="1"]
+[ext_resource type="Script" uid="uid://y06d0rwxy11x" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed.gd" id="2"]
+[ext_resource type="Script" uid="uid://ckg16wf0ebcts" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant_state.gd" id="3"]
+[ext_resource type="Script" uid="uid://cjsirac1827tg" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse.gd" id="4"]
+[ext_resource type="Script" uid="uid://bnsd2fyntembv" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_plant.gd" id="5"]
+[ext_resource type="Script" uid="uid://c6btkf1v8d8pn" path="res://addons/dreadpon.spatial_gardener/greenhouse/greenhouse_LOD_variant.gd" id="6"]
+[ext_resource type="Script" uid="uid://bfhkwdyxi414f" path="res://addons/dreadpon.spatial_gardener/toolshed/toolshed_brush.gd" id="7"]
 
 [sub_resource type="Resource" id="18"]
 resource_name = "Greenhouse_LODVariant"
@@ -116,6 +116,9 @@ behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
 behavior/behavior_overlap_mode = 0
 behavior/behavior_no_settings_text = "This brush has no additional settings"
+behavior/behavior_selection_mode = 0
+behavior/behavior_selection_collision_mask = 1
+behavior/behavior_enable_selection_preprocess = true
 metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="15"]
@@ -128,6 +131,9 @@ behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
 behavior/behavior_overlap_mode = 0
 behavior/behavior_no_settings_text = "This brush has no additional settings"
+behavior/behavior_selection_mode = 0
+behavior/behavior_selection_collision_mask = 1
+behavior/behavior_enable_selection_preprocess = true
 metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="16"]
@@ -140,6 +146,9 @@ behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
 behavior/behavior_overlap_mode = 0
 behavior/behavior_no_settings_text = "This brush has no additional settings"
+behavior/behavior_selection_mode = 0
+behavior/behavior_selection_collision_mask = 1
+behavior/behavior_enable_selection_preprocess = true
 metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="17"]
@@ -152,6 +161,9 @@ behavior/behavior_strength = 1.0
 behavior/behavior_passthrough = false
 behavior/behavior_overlap_mode = 0
 behavior/behavior_no_settings_text = "This brush has no additional settings"
+behavior/behavior_selection_mode = 0
+behavior/behavior_selection_collision_mask = 1
+behavior/behavior_enable_selection_preprocess = true
 metadata/class = "Toolshed_Brush"
 
 [sub_resource type="Resource" id="9"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b1r8m47n3hvh4"]
 
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/controls/input_fields/dialog_if/ui_dialog_if.gd" id="1"]
+[ext_resource type="Script" uid="uid://damdqvcd1j7dp" path="res://addons/dreadpon.spatial_gardener/controls/input_fields/dialog_if/ui_dialog_if.gd" id="1"]
 
 [node name="UI_Dialog_IF" type="ConfirmationDialog"]
 ok_button_text = "Apply"

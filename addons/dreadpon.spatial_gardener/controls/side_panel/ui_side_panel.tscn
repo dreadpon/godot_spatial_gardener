@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://t2apc6cgn7ud"]
 
-[ext_resource type="Script" path="res://addons/dreadpon.spatial_gardener/controls/side_panel/ui_side_panel.gd" id="3"]
+[ext_resource type="Script" uid="uid://5askkn0p64rs" path="res://addons/dreadpon.spatial_gardener/controls/side_panel/ui_side_panel.gd" id="3"]
 
 [node name="SidePanel" type="TabContainer"]
 custom_minimum_size = Vector2(300, 0)

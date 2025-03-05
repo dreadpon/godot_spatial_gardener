@@ -58,7 +58,7 @@ func duplicate_tree():
 	copy.root_octree_node = copy.root_octree_node.duplicate_tree()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
-	# TODO: 1.4.0 actually pass LOD_variants and other changes to the octree
+	# TODO: (for 1.4.2) actually pass LOD_variants and other changes to the octree
 	return copy
 
 
@@ -67,7 +67,7 @@ func deep_copy():
 	copy.root_octree_node = copy.root_octree_node.deep_copy()
 	copy.connect_node(copy.root_octree_node)
 	LOD_variants = LOD_variants.duplicate()
-	# TODO: 1.4.0 actually pass LOD_variants and other changes to the octree
+	# TODO: (for 1.4.2) actually pass LOD_variants and other changes to the octree
 	return copy
 
 
