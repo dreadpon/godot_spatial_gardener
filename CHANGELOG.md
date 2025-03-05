@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <br/><br/>
 
+## [v1.4.1](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.4.1) - 2025-03-05
+
+### Changed
+
+#### Godot 4.4 port
+- Plugin is fully ported to Godot 4.4!
+
+<br/><br/>
+
 ## [v1.4.0](https://github.com/dreadpon/godot_spatial_gardener/releases/tag/v1.4.0) - 2025-03-05
 
 ### Added
